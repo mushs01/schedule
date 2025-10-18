@@ -32,9 +32,12 @@ function initKakao() {
  * Kakao Login
  */
 function kakaoLogin() {
+    console.log('🔐 Attempting Kakao login...');
     Kakao.Auth.login({
+        scope: 'talk_message',  // 나에게 보내기 권한 요청
         success: function(authObj) {
             console.log('✅ Kakao login successful');
+            console.log('Auth object:', authObj);
             localStorage.setItem(STORAGE_KEYS.KAKAO_LOGGED_IN, 'true');
             updateLoginUI(true);
             showToast('카카오톡 로그인 성공!', 'success');
@@ -42,7 +45,17 @@ function kakaoLogin() {
         },
         fail: function(err) {
             console.error('❌ Kakao login failed:', err);
-            showToast('카카오톡 로그인 실패', 'error');
+            console.error('Error details:', JSON.stringify(err, null, 2));
+            
+            let errorMsg = '카카오톡 로그인 실패';
+            if (err.error) {
+                errorMsg += ` (${err.error})`;
+            }
+            if (err.error_description) {
+                errorMsg += `: ${err.error_description}`;
+            }
+            
+            showToast(errorMsg, 'error');
         }
     });
 }
@@ -66,11 +79,16 @@ function kakaoLogout() {
  * Send test message to Kakao
  */
 function sendTestKakaoMessage() {
+    console.log('📤 Attempting to send test message...');
+    console.log('🔑 Access Token:', Kakao.Auth.getAccessToken());
+    
     if (!Kakao.Auth.getAccessToken()) {
+        console.error('❌ No access token found');
         showToast('카카오톡 로그인이 필요합니다', 'error');
         return;
     }
 
+    console.log('📨 Sending Kakao message...');
     Kakao.API.request({
         url: '/v2/api/talk/memo/default/send',
         data: {
@@ -84,12 +102,22 @@ function sendTestKakaoMessage() {
             }
         },
         success: function(response) {
-            console.log('✅ Test message sent:', response);
+            console.log('✅ Test message sent successfully:', response);
             showToast('테스트 메시지를 전송했습니다!', 'success');
         },
         fail: function(error) {
             console.error('❌ Failed to send test message:', error);
-            showToast('메시지 전송 실패', 'error');
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            
+            let errorMsg = '메시지 전송 실패';
+            if (error.code) {
+                errorMsg += ` (코드: ${error.code})`;
+            }
+            if (error.msg) {
+                errorMsg += `: ${error.msg}`;
+            }
+            
+            showToast(errorMsg, 'error');
         }
     });
 }
