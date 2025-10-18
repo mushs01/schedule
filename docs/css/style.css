@@ -694,16 +694,27 @@ body {
     
     .view-selector {
         padding: 8px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .view-buttons {
+        justify-content: center;
     }
     
     .view-btn {
-        padding: 4px 12px;
-        font-size: 12px;
+        padding: 6px 12px;
+        font-size: 13px;
     }
     
-    /* 모바일에서 담당자 필터 숨김 */
+    /* 모바일에서 담당자 필터 버튼 표시 */
     .person-filter-buttons {
-        display: none;
+        justify-content: center;
+    }
+    
+    .person-filter-btn {
+        padding: 8px 10px;
+        font-size: 12px;
     }
     
     .fc .fc-timegrid-slot-label {
