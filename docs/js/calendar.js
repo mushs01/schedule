@@ -143,12 +143,12 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
  * Handle date selection (for creating new event)
  */
 function handleDateSelect(selectInfo) {
-    console.log('Date selected:', selectInfo.start);
-    const startDate = new Date(selectInfo.start);
+    console.log('Date selected:', selectInfo);
+    console.log('Start:', selectInfo.start, 'End:', selectInfo.end);
     
-    // Use window.openEventModal to ensure it's available
+    // selectInfo 전체를 전달 (start와 end 포함)
     if (window.openEventModal) {
-        window.openEventModal(startDate);
+        window.openEventModal(selectInfo);
     } else {
         console.error('openEventModal not found!');
     }
@@ -245,16 +245,23 @@ function filterByPerson(person) {
  * Filter calendar by multiple persons
  */
 function filterByPersons(persons) {
+    console.log('filterByPersons called with:', persons);
+    
     // persons 배열에 'all'이 포함되어 있으면 전체 표시
     if (persons.includes('all')) {
         currentFilter = 'all';
+        console.log('Filter set to: all');
     } else if (persons.length === 0) {
         currentFilter = 'none'; // 아무것도 표시 안 함
+        console.log('Filter set to: none');
     } else if (persons.length === 1) {
         currentFilter = persons[0];
+        console.log('Filter set to:', persons[0]);
     } else {
         currentFilter = persons; // 배열로 저장
+        console.log('Filter set to array:', persons);
     }
+    
     refreshCalendar();
 }
 

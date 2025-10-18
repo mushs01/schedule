@@ -527,6 +527,8 @@ function resetMobileFilter() {
 }
 
 function updateCalendarFilter() {
+    console.log('updateCalendarFilter called');
+    
     // 선택된 담당자 목록 가져오기
     const checkboxes = document.querySelectorAll('.calendar-item input[type="checkbox"]');
     const selectedPersons = [];
@@ -537,15 +539,21 @@ function updateCalendarFilter() {
         }
     });
     
+    console.log('Selected persons:', selectedPersons);
+    
     // calendarModule의 filter 함수 호출
     if (window.calendarModule && window.calendarModule.filterByPersons) {
         window.calendarModule.filterByPersons(selectedPersons);
+        showToast(`필터 적용: ${selectedPersons.length}개 선택`, 'success');
+    } else {
+        console.error('calendarModule.filterByPersons not found!');
     }
 }
 
 // Export functions to window for use in other modules
 window.showToast = showToast;
 window.openEventModal = openEventModal;
+window.updateCalendarFilter = updateCalendarFilter;
 
 /**
  * Check API health
