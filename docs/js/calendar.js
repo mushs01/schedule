@@ -286,13 +286,37 @@ function getCurrentDate() {
 }
 
 // Export functions
+/**
+ * Navigate to previous period
+ */
+function navigatePrev() {
+    if (!calendar) {
+        console.error('Calendar not initialized');
+        return;
+    }
+    calendar.prev();
+}
+
+/**
+ * Navigate to next period
+ */
+function navigateNext() {
+    if (!calendar) {
+        console.error('Calendar not initialized');
+        return;
+    }
+    calendar.next();
+}
+
 window.calendarModule = {
     init: initCalendar,
     changeView,
     refresh: refreshCalendar,
     filter: filterByPerson,
     filterByPersons,
-    getCurrentDate
+    getCurrentDate,
+    navigatePrev,
+    navigateNext
 };
 
 console.log('✅ calendarModule exported:', window.calendarModule);

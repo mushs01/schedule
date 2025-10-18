@@ -9,6 +9,7 @@ let currentEditingEvent = null;
 // DOM Elements
 const eventModal = document.getElementById('eventModal');
 const eventDetailModal = document.getElementById('eventDetailModal');
+const searchModal = document.getElementById('searchModal');
 const eventForm = document.getElementById('eventForm');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const toast = document.getElementById('toast');
@@ -109,6 +110,34 @@ function setupEventListeners() {
         });
     });
     
+    // View navigation buttons
+    const prevViewBtn = document.getElementById('prevViewBtn');
+    const nextViewBtn = document.getElementById('nextViewBtn');
+    
+    if (prevViewBtn) prevViewBtn.addEventListener('click', () => {
+        if (window.calendarModule && window.calendarModule.navigatePrev) {
+            window.calendarModule.navigatePrev();
+        }
+    });
+    
+    if (nextViewBtn) nextViewBtn.addEventListener('click', () => {
+        if (window.calendarModule && window.calendarModule.navigateNext) {
+            window.calendarModule.navigateNext();
+        }
+    });
+    
+    // Search functionality
+    const searchBtn = document.getElementById('searchBtn');
+    const closeSearchBtn = document.getElementById('closeSearchBtn');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchBtn) searchBtn.addEventListener('click', openSearchModal);
+    if (closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+    
     // Close modal on backdrop click
     eventModal.addEventListener('click', (e) => {
         if (e.target === eventModal) closeEventModal();
@@ -117,6 +146,12 @@ function setupEventListeners() {
     eventDetailModal.addEventListener('click', (e) => {
         if (e.target === eventDetailModal) closeEventDetailModal();
     });
+    
+    if (searchModal) {
+        searchModal.addEventListener('click', (e) => {
+            if (e.target === searchModal) closeSearchModal();
+        });
+    }
 }
 
 /**
@@ -527,6 +562,103 @@ function updateCalendarFilterFromButtons() {
         window.calendarModule.filterByPersons(selectedPersons);
     } else {
         console.error('calendarModule.filterByPersons not found!');
+    }
+}
+
+/**
+ * Search functionality
+ */
+function openSearchModal() {
+    if (!searchModal) return;
+    searchModal.classList.add('active');
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    // 초기 상태로 리셋
+    document.getElementById('searchResults').innerHTML = '<p class="search-hint">키워드를 입력하여 일정을 검색하세요</p>';
+}
+
+function closeSearchModal() {
+    if (!searchModal) return;
+    searchModal.classList.remove('active');
+}
+
+async function handleSearch(e) {
+    const keyword = e.target.value.trim().toLowerCase();
+    const searchResults = document.getElementById('searchResults');
+    
+    if (!keyword) {
+        searchResults.innerHTML = '<p class="search-hint">키워드를 입력하여 일정을 검색하세요</p>';
+        return;
+    }
+    
+    try {
+        // 전체 일정 가져오기
+        const schedules = await api.getSchedules({
+            person: 'all'
+        });
+        
+        // 키워드로 필터링
+        const filtered = schedules.filter(schedule => 
+            schedule.title.toLowerCase().includes(keyword) ||
+            (schedule.description && schedule.description.toLowerCase().includes(keyword))
+        );
+        
+        if (filtered.length === 0) {
+            searchResults.innerHTML = '<p class="no-results">검색 결과가 없습니다</p>';
+            return;
+        }
+        
+        // 결과 표시
+        const resultsHTML = filtered.map(schedule => {
+            const startDate = new Date(schedule.start);
+            const endDate = schedule.end ? new Date(schedule.end) : null;
+            const personName = window.PERSON_NAMES[schedule.person] || schedule.person;
+            const personColor = window.PERSON_COLORS[schedule.person] || '#808080';
+            
+            return `
+                <div class="search-result-item" data-event-id="${schedule.id}">
+                    <div class="search-result-title">${schedule.title}</div>
+                    <div class="search-result-info">
+                        <span>${formatDate(startDate)} ${formatTime(startDate)}${endDate ? ' - ' + formatTime(endDate) : ''}</span>
+                        <span class="search-result-person" style="background: ${personColor}22; color: ${personColor};">
+                            ${personName}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        searchResults.innerHTML = resultsHTML;
+        
+        // 검색 결과 클릭 이벤트
+        document.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const eventId = item.dataset.eventId;
+                const schedule = filtered.find(s => s.id === eventId);
+                if (schedule) {
+                    closeSearchModal();
+                    // 일정 상세 보기 (FullCalendar 이벤트 객체 형식으로 변환)
+                    const event = {
+                        id: schedule.id,
+                        title: schedule.title,
+                        start: schedule.start,
+                        end: schedule.end,
+                        extendedProps: {
+                            description: schedule.description,
+                            person: schedule.person
+                        }
+                    };
+                    showEventDetail(event);
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('Search error:', error);
+        searchResults.innerHTML = '<p class="no-results">검색 중 오류가 발생했습니다</p>';
     }
 }
 

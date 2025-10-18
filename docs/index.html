@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=12">
+    <link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -53,12 +53,6 @@
         <div class="gcal-header-center">
             <button class="icon-btn" id="todayBtn">
                 <span>오늘</span>
-            </button>
-            <button class="icon-btn nav-btn" id="prevBtn">
-                <span class="material-icons">chevron_left</span>
-            </button>
-            <button class="icon-btn nav-btn" id="nextBtn">
-                <span class="material-icons">chevron_right</span>
             </button>
             <h2 class="current-month" id="currentMonth">2025년 10월</h2>
         </div>
@@ -140,11 +134,19 @@
         <!-- Calendar Area -->
         <main class="gcal-content">
             <div class="view-selector">
-                <div class="view-buttons">
-                    <button class="view-btn" data-view="timeGridDay">일</button>
-                    <button class="view-btn active" data-view="timeGridWeek">주</button>
-                    <button class="view-btn" data-view="dayGridMonth">월</button>
-                    <button class="view-btn" data-view="listWeek">일정</button>
+                <div class="view-nav">
+                    <button class="icon-btn nav-btn" id="prevViewBtn">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <div class="view-buttons">
+                        <button class="view-btn" data-view="timeGridDay">일</button>
+                        <button class="view-btn active" data-view="timeGridWeek">주</button>
+                        <button class="view-btn" data-view="dayGridMonth">월</button>
+                        <button class="view-btn" data-view="listWeek">일정</button>
+                    </div>
+                    <button class="icon-btn nav-btn" id="nextViewBtn">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
                 </div>
                 
                 <div class="person-filter-buttons">
@@ -256,6 +258,29 @@
         </div>
     </div>
 
+    <!-- Search Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>일정 검색</h2>
+                <button class="icon-btn" id="closeSearchBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="search-input-container">
+                    <span class="material-icons">search</span>
+                    <input type="text" id="searchInput" placeholder="일정 제목 검색..." autofocus>
+                </div>
+                
+                <div id="searchResults" class="search-results">
+                    <p class="search-hint">키워드를 입력하여 일정을 검색하세요</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Event Detail Modal -->
     <div class="modal" id="eventDetailModal">
         <div class="modal-content gcal-modal">
@@ -301,11 +326,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js?v=14"></script>
+    <script src="js/firebase-config.js?v=15"></script>
 
     <!-- Custom JS -->
-    <script src="js/api.js?v=14"></script>
-    <script src="js/calendar.js?v=14"></script>
-    <script src="js/app.js?v=14"></script>
+    <script src="js/api.js?v=15"></script>
+    <script src="js/calendar.js?v=15"></script>
+    <script src="js/app.js?v=15"></script>
 </body>
 </html>
