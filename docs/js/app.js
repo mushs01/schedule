@@ -108,8 +108,8 @@ function setupEventListeners() {
 /**
  * Open event modal for creating/editing
  */
-function openEventModal(date = null, event = null) {
-    console.log('openEventModal called with date:', date);
+function openEventModal(dateInfo = null, event = null) {
+    console.log('openEventModal called with dateInfo:', dateInfo);
     
     if (!eventForm) {
         console.error('eventForm not found!');
@@ -136,21 +136,55 @@ function openEventModal(date = null, event = null) {
         document.getElementById('eventTitle').value = event.title;
         document.getElementById('eventStartDate').value = formatDateInput(startDate);
         document.getElementById('eventStartTime').value = formatTimeInput(startDate);
+        
+        // 종료 날짜/시간 설정
         if (endDate) {
+            document.getElementById('eventEndDate').value = formatDateInput(endDate);
             document.getElementById('eventEndTime').value = formatTimeInput(endDate);
+        } else {
+            // 종료 시간이 없으면 시작 시간 + 1시간
+            const defaultEndDate = new Date(startDate);
+            defaultEndDate.setHours(defaultEndDate.getHours() + 1);
+            document.getElementById('eventEndDate').value = formatDateInput(defaultEndDate);
+            document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
         }
+        
         document.getElementById('eventPerson').value = event.extendedProps.person;
         document.getElementById('eventDescription').value = event.extendedProps.description || '';
     } else {
         // Creating mode
         document.getElementById('modalTitle').textContent = '일정 추가';
         
-        if (date) {
-            document.getElementById('eventStartDate').value = formatDateInput(date);
-            document.getElementById('eventStartTime').value = formatTimeInput(date);
+        if (dateInfo) {
+            // dateInfo는 FullCalendar의 select 콜백에서 전달된 객체
+            const startDate = dateInfo.start || dateInfo;
+            const endDate = dateInfo.end || null;
+            
+            // 시작 날짜/시간 설정
+            document.getElementById('eventStartDate').value = formatDateInput(startDate);
+            document.getElementById('eventStartTime').value = formatTimeInput(startDate);
+            
+            // 종료 날짜/시간 자동 설정
+            if (endDate) {
+                // 드래그로 선택한 경우 - end 시간이 있음
+                document.getElementById('eventEndDate').value = formatDateInput(endDate);
+                document.getElementById('eventEndTime').value = formatTimeInput(endDate);
+            } else {
+                // 단순 클릭의 경우 - 시작 시간 + 1시간
+                const defaultEndDate = new Date(startDate);
+                defaultEndDate.setHours(defaultEndDate.getHours() + 1);
+                document.getElementById('eventEndDate').value = formatDateInput(defaultEndDate);
+                document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
+            }
         } else {
+            // 날짜 정보가 없으면 현재 시간 사용
             const now = new Date();
+            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+            
             document.getElementById('eventStartDate').value = formatDateInput(now);
+            document.getElementById('eventStartTime').value = formatTimeInput(now);
+            document.getElementById('eventEndDate').value = formatDateInput(oneHourLater);
+            document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
         }
     }
     
@@ -176,18 +210,31 @@ async function handleEventFormSubmit(e) {
     const title = document.getElementById('eventTitle').value;
     const startDate = document.getElementById('eventStartDate').value;
     const startTime = document.getElementById('eventStartTime').value;
+    const endDate = document.getElementById('eventEndDate').value;
     const endTime = document.getElementById('eventEndTime').value;
     const person = document.getElementById('eventPerson').value;
     const description = document.getElementById('eventDescription').value;
     
+    // 유효성 검사
+    if (!title || !startDate || !startTime || !endDate || !endTime || !person) {
+        showToast('모든 필수 항목을 입력해주세요.', 'error');
+        return;
+    }
+    
     // Combine date and time
     const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = endTime ? new Date(`${startDate}T${endTime}`) : null;
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+    
+    // 종료 시간이 시작 시간보다 빠른지 확인
+    if (endDateTime <= startDateTime) {
+        showToast('종료 시간은 시작 시간보다 늦어야 합니다.', 'error');
+        return;
+    }
     
     const scheduleData = {
         title,
         start_datetime: startDateTime.toISOString(),
-        end_datetime: endDateTime ? endDateTime.toISOString() : null,
+        end_datetime: endDateTime.toISOString(),
         person,
         description: description || null
     };

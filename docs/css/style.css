@@ -337,7 +337,23 @@ body {
 
 /* Form */
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+/* 레이블 스타일 개선 */
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-label .form-icon {
+    font-size: 20px;
+    color: var(--text-secondary);
 }
 
 .form-group label {
@@ -348,14 +364,39 @@ body {
     color: var(--text-primary);
 }
 
+/* 날짜/시간 입력 행 */
+.datetime-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.date-input {
+    flex: 1.5;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.time-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 14px;
     font-family: inherit;
     background: #ffffff;
 }
@@ -454,6 +495,54 @@ body {
 
 .toast.error {
     background: #c62828;
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 8px;
+}
+
+/* 버튼 개선 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn .material-icons {
+    font-size: 18px;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1557b0;
+}
+
+.btn-text {
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 10px 16px;
+}
+
+.btn-text:hover {
+    background: var(--hover-bg);
 }
 
 /* Close button */
