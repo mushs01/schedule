@@ -55,8 +55,8 @@ function initCalendar() {
         slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
         height: 'auto',
         nowIndicator: true,
-        editable: true,
-        selectable: true,
+        editable: false, // 드래그로 일정 이동 비활성화
+        selectable: true, // 빈 시간대 선택은 유지 (일정 추가용)
         selectMirror: true,
         dayMaxEvents: true,
         weekends: true,
@@ -66,8 +66,8 @@ function initCalendar() {
         // Event handlers
         select: handleDateSelect,
         eventClick: handleEventClick,
-        eventDrop: handleEventDrop,
-        eventResize: handleEventResize,
+        // eventDrop: handleEventDrop, // 드래그 앤 드롭 비활성화
+        // eventResize: handleEventResize, // 리사이즈 비활성화
         
         // Load events
         events: loadEvents,
@@ -92,30 +92,44 @@ function initCalendar() {
  */
 async function loadEvents(fetchInfo, successCallback, failureCallback) {
     try {
-        // currentFilter가 배열인 경우 처리
-        let filterPerson = 'all';
-        if (Array.isArray(currentFilter)) {
-            // 여러 담당자가 선택된 경우
-            filterPerson = 'all'; // 일단 전체를 가져온 후 클라이언트에서 필터링
-        } else {
-            filterPerson = currentFilter;
-        }
-        
+        // 항상 전체 일정을 가져온 후 클라이언트에서 필터링
         const schedules = await api.getSchedules({
             startDate: fetchInfo.startStr,
             endDate: fetchInfo.endStr,
-            person: filterPerson
+            person: 'all'
         });
         
-        // 클라이언트 측 필터링 (배열인 경우)
+        console.log('📊 Total schedules loaded:', schedules.length);
+        console.log('🔍 Current filter:', currentFilter);
+        
+        // 클라이언트 측 필터링
         let filteredSchedules = schedules;
-        if (Array.isArray(currentFilter)) {
-            filteredSchedules = schedules.filter(schedule => 
-                currentFilter.includes(schedule.person)
-            );
-        } else if (currentFilter === 'none') {
+        
+        if (currentFilter === 'none' || !currentFilter) {
+            // 아무것도 선택 안 함
             filteredSchedules = [];
+            console.log('❌ No filter - showing nothing');
+        } else if (Array.isArray(currentFilter)) {
+            // 여러 담당자 선택
+            if (currentFilter.length === 0) {
+                filteredSchedules = [];
+            } else {
+                // 선택된 담당자들의 일정만 표시
+                filteredSchedules = schedules.filter(schedule => 
+                    currentFilter.includes(schedule.person)
+                );
+                console.log(`✅ Multiple filters: ${currentFilter.join(', ')}`);
+            }
+        } else {
+            // 단일 담당자 선택 (all, dad, mom, juhwan, taehwan)
+            filteredSchedules = schedules.filter(schedule => 
+                schedule.person === currentFilter
+            );
+            console.log(`✅ Single filter: ${currentFilter}`);
         }
+        
+        console.log('✨ Filtered schedules:', filteredSchedules.length);
+        filteredSchedules.forEach(s => console.log(`  - ${s.title} (${s.person})`));
         
         const events = filteredSchedules.map(schedule => ({
             id: schedule.id,
@@ -245,21 +259,20 @@ function filterByPerson(person) {
  * Filter calendar by multiple persons
  */
 function filterByPersons(persons) {
-    console.log('filterByPersons called with:', persons);
+    console.log('🎯 filterByPersons called with:', persons);
     
-    // persons 배열에 'all'이 포함되어 있으면 전체 표시
-    if (persons.includes('all')) {
-        currentFilter = 'all';
-        console.log('Filter set to: all');
-    } else if (persons.length === 0) {
-        currentFilter = 'none'; // 아무것도 표시 안 함
-        console.log('Filter set to: none');
+    if (persons.length === 0) {
+        // 아무것도 선택 안 함
+        currentFilter = 'none';
+        console.log('❌ No person selected - filter set to: none');
     } else if (persons.length === 1) {
+        // 단일 담당자 선택 (all, dad, mom, juhwan, taehwan)
         currentFilter = persons[0];
-        console.log('Filter set to:', persons[0]);
+        console.log('✅ Single person selected - filter set to:', persons[0]);
     } else {
-        currentFilter = persons; // 배열로 저장
-        console.log('Filter set to array:', persons);
+        // 여러 담당자 선택 - 배열로 저장
+        currentFilter = persons;
+        console.log('✅ Multiple persons selected - filter set to:', persons);
     }
     
     refreshCalendar();
