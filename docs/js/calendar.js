@@ -8,20 +8,20 @@ let currentFilter = 'showAll'; // 초기 로딩 시 모든 담당자 선택 → 
 
 // Person colors mapping (글로벌 변수로 변경)
 window.PERSON_COLORS = window.PERSON_COLORS || {
-    'all': '#808080', // 전체 → 회색
-    'dad': '#3788d8',
-    'mom': '#9b59b6',
-    'juhwan': '#27ae60',
-    'taehwan': '#f39c12'
+    'all': '#1a73e8',   // 전체 → 파랑
+    'dad': '#0f9d58',   // 아빠 → 초록
+    'mom': '#f4511e',   // 엄마 → 주황
+    'juhwan': '#9c27b0', // 주환 → 보라
+    'taehwan': '#f9a825' // 태환 → 노랑
 };
 
 // 지난 일정 색상 (채도를 거의 없애고 회색에 가깝게)
 window.PERSON_COLORS_PAST = {
-    'all': '#999999', // 밝은 회색
-    'dad': '#7a8a95', // 회색빛 파란색
-    'mom': '#8a7a8f', // 회색빛 보라색
-    'juhwan': '#7a8a7a', // 회색빛 초록색
-    'taehwan': '#9a8a7a' // 회색빛 주황색
+    'all': '#8095a8',   // 회색빛 파란색
+    'mom': '#a88a7f',   // 회색빛 주황색
+    'dad': '#7a8a7a',   // 회색빛 초록색
+    'juhwan': '#8a7a8f', // 회색빛 보라색
+    'taehwan': '#9a9170' // 회색빛 노랑
 };
 
 // Person names mapping (글로벌 변수로 변경)

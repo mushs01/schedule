@@ -277,25 +277,40 @@ body {
     opacity: 0.6;
 }
 
-/* 오늘 날짜 강조 표시 */
+/* 오늘 날짜 강조 표시 - 둥근 네모 배경 */
 .fc .fc-day-today {
     background-color: #e8f0fe !important;
 }
 
-.fc .fc-day-today .fc-daygrid-day-number,
-.fc .fc-day-today .fc-col-header-cell-cushion {
+.fc .fc-day-today .fc-daygrid-day-top {
+    justify-content: center;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
     background: #1a73e8;
     color: #ffffff !important;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 32px;
+    text-align: center;
     font-weight: 500;
 }
 
-/* Today's Schedule Summary - Compact Design */
+.fc .fc-col-header-cell-frame.fc-scrollgrid-sync-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fc .fc-day-today .fc-col-header-cell-cushion {
+    background: #1a73e8;
+    color: #ffffff !important;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-weight: 500;
+}
+
+/* Today's Schedule Summary - Vertical Layout */
 .today-summary {
     background: #f5f5f5;
     border-bottom: 1px solid var(--border-color);
@@ -313,58 +328,53 @@ body {
 
 .today-summary-list {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 4px;
-    overflow-x: auto;
-    white-space: nowrap;
     padding: 4px 0;
 }
 
-.today-summary-list::-webkit-scrollbar {
-    height: 4px;
-}
-
-.today-summary-list::-webkit-scrollbar-thumb {
-    background: #cccccc;
-    border-radius: 2px;
-}
-
 .today-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 16px;
+    gap: 8px;
+    padding: 6px 0;
     cursor: pointer;
     transition: all 0.2s;
-    flex-shrink: 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.today-item:last-child {
+    border-bottom: none;
 }
 
 .today-item:hover {
-    background: #e8f0fe;
-    border-color: #1a73e8;
+    opacity: 0.8;
 }
 
 .today-item-person {
     font-weight: 500;
     font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 10px;
+    padding: 3px 8px;
+    border-radius: 12px;
     color: #ffffff;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .today-item-time {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-secondary);
     white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 80px;
 }
 
 .today-item-title {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-primary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
