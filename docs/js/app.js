@@ -111,8 +111,15 @@ function setupEventListeners() {
     });
     
     // View navigation buttons
+    const todayBtn = document.getElementById('todayBtn');
     const prevViewBtn = document.getElementById('prevViewBtn');
     const nextViewBtn = document.getElementById('nextViewBtn');
+    
+    if (todayBtn) todayBtn.addEventListener('click', () => {
+        if (window.calendarModule && window.calendarModule.navigateToday) {
+            window.calendarModule.navigateToday();
+        }
+    });
     
     if (prevViewBtn) prevViewBtn.addEventListener('click', () => {
         if (window.calendarModule && window.calendarModule.navigatePrev) {

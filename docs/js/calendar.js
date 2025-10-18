@@ -62,6 +62,7 @@ function initCalendar() {
         weekends: true,
         longPressDelay: 0, // 모바일에서 즉시 선택 가능
         selectLongPressDelay: 0, // 길게 누르지 않아도 선택 가능
+        allDaySlot: false, // all-day 줄 숨기기
         
         // Event handlers
         select: handleDateSelect,
@@ -81,10 +82,16 @@ function initCalendar() {
             
             // Add tooltip
             info.el.title = `${PERSON_NAMES[info.event.extendedProps.person]}: ${info.event.title}`;
+        },
+        
+        // 날짜 변경 시 헤더 업데이트
+        datesSet: function(dateInfo) {
+            updateHeaderDate();
         }
     });
     
     calendar.render();
+    updateHeaderDate(); // 초기 날짜 표시
 }
 
 /**
@@ -242,6 +249,7 @@ async function handleEventResize(resizeInfo) {
  */
 function changeView(viewName) {
     calendar.changeView(viewName);
+    updateHeaderDate(); // view 변경 시 헤더 날짜 업데이트
 }
 
 /**
@@ -299,6 +307,50 @@ function getCurrentDate() {
 
 // Export functions
 /**
+ * Update header date display
+ */
+function updateHeaderDate() {
+    if (!calendar) return;
+    
+    const currentDate = calendar.getDate();
+    const currentView = calendar.view.type;
+    const currentMonthEl = document.getElementById('currentMonth');
+    
+    if (!currentMonthEl) return;
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    const date = currentDate.getDate();
+    
+    let displayText = '';
+    
+    if (currentView === 'dayGridMonth') {
+        // 월 보기: "2025년 10월"
+        displayText = `${year}년 ${month}월`;
+    } else if (currentView === 'timeGridWeek' || currentView === 'listWeek') {
+        // 주 보기: "2025년 10월"
+        displayText = `${year}년 ${month}월`;
+    } else if (currentView === 'timeGridDay') {
+        // 일 보기: "2025년 10월 18일"
+        displayText = `${year}년 ${month}월 ${date}일`;
+    }
+    
+    currentMonthEl.textContent = displayText;
+}
+
+/**
+ * Navigate to today
+ */
+function navigateToday() {
+    if (!calendar) {
+        console.error('Calendar not initialized');
+        return;
+    }
+    calendar.today();
+    updateHeaderDate();
+}
+
+/**
  * Navigate to previous period
  */
 function navigatePrev() {
@@ -307,6 +359,7 @@ function navigatePrev() {
         return;
     }
     calendar.prev();
+    updateHeaderDate();
 }
 
 /**
@@ -318,6 +371,7 @@ function navigateNext() {
         return;
     }
     calendar.next();
+    updateHeaderDate();
 }
 
 window.calendarModule = {
@@ -327,6 +381,7 @@ window.calendarModule = {
     filter: filterByPerson,
     filterByPersons,
     getCurrentDate,
+    navigateToday,
     navigatePrev,
     navigateNext
 };
