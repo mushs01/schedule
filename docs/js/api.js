@@ -1,23 +1,9 @@
 /**
- * API Communication Module (Firebase Firestore)
+ * API Communication Module (Firebase Firestore Compat)
  * Firebase Firestore를 사용하여 직접 데이터베이스에 접근
  */
 
-import { db } from './firebase-config.js';
-import { 
-    collection, 
-    doc, 
-    getDocs, 
-    getDoc, 
-    addDoc, 
-    updateDoc, 
-    deleteDoc, 
-    query, 
-    where, 
-    orderBy,
-    Timestamp 
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
+// Firestore는 window.db로 이미 초기화됨 (firebase-config.js에서)
 // 컬렉션 이름
 const SCHEDULES_COLLECTION = 'schedules';
 
@@ -37,34 +23,29 @@ const api = {
      */
     async getSchedules(filters = {}) {
         try {
-            let q = collection(db, SCHEDULES_COLLECTION);
-            const constraints = [];
+            const db = window.db;
+            let query = db.collection(SCHEDULES_COLLECTION);
 
             // Filter by date range
             if (filters.startDate) {
-                const startDateTime = Timestamp.fromDate(new Date(filters.startDate));
-                constraints.push(where('start_datetime', '>=', startDateTime));
+                const startDateTime = firebase.firestore.Timestamp.fromDate(new Date(filters.startDate));
+                query = query.where('start_datetime', '>=', startDateTime);
             }
             
             if (filters.endDate) {
-                const endDateTime = Timestamp.fromDate(new Date(filters.endDate + 'T23:59:59'));
-                constraints.push(where('start_datetime', '<=', endDateTime));
+                const endDateTime = firebase.firestore.Timestamp.fromDate(new Date(filters.endDate + 'T23:59:59'));
+                query = query.where('start_datetime', '<=', endDateTime);
             }
 
             // Filter by person
             if (filters.person && filters.person !== 'all') {
-                constraints.push(where('person', 'in', [filters.person, 'all']));
+                query = query.where('person', 'in', [filters.person, 'all']);
             }
 
             // Order by start datetime
-            constraints.push(orderBy('start_datetime', 'asc'));
+            query = query.orderBy('start_datetime', 'asc');
 
-            // Apply filters
-            if (constraints.length > 0) {
-                q = query(q, ...constraints);
-            }
-
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await query.get();
             const schedules = [];
 
             querySnapshot.forEach((doc) => {
@@ -95,10 +76,11 @@ const api = {
      */
     async getSchedule(id) {
         try {
-            const docRef = doc(db, SCHEDULES_COLLECTION, id);
-            const docSnap = await getDoc(docRef);
+            const db = window.db;
+            const docRef = db.collection(SCHEDULES_COLLECTION).doc(id);
+            const docSnap = await docRef.get();
 
-            if (docSnap.exists()) {
+            if (docSnap.exists) {
                 const data = docSnap.data();
                 return {
                     id: docSnap.id,
@@ -124,6 +106,7 @@ const api = {
      */
     async createSchedule(scheduleData) {
         try {
+            const db = window.db;
             const now = new Date();
             const startDateTime = new Date(scheduleData.start_datetime);
             const color = PERSON_COLORS[scheduleData.person] || '#808080';
@@ -132,16 +115,16 @@ const api = {
             const docData = {
                 title: scheduleData.title,
                 description: scheduleData.description || null,
-                start_datetime: Timestamp.fromDate(startDateTime),
-                end_datetime: scheduleData.end_datetime ? Timestamp.fromDate(new Date(scheduleData.end_datetime)) : null,
+                start_datetime: firebase.firestore.Timestamp.fromDate(startDateTime),
+                end_datetime: scheduleData.end_datetime ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.end_datetime)) : null,
                 person: scheduleData.person,
                 color: color,
                 is_past: isPast,
-                created_at: Timestamp.fromDate(now),
-                updated_at: Timestamp.fromDate(now)
+                created_at: firebase.firestore.Timestamp.fromDate(now),
+                updated_at: firebase.firestore.Timestamp.fromDate(now)
             };
 
-            const docRef = await addDoc(collection(db, SCHEDULES_COLLECTION), docData);
+            const docRef = await db.collection(SCHEDULES_COLLECTION).add(docData);
 
             return {
                 id: docRef.id,
@@ -160,27 +143,28 @@ const api = {
      */
     async updateSchedule(id, scheduleData) {
         try {
-            const docRef = doc(db, SCHEDULES_COLLECTION, id);
+            const db = window.db;
+            const docRef = db.collection(SCHEDULES_COLLECTION).doc(id);
             const updateData = {
-                updated_at: Timestamp.fromDate(new Date())
+                updated_at: firebase.firestore.Timestamp.fromDate(new Date())
             };
 
             if (scheduleData.title) updateData.title = scheduleData.title;
             if (scheduleData.description !== undefined) updateData.description = scheduleData.description;
             if (scheduleData.start_datetime) {
                 const startDateTime = new Date(scheduleData.start_datetime);
-                updateData.start_datetime = Timestamp.fromDate(startDateTime);
+                updateData.start_datetime = firebase.firestore.Timestamp.fromDate(startDateTime);
                 updateData.is_past = startDateTime < new Date();
             }
             if (scheduleData.end_datetime !== undefined) {
-                updateData.end_datetime = scheduleData.end_datetime ? Timestamp.fromDate(new Date(scheduleData.end_datetime)) : null;
+                updateData.end_datetime = scheduleData.end_datetime ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.end_datetime)) : null;
             }
             if (scheduleData.person) {
                 updateData.person = scheduleData.person;
                 updateData.color = PERSON_COLORS[scheduleData.person] || '#808080';
             }
 
-            await updateDoc(docRef, updateData);
+            await docRef.update(updateData);
 
             return await this.getSchedule(id);
         } catch (error) {
@@ -194,8 +178,9 @@ const api = {
      */
     async deleteSchedule(id) {
         try {
-            const docRef = doc(db, SCHEDULES_COLLECTION, id);
-            await deleteDoc(docRef);
+            const db = window.db;
+            const docRef = db.collection(SCHEDULES_COLLECTION).doc(id);
+            await docRef.delete();
             return { success: true };
         } catch (error) {
             console.error('Error deleting schedule:', error);
@@ -212,8 +197,6 @@ const api = {
 
     /**
      * Get AI summary for a specific date
-     * OpenAI API는 보안상 프론트엔드에서 직접 호출하지 않습니다.
-     * 대신 간단한 로컬 요약을 제공합니다.
      */
     async getAISummary(date = null) {
         try {
@@ -272,9 +255,9 @@ const api = {
      */
     async healthCheck() {
         try {
+            const db = window.db;
             // Try to read from Firestore
-            const q = query(collection(db, SCHEDULES_COLLECTION));
-            await getDocs(q);
+            await db.collection(SCHEDULES_COLLECTION).limit(1).get();
             
             return {
                 status: 'healthy',
