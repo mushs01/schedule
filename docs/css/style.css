@@ -278,7 +278,7 @@ body {
 }
 
 /* Modal - 모바일 최적화 */
-.gcal-modal {
+.modal {
     display: none;
     position: fixed;
     top: 0;
@@ -292,10 +292,11 @@ body {
     padding: 16px;
 }
 
-.gcal-modal.active {
+.modal.active {
     display: flex;
 }
 
+.modal-content,
 .gcal-modal-content {
     background: #ffffff;
     border-radius: 8px;
@@ -305,6 +306,7 @@ body {
     overflow-y: auto;
 }
 
+.modal-header,
 .gcal-modal-header {
     padding: 16px;
     border-bottom: 1px solid var(--border-color);
@@ -313,15 +315,18 @@ body {
     align-items: center;
 }
 
+.modal-header h2,
 .gcal-modal-header h2 {
     font-size: 18px;
     font-weight: 500;
 }
 
+.modal-body,
 .gcal-modal-body {
     padding: 16px;
 }
 
+.modal-footer,
 .gcal-modal-footer {
     padding: 16px;
     border-top: 1px solid var(--border-color);
@@ -513,6 +518,7 @@ body {
         padding: 1px 3px;
     }
     
+    .modal-content,
     .gcal-modal-content {
         max-width: 100%;
         border-radius: 8px 8px 0 0;

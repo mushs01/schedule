@@ -109,6 +109,18 @@ function setupEventListeners() {
  * Open event modal for creating/editing
  */
 function openEventModal(date = null, event = null) {
+    console.log('openEventModal called with date:', date);
+    
+    if (!eventForm) {
+        console.error('eventForm not found!');
+        return;
+    }
+    
+    if (!eventModal) {
+        console.error('eventModal not found!');
+        return;
+    }
+    
     currentEditingEvent = event;
     
     // Reset form
@@ -142,7 +154,9 @@ function openEventModal(date = null, event = null) {
         }
     }
     
+    console.log('Opening modal, eventModal:', eventModal);
     eventModal.classList.add('active');
+    console.log('Modal class after add:', eventModal.className);
 }
 
 /**
