@@ -17,8 +17,14 @@ const toast = document.getElementById('toast');
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
+    
     // Initialize calendar
-    calendarModule.init();
+    if (window.calendarModule) {
+        calendarModule.init();
+    } else {
+        console.error('❌ calendarModule not found!');
+    }
     
     // Load AI summary
     loadAISummary();
@@ -35,22 +41,35 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 function setupEventListeners() {
     // Add event button
-    document.getElementById('addEventBtn').addEventListener('click', () => {
-        openEventModal();
-    });
+    const addEventBtn = document.getElementById('addEventBtn');
+    if (addEventBtn) {
+        addEventBtn.addEventListener('click', () => {
+            openEventModal();
+        });
+    }
     
     // Modal close buttons
-    document.getElementById('closeModalBtn').addEventListener('click', closeEventModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeEventModal);
-    document.getElementById('closeDetailModalBtn').addEventListener('click', closeEventDetailModal);
-    document.getElementById('closeDetailBtn').addEventListener('click', closeEventDetailModal);
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+    const closeDetailBtn = document.getElementById('closeDetailBtn');
+    
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeEventModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeEventModal);
+    if (closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', closeEventDetailModal);
+    if (closeDetailBtn) closeDetailBtn.addEventListener('click', closeEventDetailModal);
     
     // Event form submission
-    eventForm.addEventListener('submit', handleEventFormSubmit);
+    if (eventForm) {
+        eventForm.addEventListener('submit', handleEventFormSubmit);
+    }
     
     // Event detail actions
-    document.getElementById('editEventBtn').addEventListener('click', handleEditEvent);
-    document.getElementById('deleteEventBtn').addEventListener('click', handleDeleteEvent);
+    const editEventBtn = document.getElementById('editEventBtn');
+    const deleteEventBtn = document.getElementById('deleteEventBtn');
+    
+    if (editEventBtn) editEventBtn.addEventListener('click', handleEditEvent);
+    if (deleteEventBtn) deleteEventBtn.addEventListener('click', handleDeleteEvent);
     
     // View switcher
     document.querySelectorAll('.view-btn').forEach(btn => {
@@ -61,14 +80,20 @@ function setupEventListeners() {
     });
     
     // Person filter
-    document.getElementById('personFilter').addEventListener('change', (e) => {
-        calendarModule.filter(e.target.value);
-    });
+    const personFilter = document.getElementById('personFilter');
+    if (personFilter) {
+        personFilter.addEventListener('change', (e) => {
+            calendarModule.filter(e.target.value);
+        });
+    }
     
     // AI summary refresh
-    document.getElementById('refreshSummaryBtn').addEventListener('click', () => {
-        loadAISummary();
-    });
+    const refreshSummaryBtn = document.getElementById('refreshSummaryBtn');
+    if (refreshSummaryBtn) {
+        refreshSummaryBtn.addEventListener('click', () => {
+            loadAISummary();
+        });
+    }
     
     // Close modal on backdrop click
     eventModal.addEventListener('click', (e) => {
@@ -187,8 +212,8 @@ function showEventDetail(event) {
     
     const startDate = new Date(event.start);
     const endDate = event.end ? new Date(event.end) : null;
-    const person = PERSON_NAMES[event.extendedProps.person];
-    const color = PERSON_COLORS[event.extendedProps.person];
+    const person = window.PERSON_NAMES[event.extendedProps.person];
+    const color = window.PERSON_COLORS[event.extendedProps.person];
     
     detail.innerHTML = `
         <div class="event-detail-item">
@@ -293,6 +318,12 @@ function changeCalendarView(viewName) {
 async function loadAISummary() {
     const summaryContent = document.getElementById('aiSummaryContent');
     
+    // AI Summary 섹션이 없으면 스킵
+    if (!summaryContent) {
+        console.log('AI Summary section not found, skipping...');
+        return;
+    }
+    
     summaryContent.innerHTML = `
         <div class="loading">
             <i class="fas fa-spinner fa-spin"></i>
@@ -333,6 +364,11 @@ function showLoading(show) {
 function showToast(message, type = 'info') {
     const toastMessage = document.getElementById('toastMessage');
     
+    if (!toastMessage || !toast) {
+        console.log(`Toast: ${message} (${type})`);
+        return;
+    }
+    
     toastMessage.textContent = message;
     toast.className = `toast ${type}`;
     toast.classList.add('show');
@@ -341,6 +377,10 @@ function showToast(message, type = 'info') {
         toast.classList.remove('show');
     }, 3000);
 }
+
+// Export functions to window for use in other modules
+window.showToast = showToast;
+window.openEventModal = openEventModal;
 
 /**
  * Check API health

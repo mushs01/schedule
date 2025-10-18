@@ -7,8 +7,8 @@
 // 컬렉션 이름
 const SCHEDULES_COLLECTION = 'schedules';
 
-// Person color mapping
-const PERSON_COLORS = {
+// Person color mapping (글로벌 변수 사용)
+const PERSON_COLORS = window.PERSON_COLORS || {
     'all': '#808080',      // Gray
     'dad': '#3788d8',      // Blue (아빠)
     'mom': '#9b59b6',      // Purple (엄마)
@@ -26,45 +26,69 @@ const api = {
             const db = window.db;
             let query = db.collection(SCHEDULES_COLLECTION);
 
-            // Filter by date range
-            if (filters.startDate) {
-                const startDateTime = firebase.firestore.Timestamp.fromDate(new Date(filters.startDate));
-                query = query.where('start_datetime', '>=', startDateTime);
-            }
+            // Simplified query - just get all documents for now
+            // TODO: Re-add filters after confirming basic functionality works
             
-            if (filters.endDate) {
-                const endDateTime = firebase.firestore.Timestamp.fromDate(new Date(filters.endDate + 'T23:59:59'));
-                query = query.where('start_datetime', '<=', endDateTime);
-            }
-
-            // Filter by person
-            if (filters.person && filters.person !== 'all') {
-                query = query.where('person', 'in', [filters.person, 'all']);
-            }
-
-            // Order by start datetime
-            query = query.orderBy('start_datetime', 'asc');
-
             const querySnapshot = await query.get();
             const schedules = [];
+            
+            console.log(`Found ${querySnapshot.size} documents in Firestore`);
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                schedules.push({
-                    id: doc.id,
-                    title: data.title,
-                    description: data.description,
-                    start: data.start_datetime.toDate().toISOString(),
-                    end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
-                    person: data.person,
-                    color: data.color,
-                    isPast: data.is_past || false,
-                    createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
-                    updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
-                });
+                
+                // Validate required fields
+                if (!data.start_datetime || !data.title) {
+                    console.warn('Skipping invalid schedule:', doc.id, data);
+                    return;
+                }
+                
+                try {
+                    schedules.push({
+                        id: doc.id,
+                        title: data.title,
+                        description: data.description,
+                        start: data.start_datetime.toDate().toISOString(),
+                        end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
+                        person: data.person,
+                        color: data.color,
+                        isPast: data.is_past || false,
+                        createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
+                        updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
+                    });
+                } catch (dateError) {
+                    console.error('Error parsing schedule date:', doc.id, dateError);
+                }
             });
 
-            return schedules;
+            // Apply filters in JavaScript
+            let filteredSchedules = schedules;
+            
+            // Filter by date range
+            if (filters.startDate || filters.endDate) {
+                filteredSchedules = schedules.filter(schedule => {
+                    const scheduleDate = new Date(schedule.start);
+                    if (filters.startDate && scheduleDate < new Date(filters.startDate)) {
+                        return false;
+                    }
+                    if (filters.endDate && scheduleDate > new Date(filters.endDate + 'T23:59:59')) {
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            
+            // Filter by person
+            if (filters.person && filters.person !== 'all') {
+                filteredSchedules = filteredSchedules.filter(schedule => 
+                    schedule.person === filters.person || schedule.person === 'all'
+                );
+            }
+            
+            // Sort by start datetime in JavaScript
+            filteredSchedules.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            return filteredSchedules;
         } catch (error) {
             console.error('Error getting schedules:', error);
             throw error;

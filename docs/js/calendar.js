@@ -6,8 +6,8 @@
 let calendar;
 let currentFilter = 'all';
 
-// Person colors mapping
-const PERSON_COLORS = {
+// Person colors mapping (글로벌 변수로 변경)
+window.PERSON_COLORS = window.PERSON_COLORS || {
     'all': '#808080',
     'dad': '#3788d8',
     'mom': '#9b59b6',
@@ -15,8 +15,8 @@ const PERSON_COLORS = {
     'taehwan': '#f39c12'
 };
 
-// Person names mapping
-const PERSON_NAMES = {
+// Person names mapping (글로벌 변수로 변경)
+window.PERSON_NAMES = window.PERSON_NAMES || {
     'all': '전체',
     'dad': '아빠',
     'mom': '엄마',
@@ -29,6 +29,11 @@ const PERSON_NAMES = {
  */
 function initCalendar() {
     const calendarEl = document.getElementById('calendar');
+    
+    if (!calendarEl) {
+        console.error('Calendar element not found!');
+        return;
+    }
     
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
@@ -213,4 +218,6 @@ window.calendarModule = {
     filter: filterByPerson,
     getCurrentDate
 };
+
+console.log('✅ calendarModule exported:', window.calendarModule);
 
