@@ -272,13 +272,13 @@ function updateLoginUI(isLoggedIn) {
     const notificationSettings = document.getElementById('notificationSettings');
     
     if (isLoggedIn) {
-        loginSection.style.display = 'none';
-        loggedInSection.style.display = 'block';
-        notificationSettings.style.display = 'block';
+        if (loginSection) loginSection.style.display = 'none';
+        if (loggedInSection) loggedInSection.style.display = 'block';
+        if (notificationSettings) notificationSettings.style.display = 'block';
     } else {
-        loginSection.style.display = 'block';
-        loggedInSection.style.display = 'none';
-        notificationSettings.style.display = 'none';
+        if (loginSection) loginSection.style.display = 'block';
+        if (loggedInSection) loggedInSection.style.display = 'none';
+        if (notificationSettings) notificationSettings.style.display = 'none';
     }
 }
 
