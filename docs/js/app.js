@@ -64,10 +64,22 @@ function setupEventListeners() {
     const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
     const closeDetailBtn = document.getElementById('closeDetailBtn');
     
-    if (closeModalBtn) closeModalBtn.addEventListener('click', closeEventModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeEventModal);
-    if (closeDetailModalBtn) closeDetailModalBtn.addEventListener('click', closeEventDetailModal);
-    if (closeDetailBtn) closeDetailBtn.addEventListener('click', closeEventDetailModal);
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeEventModal);
+        console.log('✅ Close modal button listener added');
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEventModal);
+        console.log('✅ Cancel button listener added');
+    }
+    if (closeDetailModalBtn) {
+        closeDetailModalBtn.addEventListener('click', closeEventDetailModal);
+        console.log('✅ Close detail modal button listener added');
+    }
+    if (closeDetailBtn) {
+        closeDetailBtn.addEventListener('click', closeEventDetailModal);
+        console.log('✅ Close detail button listener added');
+    }
     
     // Event form submission
     if (eventForm) {
@@ -147,8 +159,14 @@ function setupEventListeners() {
     const closeSearchBtn = document.getElementById('closeSearchBtn');
     const searchInput = document.getElementById('searchInput');
     
-    if (searchBtn) searchBtn.addEventListener('click', openSearchModal);
-    if (closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearchModal);
+    if (searchBtn) {
+        searchBtn.addEventListener('click', openSearchModal);
+        console.log('✅ Search button listener added');
+    }
+    if (closeSearchBtn) {
+        closeSearchBtn.addEventListener('click', closeSearchModal);
+        console.log('✅ Close search button listener added');
+    }
     
     if (searchInput) {
         searchInput.addEventListener('input', handleSearch);
@@ -160,10 +178,15 @@ function setupEventListeners() {
     const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
     const kakaoLogoutBtn = document.getElementById('kakaoLogoutBtn');
     const testKakaoBtn = document.getElementById('testKakaoBtn');
-    const enableNotifications = document.getElementById('enableNotifications');
     
-    if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
-    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettingsModal);
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', openSettingsModal);
+        console.log('✅ Settings button listener added');
+    }
+    if (closeSettingsBtn) {
+        closeSettingsBtn.addEventListener('click', closeSettingsModal);
+        console.log('✅ Close settings button listener added');
+    }
     
     if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => {
         if (window.kakaoNotification) {
@@ -370,8 +393,14 @@ function openEventModal(dateInfo = null, event = null) {
  * Close event modal
  */
 function closeEventModal() {
+    console.log('📅 Closing event modal');
+    if (!eventModal) {
+        console.error('❌ Event modal not found!');
+        return;
+    }
     eventModal.classList.remove('active');
     currentEditingEvent = null;
+    console.log('✅ Event modal closed');
 }
 
 /**
@@ -650,20 +679,34 @@ function updateCalendarFilterFromButtons() {
  * Settings functionality
  */
 function openSettingsModal() {
-    if (!settingsModal) return;
+    console.log('🔧 Opening settings modal');
+    if (!settingsModal) {
+        console.error('❌ Settings modal not found!');
+        return;
+    }
     settingsModal.classList.add('active');
+    console.log('✅ Settings modal opened');
 }
 
 function closeSettingsModal() {
-    if (!settingsModal) return;
+    console.log('🔧 Closing settings modal');
+    if (!settingsModal) {
+        console.error('❌ Settings modal not found!');
+        return;
+    }
     settingsModal.classList.remove('active');
+    console.log('✅ Settings modal closed');
 }
 
 /**
  * Search functionality
  */
 function openSearchModal() {
-    if (!searchModal) return;
+    console.log('🔍 Opening search modal');
+    if (!searchModal) {
+        console.error('❌ Search modal not found!');
+        return;
+    }
     searchModal.classList.add('active');
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -672,11 +715,17 @@ function openSearchModal() {
     }
     // 초기 상태로 리셋
     document.getElementById('searchResults').innerHTML = '<p class="search-hint">키워드를 입력하여 일정을 검색하세요</p>';
+    console.log('✅ Search modal opened');
 }
 
 function closeSearchModal() {
-    if (!searchModal) return;
+    console.log('🔍 Closing search modal');
+    if (!searchModal) {
+        console.error('❌ Search modal not found!');
+        return;
+    }
     searchModal.classList.remove('active');
+    console.log('✅ Search modal closed');
 }
 
 async function handleSearch(e) {
