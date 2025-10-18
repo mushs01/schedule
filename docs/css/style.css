@@ -565,6 +565,65 @@ body {
     background: var(--hover-bg);
 }
 
+/* Mobile Filter */
+.mobile-filter-btn {
+    display: none;
+}
+
+.mobile-filter-content {
+    max-width: 400px;
+}
+
+.filter-section {
+    padding: 8px 0;
+}
+
+.filter-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.filter-item:hover {
+    background: var(--hover-bg);
+}
+
+.filter-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.filter-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.filter-name {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
 /* 모바일 반응형 */
 @media (max-width: 768px) {
     body {
@@ -595,6 +654,11 @@ body {
     .fc .fc-col-header-cell {
         padding: 4px 1px;
         font-size: 10px;
+    }
+    
+    /* 모바일에서 필터 버튼 표시 */
+    .mobile-filter-btn {
+        display: flex;
     }
     
     .fc .fc-timegrid-slot-label {

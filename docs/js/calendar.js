@@ -92,13 +92,32 @@ function initCalendar() {
  */
 async function loadEvents(fetchInfo, successCallback, failureCallback) {
     try {
+        // currentFilter가 배열인 경우 처리
+        let filterPerson = 'all';
+        if (Array.isArray(currentFilter)) {
+            // 여러 담당자가 선택된 경우
+            filterPerson = 'all'; // 일단 전체를 가져온 후 클라이언트에서 필터링
+        } else {
+            filterPerson = currentFilter;
+        }
+        
         const schedules = await api.getSchedules({
             startDate: fetchInfo.startStr,
             endDate: fetchInfo.endStr,
-            person: currentFilter
+            person: filterPerson
         });
         
-        const events = schedules.map(schedule => ({
+        // 클라이언트 측 필터링 (배열인 경우)
+        let filteredSchedules = schedules;
+        if (Array.isArray(currentFilter)) {
+            filteredSchedules = schedules.filter(schedule => 
+                currentFilter.includes(schedule.person)
+            );
+        } else if (currentFilter === 'none') {
+            filteredSchedules = [];
+        }
+        
+        const events = filteredSchedules.map(schedule => ({
             id: schedule.id,
             title: schedule.title,
             start: schedule.start,
@@ -142,7 +161,14 @@ function handleDateSelect(selectInfo) {
  */
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
-    showEventDetail(event);
+    console.log('Event clicked:', event);
+    
+    // Use window.showEventDetail to ensure it's available
+    if (window.showEventDetail) {
+        window.showEventDetail(event);
+    } else {
+        console.error('showEventDetail not found!');
+    }
 }
 
 /**
@@ -216,6 +242,23 @@ function filterByPerson(person) {
 }
 
 /**
+ * Filter calendar by multiple persons
+ */
+function filterByPersons(persons) {
+    // persons 배열에 'all'이 포함되어 있으면 전체 표시
+    if (persons.includes('all')) {
+        currentFilter = 'all';
+    } else if (persons.length === 0) {
+        currentFilter = 'none'; // 아무것도 표시 안 함
+    } else if (persons.length === 1) {
+        currentFilter = persons[0];
+    } else {
+        currentFilter = persons; // 배열로 저장
+    }
+    refreshCalendar();
+}
+
+/**
  * Get current calendar date
  */
 function getCurrentDate() {
@@ -228,6 +271,7 @@ window.calendarModule = {
     changeView,
     refresh: refreshCalendar,
     filter: filterByPerson,
+    filterByPersons,
     getCurrentDate
 };
 
