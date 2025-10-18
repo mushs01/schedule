@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load AI summary
     loadAISummary();
     
+    // Load Today's Schedule Summary
+    loadTodaySummary();
+    
     // Setup event listeners
     setupEventListeners();
     
@@ -361,9 +364,10 @@ async function handleEventFormSubmit(e) {
             showToast('일정이 추가되었습니다.', 'success');
         }
         
-        // Refresh calendar and AI summary
+        // Refresh calendar, AI summary, and today's summary
         calendarModule.refresh();
         loadAISummary();
+        loadTodaySummary();
         
         closeEventModal();
     } catch (error) {
@@ -457,6 +461,7 @@ async function handleDeleteEvent() {
         
         calendarModule.refresh();
         loadAISummary();
+        loadTodaySummary();
         
         closeEventDetailModal();
     } catch (error) {
@@ -669,9 +674,94 @@ async function handleSearch(e) {
     }
 }
 
+/**
+ * Load Today's Schedule Summary
+ */
+async function loadTodaySummary() {
+    try {
+        // 오늘 날짜 설정
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+        
+        // 오늘 날짜 표시
+        const todayDateEl = document.getElementById('todayDate');
+        if (todayDateEl) {
+            todayDateEl.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+        }
+        
+        // 모든 일정 가져오기
+        const schedules = await api.getSchedules({});
+        
+        // 오늘 일정 필터링
+        const todaySchedules = schedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.start);
+            return scheduleDate >= todayStart && scheduleDate <= todayEnd;
+        });
+        
+        // 시간순 정렬
+        todaySchedules.sort((a, b) => new Date(a.start) - new Date(b.start));
+        
+        // 일정 목록 표시
+        const todaySummaryList = document.getElementById('todaySummaryList');
+        if (!todaySummaryList) return;
+        
+        if (todaySchedules.length === 0) {
+            todaySummaryList.innerHTML = '<p class="no-schedule">오늘 예정된 일정이 없습니다</p>';
+            return;
+        }
+        
+        const itemsHTML = todaySchedules.map(schedule => {
+            const startDate = new Date(schedule.start);
+            const endDate = schedule.end ? new Date(schedule.end) : null;
+            const personName = window.PERSON_NAMES[schedule.person] || schedule.person;
+            const personColor = window.PERSON_COLORS[schedule.person] || '#808080';
+            
+            const timeText = endDate 
+                ? `${formatTime(startDate)} - ${formatTime(endDate)}`
+                : formatTime(startDate);
+            
+            return `
+                <div class="today-item" data-event-id="${schedule.id}">
+                    <span class="today-item-person" style="background: ${personColor};">${personName}</span>
+                    <span class="today-item-time">${timeText}</span>
+                    <span class="today-item-title">${schedule.title}</span>
+                </div>
+            `;
+        }).join('');
+        
+        todaySummaryList.innerHTML = itemsHTML;
+        
+        // 클릭 이벤트 추가
+        document.querySelectorAll('.today-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const eventId = item.dataset.eventId;
+                const schedule = todaySchedules.find(s => s.id === eventId);
+                if (schedule) {
+                    const event = {
+                        id: schedule.id,
+                        title: schedule.title,
+                        start: schedule.start,
+                        end: schedule.end,
+                        extendedProps: {
+                            description: schedule.description,
+                            person: schedule.person
+                        }
+                    };
+                    showEventDetail(event);
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error loading today summary:', error);
+    }
+}
+
 // Export functions to window for use in other modules
 window.showToast = showToast;
 window.openEventModal = openEventModal;
+window.loadTodaySummary = loadTodaySummary;
 
 /**
  * Check API health

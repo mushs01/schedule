@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=15">
+    <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -151,7 +151,7 @@
                 
                 <div class="person-filter-buttons">
                     <button class="person-filter-btn active" data-person="all">
-                        <span class="person-color" style="background: #808080;"></span>
+                        <span class="person-color" style="background: #d32f2f;"></span>
                         <span>전체</span>
                     </button>
                     <button class="person-filter-btn active" data-person="dad">
@@ -170,6 +170,17 @@
                         <span class="person-color" style="background: #f39c12;"></span>
                         <span>태환</span>
                     </button>
+                </div>
+            </div>
+            
+            <!-- Today's Schedule Summary -->
+            <div id="todaySummary" class="today-summary">
+                <div class="today-summary-header">
+                    <h3>오늘의 일정</h3>
+                    <span class="today-date" id="todayDate"></span>
+                </div>
+                <div class="today-summary-list" id="todaySummaryList">
+                    <p class="no-schedule">오늘 예정된 일정이 없습니다</p>
                 </div>
             </div>
             
@@ -326,11 +337,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js?v=18"></script>
+    <script src="js/firebase-config.js?v=19"></script>
 
     <!-- Custom JS -->
-    <script src="js/api.js?v=18"></script>
-    <script src="js/calendar.js?v=18"></script>
-    <script src="js/app.js?v=18"></script>
+    <script src="js/api.js?v=19"></script>
+    <script src="js/calendar.js?v=19"></script>
+    <script src="js/app.js?v=19"></script>
 </body>
 </html>
