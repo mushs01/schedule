@@ -109,6 +109,10 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
             // 아무것도 선택 안 함
             filteredSchedules = [];
             console.log('❌ No filter - showing nothing');
+        } else if (currentFilter === 'showAll') {
+            // 모든 담당자 선택 - 전체 일정 표시
+            filteredSchedules = schedules;
+            console.log('✅ Show all schedules - no filtering');
         } else if (Array.isArray(currentFilter)) {
             // 여러 담당자 선택
             if (currentFilter.length === 0) {
@@ -261,10 +265,18 @@ function filterByPerson(person) {
 function filterByPersons(persons) {
     console.log('🎯 filterByPersons called with:', persons);
     
+    // 모든 담당자가 선택된 경우 체크 (all, dad, mom, juhwan, taehwan = 5개)
+    const allPersons = ['all', 'dad', 'mom', 'juhwan', 'taehwan'];
+    const allSelected = allPersons.every(p => persons.includes(p));
+    
     if (persons.length === 0) {
         // 아무것도 선택 안 함
         currentFilter = 'none';
         console.log('❌ No person selected - filter set to: none');
+    } else if (allSelected) {
+        // 모든 담당자 선택 - 전체 일정 표시
+        currentFilter = 'showAll';
+        console.log('✅ All persons selected - showing all schedules');
     } else if (persons.length === 1) {
         // 단일 담당자 선택 (all, dad, mom, juhwan, taehwan)
         currentFilter = persons[0];
