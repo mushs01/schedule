@@ -171,6 +171,7 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 backgroundColor: color,
                 borderColor: color,
                 extendedProps: {
+                    id: schedule.id,  // ID를 extendedProps에도 포함
                     description: schedule.description,
                     person: schedule.person,
                     isPast: isPast,

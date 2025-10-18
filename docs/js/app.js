@@ -255,26 +255,29 @@ function setupEventListeners() {
  * Open event modal for creating/editing
  */
 function openEventModal(dateInfo = null, event = null) {
-    console.log('openEventModal called - dateInfo:', dateInfo, 'event:', event);
+    console.log('🔧 openEventModal called - dateInfo:', dateInfo, 'event:', event);
     
     if (!eventForm) {
-        console.error('eventForm not found!');
+        console.error('❌ eventForm not found!');
         return;
     }
     
     if (!eventModal) {
-        console.error('eventModal not found!');
+        console.error('❌ eventModal not found!');
         return;
     }
     
     currentEditingEvent = event;
+    console.log('📝 currentEditingEvent set to:', currentEditingEvent);
     
     // Reset form
     eventForm.reset();
     
     if (event) {
         // Editing mode - 기존 일정 수정
-        console.log('Edit mode - event:', event);
+        console.log('✏️ Edit mode - event:', event);
+        console.log('📋 Event ID:', event.id || event.extendedProps?.id);
+        console.log('📋 Event extendedProps:', event.extendedProps);
         document.getElementById('modalTitle').textContent = '일정 수정';
         
         const startDate = new Date(event.start);
@@ -477,10 +480,23 @@ async function handleEventFormSubmit(e) {
         
         if (currentEditingEvent) {
             // Update existing event
-            await api.updateSchedule(currentEditingEvent.id, scheduleData);
+            // FullCalendar event의 ID는 event.id 또는 event.extendedProps.id에 있을 수 있음
+            const eventId = currentEditingEvent.id || currentEditingEvent.extendedProps?.id;
+            console.log('📝 Updating event with ID:', eventId);
+            console.log('📋 Schedule data:', scheduleData);
+            
+            if (!eventId) {
+                console.error('❌ Event ID not found!', currentEditingEvent);
+                showToast('일정 ID를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            await api.updateSchedule(eventId, scheduleData);
             showToast('일정이 수정되었습니다.', 'success');
         } else {
             // Create new event
+            console.log('➕ Creating new event');
+            console.log('📋 Schedule data:', scheduleData);
             await api.createSchedule(scheduleData);
             showToast('일정이 추가되었습니다.', 'success');
         }
@@ -492,7 +508,7 @@ async function handleEventFormSubmit(e) {
         
         closeEventModal();
     } catch (error) {
-        console.error('Error saving event:', error);
+        console.error('❌ Error saving event:', error);
         showToast('일정 저장에 실패했습니다.', 'error');
     } finally {
         showLoading(false);
