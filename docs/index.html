@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=23">
+    <link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -269,6 +269,62 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>설정</h2>
+                <button class="icon-btn" id="closeSettingsBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Kakao Login Section -->
+                <div class="settings-section">
+                    <h3>카카오톡 알림</h3>
+                    <div id="kakaoLoginSection">
+                        <p class="settings-description">카카오톡으로 일정 알림을 받으려면 로그인하세요</p>
+                        <button class="btn-primary" id="kakaoLoginBtn">
+                            <span class="material-icons">chat</span>
+                            카카오 로그인
+                        </button>
+                    </div>
+                    <div id="kakaoLoggedInSection" style="display: none;">
+                        <p class="settings-description">
+                            <span class="material-icons" style="vertical-align: middle; color: #0f9d58;">check_circle</span>
+                            카카오톡 연동됨
+                        </p>
+                        <button class="btn-secondary" id="kakaoLogoutBtn">로그아웃</button>
+                        <button class="btn-primary" id="testKakaoBtn">테스트 메시지 보내기</button>
+                    </div>
+                </div>
+                
+                <!-- Notification Settings -->
+                <div class="settings-section" id="notificationSettings" style="display: none;">
+                    <h3>알림 설정</h3>
+                    <div class="settings-item">
+                        <label class="settings-label">
+                            <input type="checkbox" id="enableNotifications">
+                            <span>카카오톡 알림 받기 (10분 전)</span>
+                        </label>
+                        <p class="settings-hint">체크하면 일정 시작 10분 전에 카카오톡으로 알림을 받습니다</p>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="settings-section">
+                    <h3>사용 안내</h3>
+                    <ol class="settings-instructions">
+                        <li>카카오 로그인을 하면 본인에게 알림을 보낼 수 있습니다</li>
+                        <li>브라우저가 열려있을 때만 알림이 전송됩니다</li>
+                        <li>설정한 시간에 맞춰 일정 알림을 받습니다</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Modal -->
     <div class="modal" id="searchModal">
         <div class="modal-content gcal-modal">
@@ -332,6 +388,9 @@
     <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
+    <!-- Kakao SDK -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    
     <!-- Firebase JS SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -340,8 +399,9 @@
     <script src="js/firebase-config.js?v=22"></script>
 
     <!-- Custom JS -->
-    <script src="js/api.js?v=22"></script>
-    <script src="js/calendar.js?v=22"></script>
-    <script src="js/app.js?v=22"></script>
+    <script src="js/kakao-notification.js?v=24"></script>
+    <script src="js/api.js?v=24"></script>
+    <script src="js/calendar.js?v=24"></script>
+    <script src="js/app.js?v=24"></script>
 </body>
 </html>

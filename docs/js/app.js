@@ -10,6 +10,7 @@ let currentEditingEvent = null;
 const eventModal = document.getElementById('eventModal');
 const eventDetailModal = document.getElementById('eventDetailModal');
 const searchModal = document.getElementById('searchModal');
+const settingsModal = document.getElementById('settingsModal');
 const eventForm = document.getElementById('eventForm');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const toast = document.getElementById('toast');
@@ -32,6 +33,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Load Today's Schedule Summary
     loadTodaySummary();
+    
+    // Initialize Kakao SDK
+    if (window.kakaoNotification) {
+        window.kakaoNotification.init();
+    }
     
     // Setup event listeners
     setupEventListeners();
@@ -148,6 +154,41 @@ function setupEventListeners() {
         searchInput.addEventListener('input', handleSearch);
     }
     
+    // Settings functionality
+    const settingsBtn = document.getElementById('settingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
+    const kakaoLogoutBtn = document.getElementById('kakaoLogoutBtn');
+    const testKakaoBtn = document.getElementById('testKakaoBtn');
+    const enableNotifications = document.getElementById('enableNotifications');
+    
+    if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettingsModal);
+    
+    if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => {
+        if (window.kakaoNotification) {
+            window.kakaoNotification.login();
+        }
+    });
+    
+    if (kakaoLogoutBtn) kakaoLogoutBtn.addEventListener('click', () => {
+        if (window.kakaoNotification) {
+            window.kakaoNotification.logout();
+        }
+    });
+    
+    if (testKakaoBtn) testKakaoBtn.addEventListener('click', () => {
+        if (window.kakaoNotification) {
+            window.kakaoNotification.sendTest();
+        }
+    });
+    
+    if (enableNotifications) enableNotifications.addEventListener('change', () => {
+        if (window.kakaoNotification) {
+            window.kakaoNotification.saveSettings();
+        }
+    });
+    
     // Close modal on backdrop click
     eventModal.addEventListener('click', (e) => {
         if (e.target === eventModal) closeEventModal();
@@ -160,6 +201,12 @@ function setupEventListeners() {
     if (searchModal) {
         searchModal.addEventListener('click', (e) => {
             if (e.target === searchModal) closeSearchModal();
+        });
+    }
+    
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettingsModal();
         });
     }
 }
@@ -575,6 +622,19 @@ function updateCalendarFilterFromButtons() {
     } else {
         console.error('calendarModule.filterByPersons not found!');
     }
+}
+
+/**
+ * Settings functionality
+ */
+function openSettingsModal() {
+    if (!settingsModal) return;
+    settingsModal.classList.add('active');
+}
+
+function closeSettingsModal() {
+    if (!settingsModal) return;
+    settingsModal.classList.remove('active');
 }
 
 /**
