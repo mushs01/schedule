@@ -64,9 +64,6 @@
         </div>
         
         <div class="gcal-header-right">
-            <button class="icon-btn mobile-filter-btn" id="mobileFilterBtn">
-                <span class="material-icons">filter_list</span>
-            </button>
             <button class="icon-btn" id="searchBtn">
                 <span class="material-icons">search</span>
             </button>
@@ -256,59 +253,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Mobile Filter Modal -->
-    <div class="modal" id="mobileFilterModal">
-        <div class="modal-content gcal-modal mobile-filter-content">
-            <div class="modal-header">
-                <h2>필터</h2>
-                <button class="icon-btn" id="closeMobileFilterBtn">
-                    <span class="material-icons">close</span>
-                </button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="filter-section">
-                    <h3 class="filter-title">담당자 선택</h3>
-                    <div class="filter-list" id="mobileFilterList">
-                        <label class="filter-item">
-                            <input type="checkbox" checked data-person="all">
-                            <span class="filter-color" style="background: #808080;"></span>
-                            <span class="filter-name">전체</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" checked data-person="dad">
-                            <span class="filter-color" style="background: #3788d8;"></span>
-                            <span class="filter-name">아빠</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" checked data-person="mom">
-                            <span class="filter-color" style="background: #9b59b6;"></span>
-                            <span class="filter-name">엄마</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" checked data-person="juhwan">
-                            <span class="filter-color" style="background: #27ae60;"></span>
-                            <span class="filter-name">주환</span>
-                        </label>
-                        <label class="filter-item">
-                            <input type="checkbox" checked data-person="taehwan">
-                            <span class="filter-color" style="background: #f39c12;"></span>
-                            <span class="filter-name">태환</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-actions">
-                <button type="button" class="btn btn-text" id="resetFilterBtn">전체 선택</button>
-                <button type="button" class="btn btn-primary" id="applyFilterBtn">
-                    <span class="material-icons">check</span>
-                    <span>적용</span>
-                </button>
-            </div>
         </div>
     </div>
 

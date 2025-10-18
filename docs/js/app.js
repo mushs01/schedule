@@ -9,7 +9,6 @@ let currentEditingEvent = null;
 // DOM Elements
 const eventModal = document.getElementById('eventModal');
 const eventDetailModal = document.getElementById('eventDetailModal');
-const mobileFilterModal = document.getElementById('mobileFilterModal');
 const eventForm = document.getElementById('eventForm');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const toast = document.getElementById('toast');
@@ -96,12 +95,6 @@ function setupEventListeners() {
         });
     }
     
-    // Sidebar filter (PC)
-    const sidebarCheckboxes = document.querySelectorAll('.calendar-item input[type="checkbox"]');
-    sidebarCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateCalendarFilter);
-    });
-    
     // Person filter buttons (헤더)
     const personFilterBtns = document.querySelectorAll('.person-filter-btn');
     personFilterBtns.forEach(btn => {
@@ -111,27 +104,10 @@ function setupEventListeners() {
             // 버튼 활성화/비활성화 토글
             btn.classList.toggle('active');
             
-            // 사이드바 체크박스도 동기화
-            const sidebarCheckbox = document.querySelector(`.calendar-item input[data-person="${person}"]`);
-            if (sidebarCheckbox) {
-                sidebarCheckbox.checked = btn.classList.contains('active');
-            }
-            
             // 필터 적용
             updateCalendarFilterFromButtons();
         });
     });
-    
-    // Mobile filter
-    const mobileFilterBtn = document.getElementById('mobileFilterBtn');
-    const closeMobileFilterBtn = document.getElementById('closeMobileFilterBtn');
-    const applyFilterBtn = document.getElementById('applyFilterBtn');
-    const resetFilterBtn = document.getElementById('resetFilterBtn');
-    
-    if (mobileFilterBtn) mobileFilterBtn.addEventListener('click', openMobileFilter);
-    if (closeMobileFilterBtn) closeMobileFilterBtn.addEventListener('click', closeMobileFilter);
-    if (applyFilterBtn) applyFilterBtn.addEventListener('click', applyMobileFilter);
-    if (resetFilterBtn) resetFilterBtn.addEventListener('click', resetMobileFilter);
     
     // Close modal on backdrop click
     eventModal.addEventListener('click', (e) => {
@@ -141,12 +117,6 @@ function setupEventListeners() {
     eventDetailModal.addEventListener('click', (e) => {
         if (e.target === eventDetailModal) closeEventDetailModal();
     });
-    
-    if (mobileFilterModal) {
-        mobileFilterModal.addEventListener('click', (e) => {
-            if (e.target === mobileFilterModal) closeMobileFilter();
-        });
-    }
 }
 
 /**
@@ -537,79 +507,8 @@ function showToast(message, type = 'info') {
 }
 
 /**
- * Mobile Filter Functions
+ * Update calendar filter from buttons
  */
-function openMobileFilter() {
-    if (!mobileFilterModal) return;
-    
-    // 사이드바의 체크박스 상태를 모바일 필터에 동기화
-    const sidebarCheckboxes = document.querySelectorAll('.calendar-item input[type="checkbox"]');
-    const mobileCheckboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
-    
-    sidebarCheckboxes.forEach((sidebarCheckbox, index) => {
-        if (mobileCheckboxes[index]) {
-            mobileCheckboxes[index].checked = sidebarCheckbox.checked;
-        }
-    });
-    
-    mobileFilterModal.classList.add('active');
-}
-
-function closeMobileFilter() {
-    if (!mobileFilterModal) return;
-    mobileFilterModal.classList.remove('active');
-}
-
-function applyMobileFilter() {
-    // 모바일 필터의 체크박스 상태를 사이드바에 동기화
-    const mobileCheckboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
-    const sidebarCheckboxes = document.querySelectorAll('.calendar-item input[type="checkbox"]');
-    
-    mobileCheckboxes.forEach((mobileCheckbox, index) => {
-        if (sidebarCheckboxes[index]) {
-            sidebarCheckboxes[index].checked = mobileCheckbox.checked;
-        }
-    });
-    
-    // 캘린더 필터 적용
-    updateCalendarFilter();
-    
-    closeMobileFilter();
-    showToast('필터가 적용되었습니다.', 'success');
-}
-
-function resetMobileFilter() {
-    // 모든 체크박스 선택
-    const mobileCheckboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
-    mobileCheckboxes.forEach(checkbox => {
-        checkbox.checked = true;
-    });
-}
-
-function updateCalendarFilter() {
-    console.log('updateCalendarFilter called');
-    
-    // 선택된 담당자 목록 가져오기
-    const checkboxes = document.querySelectorAll('.calendar-item input[type="checkbox"]');
-    const selectedPersons = [];
-    
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            selectedPersons.push(checkbox.dataset.person);
-        }
-    });
-    
-    console.log('Selected persons:', selectedPersons);
-    
-    // calendarModule의 filter 함수 호출
-    if (window.calendarModule && window.calendarModule.filterByPersons) {
-        window.calendarModule.filterByPersons(selectedPersons);
-        showToast(`필터 적용: ${selectedPersons.length}개 선택`, 'success');
-    } else {
-        console.error('calendarModule.filterByPersons not found!');
-    }
-}
-
 function updateCalendarFilterFromButtons() {
     console.log('updateCalendarFilterFromButtons called');
     
@@ -634,7 +533,6 @@ function updateCalendarFilterFromButtons() {
 // Export functions to window for use in other modules
 window.showToast = showToast;
 window.openEventModal = openEventModal;
-window.updateCalendarFilter = updateCalendarFilter;
 
 /**
  * Check API health

@@ -480,6 +480,21 @@ body {
     background: #ffffff;
 }
 
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 35px;
+}
+
+.form-group select:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
 .form-group textarea {
     resize: vertical;
     min-height: 80px;
@@ -644,64 +659,6 @@ body {
     background: var(--hover-bg);
 }
 
-/* Mobile Filter */
-.mobile-filter-btn {
-    display: none;
-}
-
-.mobile-filter-content {
-    max-width: 400px;
-}
-
-.filter-section {
-    padding: 8px 0;
-}
-
-.filter-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-}
-
-.filter-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filter-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.filter-item:hover {
-    background: var(--hover-bg);
-}
-
-.filter-item input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
-
-.filter-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.filter-name {
-    flex: 1;
-    font-size: 14px;
-    color: var(--text-primary);
-}
 
 /* 모바일 반응형 */
 @media (max-width: 768px) {
@@ -735,16 +692,6 @@ body {
         font-size: 10px;
     }
     
-    /* 모바일에서 필터 버튼 표시 */
-    .mobile-filter-btn {
-        display: flex;
-    }
-    
-    /* 모바일에서 헤더의 담당자 필터 숨김 */
-    .person-filter-buttons {
-        display: none;
-    }
-    
     .view-selector {
         padding: 8px;
     }
@@ -752,6 +699,11 @@ body {
     .view-btn {
         padding: 4px 12px;
         font-size: 12px;
+    }
+    
+    /* 모바일에서 담당자 필터 숨김 */
+    .person-filter-buttons {
+        display: none;
     }
     
     .fc .fc-timegrid-slot-label {
