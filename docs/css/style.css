@@ -606,22 +606,35 @@ body {
     color: var(--text-primary);
 }
 
-/* 체크박스 행 - 카카오톡 알림 등 */
-.checkbox-row {
+/* 폼 행 - 아이콘과 입력 요소를 한 줄에 */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-row .form-label {
+    margin-bottom: 0;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+/* 체크박스 인라인 - 같은 줄에 배치 */
+.checkbox-inline {
     display: flex;
     gap: 16px;
     align-items: center;
-    margin-left: 32px;
 }
 
 .checkbox-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     font-size: 14px;
     color: var(--text-primary);
     cursor: pointer;
-    line-height: 24px;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -629,12 +642,16 @@ body {
     height: 18px;
     cursor: pointer;
     margin: 0;
+    padding: 0;
     flex-shrink: 0;
+    vertical-align: middle;
 }
 
 .checkbox-label span {
-    line-height: 24px;
+    line-height: 18px;
     white-space: nowrap;
+    vertical-align: middle;
+    display: inline-block;
 }
 
 /* 날짜/시간 입력 행 */
@@ -1139,6 +1156,20 @@ body {
         max-width: 100%;
         border-radius: 8px 8px 0 0;
         max-height: 85vh;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-row .form-label {
+        min-width: auto;
+    }
+    
+    .checkbox-inline {
+        width: 100%;
+        flex-wrap: wrap;
     }
 }
 
