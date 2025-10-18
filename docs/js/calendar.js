@@ -8,20 +8,20 @@ let currentFilter = 'showAll'; // 초기 로딩 시 모든 담당자 선택 → 
 
 // Person colors mapping (글로벌 변수로 변경)
 window.PERSON_COLORS = window.PERSON_COLORS || {
-    'all': '#d32f2f', // 회식 → 빨간색으로 변경
+    'all': '#808080', // 전체 → 회색
     'dad': '#3788d8',
     'mom': '#9b59b6',
     'juhwan': '#27ae60',
     'taehwan': '#f39c12'
 };
 
-// 지난 일정 색상 (각 담당자 색상에서 명도 낮춤)
+// 지난 일정 색상 (각 담당자 색상에서 명도를 크게 낮춤)
 window.PERSON_COLORS_PAST = {
-    'all': '#a52626', // 어두운 빨간색
-    'dad': '#2b6aa8', // 어두운 파란색
-    'mom': '#7a4689', // 어두운 보라색
-    'juhwan': '#1e874b', // 어두운 초록색
-    'taehwan': '#c27d0e' // 어두운 주황색
+    'all': '#4a4a4a', // 훨씬 어두운 회색
+    'dad': '#1e4d7a', // 훨씬 어두운 파란색
+    'mom': '#5a3568', // 훨씬 어두운 보라색
+    'juhwan': '#166635', // 훨씬 어두운 초록색
+    'taehwan': '#996108' // 훨씬 어두운 주황색
 };
 
 // Person names mapping (글로벌 변수로 변경)
