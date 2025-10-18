@@ -39,6 +39,8 @@ body {
     height: 50px;
     background: #ffffff;
     flex-wrap: nowrap;
+    position: relative;
+    z-index: 100;
 }
 
 .gcal-header-left,
@@ -47,6 +49,31 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* 헤더 버튼 - 터치 영역 개선 */
+.gcal-header button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.gcal-header button:hover {
+    background: var(--hover-bg);
+}
+
+.gcal-header button:active {
+    background: #d0d0d0;
 }
 
 .gcal-header-left {
@@ -500,6 +527,33 @@ body {
 .gcal-modal-header h2 {
     font-size: 18px;
     font-weight: 500;
+}
+
+.modal-header button,
+.gcal-modal-header button {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.modal-header button:hover,
+.gcal-modal-header button:hover {
+    background: var(--hover-bg);
+}
+
+.modal-header button:active,
+.gcal-modal-header button:active {
+    background: #d0d0d0;
 }
 
 .modal-body,
