@@ -6,20 +6,39 @@
 // Global state
 let currentEditingEvent = null;
 
-// DOM Elements
-const eventModal = document.getElementById('eventModal');
-const eventDetailModal = document.getElementById('eventDetailModal');
-const searchModal = document.getElementById('searchModal');
-const settingsModal = document.getElementById('settingsModal');
-const eventForm = document.getElementById('eventForm');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const toast = document.getElementById('toast');
+// DOM Elements - will be initialized after DOM loads
+let eventModal;
+let eventDetailModal;
+let searchModal;
+let settingsModal;
+let eventForm;
+let loadingOverlay;
+let toast;
 
 /**
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
+    
+    // Initialize DOM elements
+    eventModal = document.getElementById('eventModal');
+    eventDetailModal = document.getElementById('eventDetailModal');
+    searchModal = document.getElementById('searchModal');
+    settingsModal = document.getElementById('settingsModal');
+    eventForm = document.getElementById('eventForm');
+    loadingOverlay = document.getElementById('loadingOverlay');
+    toast = document.getElementById('toast');
+    
+    console.log('📋 DOM Elements initialized:', {
+        eventModal: !!eventModal,
+        eventDetailModal: !!eventDetailModal,
+        searchModal: !!searchModal,
+        settingsModal: !!settingsModal,
+        eventForm: !!eventForm,
+        loadingOverlay: !!loadingOverlay,
+        toast: !!toast
+    });
     
     // Initialize calendar
     if (window.calendarModule) {
@@ -207,13 +226,17 @@ function setupEventListeners() {
     });
     
     // Close modal on backdrop click
-    eventModal.addEventListener('click', (e) => {
-        if (e.target === eventModal) closeEventModal();
-    });
+    if (eventModal) {
+        eventModal.addEventListener('click', (e) => {
+            if (e.target === eventModal) closeEventModal();
+        });
+    }
     
-    eventDetailModal.addEventListener('click', (e) => {
-        if (e.target === eventDetailModal) closeEventDetailModal();
-    });
+    if (eventDetailModal) {
+        eventDetailModal.addEventListener('click', (e) => {
+            if (e.target === eventDetailModal) closeEventDetailModal();
+        });
+    }
     
     if (searchModal) {
         searchModal.addEventListener('click', (e) => {
