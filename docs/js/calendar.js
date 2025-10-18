@@ -211,13 +211,17 @@ function handleDateSelect(selectInfo) {
  */
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
-    console.log('Event clicked:', event);
+    console.log('🖱️ Event clicked:', event);
+    console.log('📋 Event ID:', event.id);
+    console.log('📋 Event extendedProps:', event.extendedProps);
+    console.log('📋 Event title:', event.title);
     
     // Use window.showEventDetail to ensure it's available
     if (window.showEventDetail) {
+        console.log('✅ Calling showEventDetail...');
         window.showEventDetail(event);
     } else {
-        console.error('showEventDetail not found!');
+        console.error('❌ showEventDetail not found!');
     }
 }
 

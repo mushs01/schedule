@@ -519,6 +519,10 @@ async function handleEventFormSubmit(e) {
  * Show event detail modal
  */
 function showEventDetail(event) {
+    console.log('📖 showEventDetail called with event:', event);
+    console.log('📋 Event ID:', event.id);
+    console.log('📋 Event extendedProps.id:', event.extendedProps?.id);
+    
     const detail = document.getElementById('eventDetail');
     
     const startDate = new Date(event.start);
@@ -563,6 +567,10 @@ function showEventDetail(event) {
     `;
     
     currentEditingEvent = event;
+    console.log('📝 currentEditingEvent set to:', currentEditingEvent);
+    console.log('📋 currentEditingEvent.id:', currentEditingEvent.id);
+    console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent.extendedProps);
+    
     eventDetailModal.classList.add('active');
 }
 
@@ -578,6 +586,11 @@ function closeEventDetailModal() {
  * Handle edit event button
  */
 function handleEditEvent() {
+    console.log('✏️ handleEditEvent called');
+    console.log('📝 currentEditingEvent:', currentEditingEvent);
+    console.log('📋 currentEditingEvent.id:', currentEditingEvent?.id);
+    console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent?.extendedProps);
+    
     closeEventDetailModal();
     openEventModal(null, currentEditingEvent);
 }
