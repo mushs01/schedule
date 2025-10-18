@@ -58,6 +58,8 @@ function initCalendar() {
         selectMirror: true,
         dayMaxEvents: true,
         weekends: true,
+        longPressDelay: 0, // 모바일에서 즉시 선택 가능
+        selectLongPressDelay: 0, // 길게 누르지 않아도 선택 가능
         
         // Event handlers
         select: handleDateSelect,
