@@ -124,8 +124,16 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
  * Handle date selection (for creating new event)
  */
 function handleDateSelect(selectInfo) {
+    console.log('Date selected:', selectInfo.start);
     const startDate = new Date(selectInfo.start);
-    openEventModal(startDate);
+    
+    // Use window.openEventModal to ensure it's available
+    if (window.openEventModal) {
+        window.openEventModal(startDate);
+    } else {
+        console.error('openEventModal not found!');
+    }
+    
     calendar.unselect();
 }
 

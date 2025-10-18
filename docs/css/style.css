@@ -1,5 +1,10 @@
 /* Mobile-Optimized Calendar Style */
 
+/* 다크모드 강제 비활성화 */
+:root {
+    color-scheme: light only;
+}
+
 :root {
     --primary-blue: #1a73e8;
     --hover-blue: #1765cc;
@@ -206,27 +211,45 @@ body {
 /* FullCalendar 커스텀 - 모바일 최적화 */
 .fc {
     font-size: 12px;
+    background: #ffffff !important;
 }
 
 .fc .fc-toolbar {
     display: none; /* 우리가 만든 헤더 사용 */
 }
 
+.fc .fc-view-harness {
+    background: #ffffff !important;
+}
+
+.fc .fc-scrollgrid {
+    background: #ffffff !important;
+}
+
 .fc .fc-col-header-cell {
     padding: 6px 2px;
     font-size: 11px;
     font-weight: 500;
-    background: #ffffff;
+    background: #ffffff !important;
     border-color: var(--border-color);
 }
 
 .fc .fc-daygrid-day {
-    background: #ffffff;
+    background: #ffffff !important;
 }
 
 .fc .fc-timegrid-slot {
     height: 40px; /* 한 칸으로 줄임 */
     border-color: var(--border-color);
+    background: #ffffff !important;
+}
+
+.fc .fc-timegrid-col {
+    background: #ffffff !important;
+}
+
+.fc .fc-day {
+    background: #ffffff !important;
 }
 
 .fc .fc-timegrid-slot-label {
