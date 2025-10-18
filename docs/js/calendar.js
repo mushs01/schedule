@@ -173,7 +173,9 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 extendedProps: {
                     description: schedule.description,
                     person: schedule.person,
-                    isPast: isPast
+                    isPast: isPast,
+                    kakao_notification_start: schedule.kakao_notification_start || false,
+                    kakao_notification_end: schedule.kakao_notification_end || false
                 }
             };
         });

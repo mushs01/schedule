@@ -97,18 +97,29 @@ function sendTestKakaoMessage() {
 /**
  * Send schedule notification to Kakao
  */
-function sendScheduleNotification(schedule) {
+function sendScheduleNotification(schedule, notificationType = 'start') {
     if (!Kakao.Auth.getAccessToken()) {
         return;
     }
 
     const personName = window.PERSON_NAMES[schedule.person] || schedule.person;
     const startDate = new Date(schedule.start);
-    const timeStr = formatTime(startDate);
+    const endDate = schedule.end ? new Date(schedule.end) : null;
     
-    let text = `📅 일정 알림\n\n`;
-    text += `[${personName}] ${schedule.title}\n`;
-    text += `시간: ${timeStr}`;
+    let text = '';
+    
+    if (notificationType === 'start') {
+        text = `📅 일정 시작 알림 (10분 전)\n\n`;
+        text += `[${personName}] ${schedule.title}\n`;
+        text += `시작: ${formatTime(startDate)}`;
+        if (endDate) {
+            text += `\n종료: ${formatTime(endDate)}`;
+        }
+    } else {
+        text = `🔔 일정 종료 알림 (10분 전)\n\n`;
+        text += `[${personName}] ${schedule.title}\n`;
+        text += `종료: ${formatTime(endDate)}`;
+    }
     
     if (schedule.description) {
         text += `\n내용: ${schedule.description}`;
@@ -140,10 +151,9 @@ function sendScheduleNotification(schedule) {
  * Check and send notifications
  */
 async function checkAndSendNotifications() {
-    const enableNotifications = localStorage.getItem(STORAGE_KEYS.ENABLE_NOTIFICATIONS) === 'true';
     const notificationTime = 10; // 고정: 10분 전
     
-    if (!enableNotifications || !Kakao.Auth.getAccessToken()) {
+    if (!Kakao.Auth.getAccessToken()) {
         return;
     }
 
@@ -154,25 +164,51 @@ async function checkAndSendNotifications() {
         const notificationLeadTime = notificationTime * 60 * 1000; // Convert minutes to milliseconds
         
         // Filter schedules that need notification
-        const schedulesToNotify = schedules.filter(schedule => {
+        const schedulesToNotify = [];
+        
+        schedules.forEach(schedule => {
             const scheduleStart = new Date(schedule.start);
-            const timeDiff = scheduleStart - now;
+            const scheduleEnd = schedule.end ? new Date(schedule.end) : null;
             
-            // Check if notification time range (within ±2 minutes of lead time)
-            const isInNotificationWindow = 
-                timeDiff > (notificationLeadTime - 2 * 60 * 1000) && 
-                timeDiff <= (notificationLeadTime + 2 * 60 * 1000);
+            // 시작 10분 전 알림 체크
+            if (schedule.kakao_notification_start) {
+                const timeDiffStart = scheduleStart - now;
+                const isInStartWindow = 
+                    timeDiffStart > (notificationLeadTime - 2 * 60 * 1000) && 
+                    timeDiffStart <= (notificationLeadTime + 2 * 60 * 1000);
+                
+                if (isInStartWindow) {
+                    schedulesToNotify.push({
+                        ...schedule,
+                        notificationType: 'start'
+                    });
+                }
+            }
             
-            return isInNotificationWindow;
+            // 종료 10분 전 알림 체크
+            if (schedule.kakao_notification_end && scheduleEnd) {
+                const timeDiffEnd = scheduleEnd - now;
+                const isInEndWindow = 
+                    timeDiffEnd > (notificationLeadTime - 2 * 60 * 1000) && 
+                    timeDiffEnd <= (notificationLeadTime + 2 * 60 * 1000);
+                
+                if (isInEndWindow) {
+                    schedulesToNotify.push({
+                        ...schedule,
+                        notificationType: 'end'
+                    });
+                }
+            }
         });
         
         // Send notifications
         schedulesToNotify.forEach(schedule => {
             // Check if already notified (use localStorage to track)
-            const notifiedKey = `notified_${schedule.id}_${notificationTime}`;
+            const notifiedKey = `notified_${schedule.id}_${schedule.notificationType}_${notificationTime}`;
             if (!localStorage.getItem(notifiedKey)) {
-                sendScheduleNotification(schedule);
+                sendScheduleNotification(schedule, schedule.notificationType);
                 localStorage.setItem(notifiedKey, 'true');
+                localStorage.setItem(notifiedKey + '_timestamp', Date.now().toString());
                 // Remove old notification flags (older than 1 day)
                 cleanupOldNotificationFlags();
             }

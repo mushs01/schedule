@@ -183,12 +183,6 @@ function setupEventListeners() {
         }
     });
     
-    if (enableNotifications) enableNotifications.addEventListener('change', () => {
-        if (window.kakaoNotification) {
-            window.kakaoNotification.saveSettings();
-        }
-    });
-    
     // Close modal on backdrop click
     eventModal.addEventListener('click', (e) => {
         if (e.target === eventModal) closeEventModal();
@@ -269,11 +263,31 @@ function openEventModal(dateInfo = null, event = null) {
             descriptionField.value = event.extendedProps.description || '';
         }
         
+        // 카카오톡 알림 설정
+        const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
+        const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
+        if (kakaoNotificationStartField && event.extendedProps) {
+            kakaoNotificationStartField.checked = event.extendedProps.kakao_notification_start || false;
+        }
+        if (kakaoNotificationEndField && event.extendedProps) {
+            kakaoNotificationEndField.checked = event.extendedProps.kakao_notification_end || false;
+        }
+        
         console.log('Form filled with event data');
     } else {
         // Creating mode - 새 일정 추가
         console.log('Create mode - dateInfo:', dateInfo);
         document.getElementById('modalTitle').textContent = '일정 추가';
+        
+        // 카카오톡 알림 체크박스 초기화 (디폴트 OFF)
+        const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
+        const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
+        if (kakaoNotificationStartField) {
+            kakaoNotificationStartField.checked = false;
+        }
+        if (kakaoNotificationEndField) {
+            kakaoNotificationEndField.checked = false;
+        }
         
         if (dateInfo) {
             // dateInfo는 FullCalendar의 select 콜백에서 전달된 객체
@@ -390,12 +404,20 @@ async function handleEventFormSubmit(e) {
         return;
     }
     
+    // 카카오톡 알림 설정
+    const kakaoNotificationStart = document.getElementById('eventKakaoNotificationStart');
+    const kakaoNotificationEnd = document.getElementById('eventKakaoNotificationEnd');
+    const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
+    const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
+    
     const scheduleData = {
         title,
         start_datetime: startDateTime.toISOString(),
         end_datetime: endDateTime.toISOString(),
         person,
-        description: description || null
+        description: description || null,
+        kakao_notification_start: enableNotificationStart,
+        kakao_notification_end: enableNotificationEnd
     };
     
     try {

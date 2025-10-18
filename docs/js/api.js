@@ -53,6 +53,8 @@ const api = {
                         person: data.person,
                         color: data.color,
                         isPast: data.is_past || false,
+                        kakao_notification_start: data.kakao_notification_start || false,
+                        kakao_notification_end: data.kakao_notification_end || false,
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
                     });
@@ -114,7 +116,9 @@ const api = {
                     end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
                     person: data.person,
                     color: data.color,
-                    isPast: data.is_past || false
+                    isPast: data.is_past || false,
+                    kakao_notification_start: data.kakao_notification_start || false,
+                    kakao_notification_end: data.kakao_notification_end || false
                 };
             } else {
                 throw new Error('Schedule not found');

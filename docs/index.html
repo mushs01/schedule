@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=24">
+    <link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -257,6 +257,24 @@
                     <textarea id="eventDescription" rows="3" placeholder="일정에 대한 추가 설명을 입력하세요" class="input-large"></textarea>
                 </div>
                 
+                <!-- 카카오톡 알림 -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="material-icons form-icon">notifications</span>
+                        <span>카카오톡 알림</span>
+                    </label>
+                    <div style="margin-left: 36px;">
+                        <label class="settings-label" style="margin-bottom: 8px;">
+                            <input type="checkbox" id="eventKakaoNotificationStart">
+                            <span>일정 시작 10분 전</span>
+                        </label>
+                        <label class="settings-label" style="margin-bottom: 0;">
+                            <input type="checkbox" id="eventKakaoNotificationEnd">
+                            <span>일정 종료 10분 전</span>
+                        </label>
+                    </div>
+                </div>
+                
                 <!-- 버튼 -->
                 <div class="modal-actions">
                     <button type="button" class="btn btn-text" id="cancelBtn">취소</button>
@@ -300,25 +318,14 @@
                     </div>
                 </div>
                 
-                <!-- Notification Settings -->
-                <div class="settings-section" id="notificationSettings" style="display: none;">
-                    <h3>알림 설정</h3>
-                    <div class="settings-item">
-                        <label class="settings-label">
-                            <input type="checkbox" id="enableNotifications">
-                            <span>카카오톡 알림 받기 (10분 전)</span>
-                        </label>
-                        <p class="settings-hint">체크하면 일정 시작 10분 전에 카카오톡으로 알림을 받습니다</p>
-                    </div>
-                </div>
-                
                 <!-- Instructions -->
                 <div class="settings-section">
                     <h3>사용 안내</h3>
                     <ol class="settings-instructions">
-                        <li>카카오 로그인을 하면 본인에게 알림을 보낼 수 있습니다</li>
+                        <li>카카오 로그인을 하면 일정별로 알림을 설정할 수 있습니다</li>
+                        <li>일정 추가/수정 시 "카카오톡 알림" 체크박스를 선택하세요</li>
+                        <li>일정 시작 10분 전에 나에게 카카오톡 메시지가 전송됩니다</li>
                         <li>브라우저가 열려있을 때만 알림이 전송됩니다</li>
-                        <li>설정한 시간에 맞춰 일정 알림을 받습니다</li>
                     </ol>
                 </div>
             </div>
@@ -399,9 +406,9 @@
     <script src="js/firebase-config.js?v=22"></script>
 
     <!-- Custom JS -->
-    <script src="js/kakao-notification.js?v=24"></script>
-    <script src="js/api.js?v=24"></script>
-    <script src="js/calendar.js?v=24"></script>
-    <script src="js/app.js?v=24"></script>
+    <script src="js/kakao-notification.js?v=25"></script>
+    <script src="js/api.js?v=25"></script>
+    <script src="js/calendar.js?v=25"></script>
+    <script src="js/app.js?v=25"></script>
 </body>
 </html>
