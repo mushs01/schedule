@@ -102,6 +102,26 @@ function setupEventListeners() {
         checkbox.addEventListener('change', updateCalendarFilter);
     });
     
+    // Person filter buttons (헤더)
+    const personFilterBtns = document.querySelectorAll('.person-filter-btn');
+    personFilterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const person = btn.dataset.person;
+            
+            // 버튼 활성화/비활성화 토글
+            btn.classList.toggle('active');
+            
+            // 사이드바 체크박스도 동기화
+            const sidebarCheckbox = document.querySelector(`.calendar-item input[data-person="${person}"]`);
+            if (sidebarCheckbox) {
+                sidebarCheckbox.checked = btn.classList.contains('active');
+            }
+            
+            // 필터 적용
+            updateCalendarFilterFromButtons();
+        });
+    });
+    
     // Mobile filter
     const mobileFilterBtn = document.getElementById('mobileFilterBtn');
     const closeMobileFilterBtn = document.getElementById('closeMobileFilterBtn');
@@ -190,29 +210,67 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('Form filled with event data');
     } else {
         // Creating mode - 새 일정 추가
-        console.log('Create mode');
+        console.log('Create mode - dateInfo:', dateInfo);
         document.getElementById('modalTitle').textContent = '일정 추가';
         
         if (dateInfo) {
             // dateInfo는 FullCalendar의 select 콜백에서 전달된 객체
-            const startDate = dateInfo.start || dateInfo;
-            const endDate = dateInfo.end || null;
+            // dateInfo.start, dateInfo.end를 사용
+            let startDate, endDate;
+            
+            if (dateInfo.start instanceof Date) {
+                startDate = dateInfo.start;
+            } else if (typeof dateInfo.start === 'string') {
+                startDate = new Date(dateInfo.start);
+            } else if (dateInfo instanceof Date) {
+                startDate = dateInfo;
+            } else {
+                startDate = new Date();
+            }
+            
+            if (dateInfo.end) {
+                if (dateInfo.end instanceof Date) {
+                    endDate = dateInfo.end;
+                } else if (typeof dateInfo.end === 'string') {
+                    endDate = new Date(dateInfo.end);
+                } else {
+                    endDate = null;
+                }
+            } else {
+                endDate = null;
+            }
+            
+            console.log('Parsed dates - Start:', startDate, 'End:', endDate);
             
             // 시작 날짜/시간 설정
-            document.getElementById('eventStartDate').value = formatDateInput(startDate);
-            document.getElementById('eventStartTime').value = formatTimeInput(startDate);
+            const startDateStr = formatDateInput(startDate);
+            const startTimeStr = formatTimeInput(startDate);
+            
+            document.getElementById('eventStartDate').value = startDateStr;
+            document.getElementById('eventStartTime').value = startTimeStr;
+            
+            console.log('Set start date/time:', startDateStr, startTimeStr);
             
             // 종료 날짜/시간 자동 설정
             if (endDate) {
                 // 드래그로 선택한 경우 - end 시간이 있음
-                document.getElementById('eventEndDate').value = formatDateInput(endDate);
-                document.getElementById('eventEndTime').value = formatTimeInput(endDate);
+                const endDateStr = formatDateInput(endDate);
+                const endTimeStr = formatTimeInput(endDate);
+                
+                document.getElementById('eventEndDate').value = endDateStr;
+                document.getElementById('eventEndTime').value = endTimeStr;
+                
+                console.log('🎯 드래그 선택 - 종료 날짜/시간:', endDateStr, endTimeStr);
             } else {
                 // 단순 클릭의 경우 - 시작 시간 + 1시간
-                const defaultEndDate = new Date(startDate);
-                defaultEndDate.setHours(defaultEndDate.getHours() + 1);
-                document.getElementById('eventEndDate').value = formatDateInput(defaultEndDate);
-                document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
+                const defaultEndDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+                const endDateStr = formatDateInput(defaultEndDate);
+                const endTimeStr = formatTimeInput(defaultEndDate);
+                
+                document.getElementById('eventEndDate').value = endDateStr;
+                document.getElementById('eventEndTime').value = endTimeStr;
+                
+                console.log('👆 클릭 선택 - 종료 시간 +1시간:', endDateStr, endTimeStr);
             }
         } else {
             // 날짜 정보가 없으면 현재 시간 사용
@@ -223,6 +281,8 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventStartTime').value = formatTimeInput(now);
             document.getElementById('eventEndDate').value = formatDateInput(oneHourLater);
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
+            
+            console.log('📅 기본값 사용 (현재 시간)');
         }
     }
     
@@ -545,6 +605,27 @@ function updateCalendarFilter() {
     if (window.calendarModule && window.calendarModule.filterByPersons) {
         window.calendarModule.filterByPersons(selectedPersons);
         showToast(`필터 적용: ${selectedPersons.length}개 선택`, 'success');
+    } else {
+        console.error('calendarModule.filterByPersons not found!');
+    }
+}
+
+function updateCalendarFilterFromButtons() {
+    console.log('updateCalendarFilterFromButtons called');
+    
+    // 활성화된 버튼에서 담당자 목록 가져오기
+    const activeButtons = document.querySelectorAll('.person-filter-btn.active');
+    const selectedPersons = [];
+    
+    activeButtons.forEach(btn => {
+        selectedPersons.push(btn.dataset.person);
+    });
+    
+    console.log('Selected persons from buttons:', selectedPersons);
+    
+    // calendarModule의 filter 함수 호출
+    if (window.calendarModule && window.calendarModule.filterByPersons) {
+        window.calendarModule.filterByPersons(selectedPersons);
     } else {
         console.error('calendarModule.filterByPersons not found!');
     }

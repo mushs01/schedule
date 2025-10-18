@@ -143,10 +143,35 @@
         <!-- Calendar Area -->
         <main class="gcal-content">
             <div class="view-selector">
-                <button class="view-btn" data-view="timeGridDay">일</button>
-                <button class="view-btn active" data-view="timeGridWeek">주</button>
-                <button class="view-btn" data-view="dayGridMonth">월</button>
-                <button class="view-btn" data-view="listWeek">일정</button>
+                <div class="view-buttons">
+                    <button class="view-btn" data-view="timeGridDay">일</button>
+                    <button class="view-btn active" data-view="timeGridWeek">주</button>
+                    <button class="view-btn" data-view="dayGridMonth">월</button>
+                    <button class="view-btn" data-view="listWeek">일정</button>
+                </div>
+                
+                <div class="person-filter-buttons">
+                    <button class="person-filter-btn active" data-person="all">
+                        <span class="person-color" style="background: #808080;"></span>
+                        <span>전체</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="dad">
+                        <span class="person-color" style="background: #3788d8;"></span>
+                        <span>아빠</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="mom">
+                        <span class="person-color" style="background: #9b59b6;"></span>
+                        <span>엄마</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="juhwan">
+                        <span class="person-color" style="background: #27ae60;"></span>
+                        <span>주환</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="taehwan">
+                        <span class="person-color" style="background: #f39c12;"></span>
+                        <span>태환</span>
+                    </button>
+                </div>
             </div>
             
             <div id="calendar"></div>
