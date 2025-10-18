@@ -4,7 +4,7 @@
  */
 
 let calendar;
-let currentFilter = 'all';
+let currentFilter = 'showAll'; // 초기 로딩 시 모든 담당자 선택 → 모든 일정 표시
 
 // Person colors mapping (글로벌 변수로 변경)
 window.PERSON_COLORS = window.PERSON_COLORS || {
