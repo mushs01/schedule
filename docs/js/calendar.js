@@ -15,13 +15,13 @@ window.PERSON_COLORS = window.PERSON_COLORS || {
     'taehwan': '#f39c12'
 };
 
-// 지난 일정 색상 (각 담당자 색상에서 명도를 크게 낮춤)
+// 지난 일정 색상 (채도를 거의 없애고 회색에 가깝게)
 window.PERSON_COLORS_PAST = {
-    'all': '#4a4a4a', // 훨씬 어두운 회색
-    'dad': '#1e4d7a', // 훨씬 어두운 파란색
-    'mom': '#5a3568', // 훨씬 어두운 보라색
-    'juhwan': '#166635', // 훨씬 어두운 초록색
-    'taehwan': '#996108' // 훨씬 어두운 주황색
+    'all': '#999999', // 밝은 회색
+    'dad': '#7a8a95', // 회색빛 파란색
+    'mom': '#8a7a8f', // 회색빛 보라색
+    'juhwan': '#7a8a7a', // 회색빛 초록색
+    'taehwan': '#9a8a7a' // 회색빛 주황색
 };
 
 // Person names mapping (글로벌 변수로 변경)

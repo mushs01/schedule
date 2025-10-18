@@ -277,25 +277,33 @@ body {
     opacity: 0.6;
 }
 
-/* Today's Schedule Summary */
+/* 오늘 날짜 강조 표시 */
+.fc .fc-day-today {
+    background-color: #e8f0fe !important;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number,
+.fc .fc-day-today .fc-col-header-cell-cushion {
+    background: #1a73e8;
+    color: #ffffff !important;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* Today's Schedule Summary - Compact Design */
 .today-summary {
-    background: #ffffff;
+    background: #f5f5f5;
     border-bottom: 1px solid var(--border-color);
-    padding: 16px;
+    padding: 8px 16px;
 }
 
 .today-summary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.today-summary-header h3 {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin: 0;
+    display: none; /* 헤더 숨김 */
 }
 
 .today-date {
@@ -305,51 +313,65 @@ body {
 
 .today-summary-list {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 4px 0;
+}
+
+.today-summary-list::-webkit-scrollbar {
+    height: 4px;
+}
+
+.today-summary-list::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 2px;
 }
 
 .today-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    background: var(--hover-bg);
-    border-radius: 6px;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .today-item:hover {
     background: #e8f0fe;
+    border-color: #1a73e8;
 }
 
 .today-item-person {
     font-weight: 500;
-    font-size: 13px;
-    padding: 2px 8px;
-    border-radius: 12px;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
     color: #ffffff;
     white-space: nowrap;
 }
 
 .today-item-time {
-    font-size: 13px;
+    font-size: 11px;
     color: var(--text-secondary);
     white-space: nowrap;
 }
 
 .today-item-title {
-    flex: 1;
-    font-size: 14px;
+    font-size: 12px;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .no-schedule {
-    text-align: center;
+    font-size: 12px;
     color: var(--text-secondary);
-    font-size: 13px;
-    padding: 8px;
+    padding: 4px 0;
     margin: 0;
 }
 
