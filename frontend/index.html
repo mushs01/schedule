@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar - 우리가족 일정관리</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    
+    <!-- Google Material Icons & Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Google Calendar Style Header -->
+    <header class="gcal-header">
+        <div class="gcal-header-left">
+            <button class="icon-btn menu-btn">
+                <span class="material-icons">menu</span>
+            </button>
+            <div class="gcal-logo">
+                <span class="material-icons gcal-logo-icon">calendar_today</span>
+                <span class="gcal-logo-text">Calendar</span>
+            </div>
+        </div>
+        
+        <div class="gcal-header-center">
+            <button class="icon-btn" id="todayBtn">
+                <span>오늘</span>
+            </button>
+            <button class="icon-btn nav-btn" id="prevBtn">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <button class="icon-btn nav-btn" id="nextBtn">
+                <span class="material-icons">chevron_right</span>
+            </button>
+            <h2 class="current-month" id="currentMonth">2025년 10월</h2>
+        </div>
+        
+        <div class="gcal-header-right">
+            <button class="icon-btn" id="searchBtn">
+                <span class="material-icons">search</span>
+            </button>
+            <button class="icon-btn" id="helpBtn">
+                <span class="material-icons">help_outline</span>
+            </button>
+            <button class="icon-btn" id="settingsBtn">
+                <span class="material-icons">settings</span>
+            </button>
+            <button class="icon-btn">
+                <span class="material-icons">apps</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="gcal-main">
+        <!-- Sidebar -->
+        <aside class="gcal-sidebar">
+            <button class="create-btn" id="addEventBtn">
+                <span class="material-icons">add</span>
+                <span>만들기</span>
+            </button>
+            
+            <div class="mini-calendar" id="miniCalendar">
+                <div class="mini-calendar-header">
+                    <button class="icon-btn mini-prev">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <span class="mini-month-year">2025년 10월</span>
+                    <button class="icon-btn mini-next">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+                <div class="mini-calendar-body">
+                    <!-- JavaScript로 생성 -->
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">사용자 검색</h3>
+                <div class="search-box">
+                    <span class="material-icons">search</span>
+                    <input type="text" placeholder="사용자 검색">
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">내 캘린더</h3>
+                <div class="calendar-list">
+                    <label class="calendar-item">
+                        <input type="checkbox" checked data-person="all">
+                        <span class="calendar-color" style="background: #808080;"></span>
+                        <span>전체</span>
+                    </label>
+                    <label class="calendar-item">
+                        <input type="checkbox" checked data-person="dad">
+                        <span class="calendar-color" style="background: #3788d8;"></span>
+                        <span>아빠</span>
+                    </label>
+                    <label class="calendar-item">
+                        <input type="checkbox" checked data-person="mom">
+                        <span class="calendar-color" style="background: #9b59b6;"></span>
+                        <span>엄마</span>
+                    </label>
+                    <label class="calendar-item">
+                        <input type="checkbox" checked data-person="juhwan">
+                        <span class="calendar-color" style="background: #27ae60;"></span>
+                        <span>주환</span>
+                    </label>
+                    <label class="calendar-item">
+                        <input type="checkbox" checked data-person="taehwan">
+                        <span class="calendar-color" style="background: #f39c12;"></span>
+                        <span>태환</span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Calendar Area -->
+        <main class="gcal-content">
+            <div class="view-selector">
+                <button class="view-btn" data-view="timeGridDay">일</button>
+                <button class="view-btn active" data-view="timeGridWeek">주</button>
+                <button class="view-btn" data-view="dayGridMonth">월</button>
+                <button class="view-btn" data-view="listWeek">일정</button>
+            </div>
+            
+            <div id="calendar"></div>
+        </main>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">일정 추가</h2>
+                <button class="icon-btn" id="closeModalBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <form id="eventForm">
+                <div class="form-group">
+                    <span class="material-icons form-icon">title</span>
+                    <input type="text" id="eventTitle" required placeholder="제목 추가" class="input-large">
+                </div>
+                
+                <div class="form-group">
+                    <span class="material-icons form-icon">schedule</span>
+                    <div class="datetime-inputs">
+                        <input type="date" id="eventStartDate" required>
+                        <input type="time" id="eventStartTime" required>
+                        <span>-</span>
+                        <input type="time" id="eventEndTime">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <span class="material-icons form-icon">person</span>
+                    <select id="eventPerson" required class="input-large">
+                        <option value="all">전체</option>
+                        <option value="dad">아빠</option>
+                        <option value="mom">엄마</option>
+                        <option value="juhwan">주환</option>
+                        <option value="taehwan">태환</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <span class="material-icons form-icon">subject</span>
+                    <textarea id="eventDescription" rows="3" placeholder="설명 추가" class="input-large"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal" id="eventDetailModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>일정 상세</h2>
+                <button class="icon-btn" id="closeDetailModalBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="event-detail" id="eventDetail">
+                <!-- Event details will be inserted here -->
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-text" id="deleteEventBtn">
+                    <span class="material-icons">delete</span>
+                    삭제
+                </button>
+                <button type="button" class="btn btn-primary" id="editEventBtn">
+                    <span class="material-icons">edit</span>
+                    수정
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <!-- Custom JS (ES6 Modules) -->
+    <script type="module" src="js/api.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
