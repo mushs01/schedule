@@ -1,9 +1,9 @@
 {
   "name": "우리가족 일정관리",
   "short_name": "일정관리",
-  "version": "2.0",
+  "version": "2.1",
   "description": "가족 일정을 함께 관리하는 캘린더 앱",
-  "start_url": "/schedule/?v=2",
+  "start_url": "/schedule/?v=3",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a73e8",
