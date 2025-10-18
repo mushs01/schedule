@@ -579,7 +579,8 @@ function showEventDetail(event) {
  */
 function closeEventDetailModal() {
     eventDetailModal.classList.remove('active');
-    currentEditingEvent = null;
+    // currentEditingEvent는 여기서 null로 설정하지 않음
+    // 수정 모드에서 필요할 수 있음
 }
 
 /**
@@ -591,8 +592,13 @@ function handleEditEvent() {
     console.log('📋 currentEditingEvent.id:', currentEditingEvent?.id);
     console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent?.extendedProps);
     
+    // currentEditingEvent를 임시 변수에 저장
+    const eventToEdit = currentEditingEvent;
+    
     closeEventDetailModal();
-    openEventModal(null, currentEditingEvent);
+    
+    // 저장된 이벤트로 수정 모달 열기
+    openEventModal(null, eventToEdit);
 }
 
 /**
