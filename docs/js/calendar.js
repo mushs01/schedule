@@ -51,6 +51,8 @@ function initCalendar() {
         },
         slotMinTime: '06:00:00',
         slotMaxTime: '24:00:00',
+        slotDuration: '01:00:00', // 1시간 단위로 표시
+        slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
         height: 'auto',
         nowIndicator: true,
         editable: true,
