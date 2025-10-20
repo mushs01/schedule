@@ -44,6 +44,14 @@ const api = {
                 }
                 
                 try {
+                    // Debug: 카카오 알림 필드 확인
+                    if (data.title?.includes('테스트')) {
+                        console.log(`📝 Loading schedule "${data.title}":`, {
+                            kakao_notification_start: data.kakao_notification_start,
+                            kakao_notification_end: data.kakao_notification_end
+                        });
+                    }
+                    
                     schedules.push({
                         id: doc.id,
                         title: data.title,
@@ -53,8 +61,8 @@ const api = {
                         person: data.person,
                         color: data.color,
                         isPast: data.is_past || false,
-                        kakao_notification_start: data.kakao_notification_start || false,
-                        kakao_notification_end: data.kakao_notification_end || false,
+                        kakao_notification_start: data.kakao_notification_start === true,
+                        kakao_notification_end: data.kakao_notification_end === true,
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
                     });
