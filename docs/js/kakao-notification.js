@@ -242,14 +242,19 @@ async function checkAndSendNotifications() {
     const notificationTime = 10; // 고정: 10분 전
     
     if (!Kakao.Auth.getAccessToken()) {
+        console.log('⚠️ No Kakao access token - skipping notification check');
         return;
     }
 
+    console.log(`🔔 Checking notifications... Current time: ${new Date().toLocaleString('ko-KR')}`);
+    
     try {
         // Get all schedules
         const schedules = await api.getSchedules({});
         const now = new Date();
         const notificationLeadTime = notificationTime * 60 * 1000; // Convert minutes to milliseconds
+        
+        console.log(`📋 Total schedules: ${schedules.length}`);
         
         // Filter schedules that need notification
         const schedulesToNotify = [];
@@ -261,11 +266,16 @@ async function checkAndSendNotifications() {
             // 시작 10분 전 알림 체크
             if (schedule.kakao_notification_start) {
                 const timeDiffStart = scheduleStart - now;
+                const minutesUntilStart = Math.floor(timeDiffStart / 60000);
+                
+                console.log(`  📅 ${schedule.title} - 시작까지 ${minutesUntilStart}분 (알림 설정: 시작 10분 전)`);
+                
                 const isInStartWindow = 
                     timeDiffStart > (notificationLeadTime - 2 * 60 * 1000) && 
                     timeDiffStart <= (notificationLeadTime + 2 * 60 * 1000);
                 
                 if (isInStartWindow) {
+                    console.log(`  ✅ 시작 알림 전송 대상: ${schedule.title}`);
                     schedulesToNotify.push({
                         ...schedule,
                         notificationType: 'start'
@@ -276,11 +286,16 @@ async function checkAndSendNotifications() {
             // 종료 10분 전 알림 체크
             if (schedule.kakao_notification_end && scheduleEnd) {
                 const timeDiffEnd = scheduleEnd - now;
+                const minutesUntilEnd = Math.floor(timeDiffEnd / 60000);
+                
+                console.log(`  📅 ${schedule.title} - 종료까지 ${minutesUntilEnd}분 (알림 설정: 종료 10분 전)`);
+                
                 const isInEndWindow = 
                     timeDiffEnd > (notificationLeadTime - 2 * 60 * 1000) && 
                     timeDiffEnd <= (notificationLeadTime + 2 * 60 * 1000);
                 
                 if (isInEndWindow) {
+                    console.log(`  ✅ 종료 알림 전송 대상: ${schedule.title}`);
                     schedulesToNotify.push({
                         ...schedule,
                         notificationType: 'end'
@@ -289,21 +304,27 @@ async function checkAndSendNotifications() {
             }
         });
         
+        console.log(`📬 Total notifications to send: ${schedulesToNotify.length}`);
+        
         // Send notifications
-        schedulesToNotify.forEach(schedule => {
+        for (const schedule of schedulesToNotify) {
             // Check if already notified (use localStorage to track)
             const notifiedKey = `notified_${schedule.id}_${schedule.notificationType}_${notificationTime}`;
+            
             if (!localStorage.getItem(notifiedKey)) {
-                sendScheduleNotification(schedule, schedule.notificationType);
+                console.log(`📤 Sending ${schedule.notificationType} notification for: ${schedule.title}`);
+                await sendScheduleNotification(schedule, schedule.notificationType);
                 localStorage.setItem(notifiedKey, 'true');
                 localStorage.setItem(notifiedKey + '_timestamp', Date.now().toString());
                 // Remove old notification flags (older than 1 day)
                 cleanupOldNotificationFlags();
+            } else {
+                console.log(`⏭️ Already notified: ${schedule.title} (${schedule.notificationType})`);
             }
-        });
+        }
         
     } catch (error) {
-        console.error('Error checking notifications:', error);
+        console.error('❌ Error checking notifications:', error);
     }
 }
 
@@ -329,15 +350,26 @@ function cleanupOldNotificationFlags() {
 function startNotificationScheduler() {
     if (notificationInterval) {
         clearInterval(notificationInterval);
+        console.log('⏹️ Stopped previous notification scheduler');
     }
     
-    // Check every minute
-    notificationInterval = setInterval(checkAndSendNotifications, 60 * 1000);
+    // Check every minute with error handling
+    notificationInterval = setInterval(async () => {
+        try {
+            await checkAndSendNotifications();
+        } catch (error) {
+            console.error('❌ Error in notification scheduler:', error);
+        }
+    }, 60 * 1000);
     
     // Initial check
-    checkAndSendNotifications();
+    console.log('🚀 Starting notification scheduler...');
+    checkAndSendNotifications().catch(error => {
+        console.error('❌ Error in initial notification check:', error);
+    });
     
-    console.log('✅ Notification scheduler started');
+    console.log('✅ Notification scheduler started - checking every 1 minute');
+    console.log('⏰ Next check in 60 seconds');
 }
 
 /**

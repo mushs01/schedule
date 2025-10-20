@@ -400,11 +400,19 @@ function openEventModal(dateInfo = null, event = null) {
         // 카카오톡 알림 설정
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
         const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
+        
+        console.log('🔔 Loading kakao notification settings:');
+        console.log('  - extendedProps:', event.extendedProps);
+        console.log('  - kakao_notification_start:', event.extendedProps?.kakao_notification_start);
+        console.log('  - kakao_notification_end:', event.extendedProps?.kakao_notification_end);
+        
         if (kakaoNotificationStartField && event.extendedProps) {
             kakaoNotificationStartField.checked = event.extendedProps.kakao_notification_start || false;
+            console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
         }
         if (kakaoNotificationEndField && event.extendedProps) {
             kakaoNotificationEndField.checked = event.extendedProps.kakao_notification_end || false;
+            console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
         }
         
         // 반복 설정
