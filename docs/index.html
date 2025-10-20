@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=31">
+    <link rel="stylesheet" href="css/style.css?v=32">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -234,14 +234,28 @@
                     <label class="form-label" title="담당자">
                         <span class="material-icons form-icon">person</span>
                     </label>
-                    <select id="eventPerson" required class="input-large">
-                        <option value="">선택하세요</option>
-                        <option value="all">전체</option>
-                        <option value="dad">아빠</option>
-                        <option value="mom">엄마</option>
-                        <option value="juhwan">주환</option>
-                        <option value="taehwan">태환</option>
-                    </select>
+                    <div class="person-checkboxes">
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="all" id="personAll">
+                            <span>전체</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="dad" id="personDad">
+                            <span>아빠</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="mom" id="personMom">
+                            <span>엄마</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="juhwan" id="personJuhwan">
+                            <span>주환</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="taehwan" id="personTaehwan">
+                            <span>태환</span>
+                        </label>
+                    </div>
                 </div>
                 
                 <!-- 설명 -->
@@ -403,6 +417,6 @@
     <script src="js/kakao-notification.js?v=31"></script>
     <script src="js/api.js?v=25"></script>
     <script src="js/calendar.js?v=32"></script>
-    <script src="js/app.js?v=33"></script>
+    <script src="js/app.js?v=34"></script>
 </body>
 </html>

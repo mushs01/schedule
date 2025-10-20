@@ -61,9 +61,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup event listeners
     setupEventListeners();
     
+    // Setup person checkbox listeners
+    setupPersonCheckboxListeners();
+    
     // Check API health
     checkAPIHealth();
 });
+
+/**
+ * Setup person checkbox listeners
+ */
+function setupPersonCheckboxListeners() {
+    const personAll = document.getElementById('personAll');
+    const personCheckboxes = document.querySelectorAll('input[name="eventPerson"]:not(#personAll)');
+    
+    if (personAll) {
+        personAll.addEventListener('change', function() {
+            if (this.checked) {
+                // '전체' 선택 시 다른 체크박스 모두 해제
+                personCheckboxes.forEach(cb => cb.checked = false);
+            }
+        });
+    }
+    
+    if (personCheckboxes) {
+        personCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked && personAll) {
+                    // 개별 체크박스 선택 시 '전체' 해제
+                    personAll.checked = false;
+                }
+            });
+        });
+    }
+}
 
 /**
  * Setup all event listeners
@@ -300,10 +331,19 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
         }
         
-        // 담당자 설정
-        const personSelect = document.getElementById('eventPerson');
-        if (personSelect && event.extendedProps && event.extendedProps.person) {
-            personSelect.value = event.extendedProps.person;
+        // 담당자 설정 (체크박스)
+        if (event.extendedProps && event.extendedProps.persons) {
+            // 복수 담당자
+            const persons = event.extendedProps.persons;
+            persons.forEach(person => {
+                const checkbox = document.getElementById(`person${person.charAt(0).toUpperCase() + person.slice(1)}`);
+                if (checkbox) checkbox.checked = true;
+            });
+        } else if (event.extendedProps && event.extendedProps.person) {
+            // 단일 담당자 (하위 호환성)
+            const person = event.extendedProps.person;
+            const checkbox = document.getElementById(`person${person.charAt(0).toUpperCase() + person.slice(1)}`);
+            if (checkbox) checkbox.checked = true;
         }
         
         // 설명 설정
@@ -440,11 +480,16 @@ async function handleEventFormSubmit(e) {
     const startTime = document.getElementById('eventStartTime').value;
     const endDate = document.getElementById('eventEndDate').value;
     const endTime = document.getElementById('eventEndTime').value;
-    const person = document.getElementById('eventPerson').value;
     const description = document.getElementById('eventDescription').value;
     
+    // 담당자 체크박스에서 선택된 값들 가져오기
+    const selectedPersons = [];
+    document.querySelectorAll('input[name="eventPerson"]:checked').forEach(checkbox => {
+        selectedPersons.push(checkbox.value);
+    });
+    
     // 유효성 검사
-    if (!title || !startDate || !startTime || !endDate || !endTime || !person) {
+    if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
         showToast('모든 필수 항목을 입력해주세요.', 'error');
         return;
     }
@@ -465,11 +510,15 @@ async function handleEventFormSubmit(e) {
     const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
     const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
     
+    // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
+    const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
+    
     const scheduleData = {
         title,
         start_datetime: startDateTime.toISOString(),
         end_datetime: endDateTime.toISOString(),
         person,
+        persons: selectedPersons,  // 복수 담당자 정보 추가
         description: description || null,
         kakao_notification_start: enableNotificationStart,
         kakao_notification_end: enableNotificationEnd

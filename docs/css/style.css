@@ -572,23 +572,23 @@ body {
 
 /* Form */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 8px;
 }
 
 /* 레이블 스타일 개선 - 아이콘만 표시 */
 .form-label {
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     margin-bottom: 0;
-    min-width: 44px;
-    width: 44px;
-    height: 44px;
+    min-width: 40px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
-    padding-top: 10px;
+    padding-top: 8px;
     cursor: help;
 }
 
@@ -671,6 +671,57 @@ body {
     white-space: nowrap;
     vertical-align: middle;
     display: inline-block;
+}
+
+/* 담당자 체크박스 */
+.person-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    flex: 1;
+}
+
+.person-checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    background: #ffffff;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.person-checkbox-item:hover {
+    border-color: var(--primary-blue);
+    background: #f8f9fa;
+}
+
+.person-checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.person-checkbox-item input[type="checkbox"]:checked + span {
+    font-weight: 500;
+}
+
+.person-checkbox-item:has(input:checked) {
+    border-color: var(--primary-blue);
+    background: #e8f0fe;
+    color: var(--primary-blue);
+}
+
+.person-checkbox-item span {
+    white-space: nowrap;
 }
 
 /* 날짜/시간 입력 행 */
