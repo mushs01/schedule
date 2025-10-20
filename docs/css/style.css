@@ -573,6 +573,9 @@ body {
 /* Form */
 .form-group {
     margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 /* 레이블 스타일 개선 */
@@ -580,12 +583,14 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
     line-height: 24px;
     min-width: 130px;
+    flex-shrink: 0;
+    padding-top: 10px;
 }
 
 .form-label .form-icon {
@@ -611,17 +616,27 @@ body {
     color: var(--text-primary);
 }
 
+/* 입력 필드 컨테이너 */
+.form-group > input,
+.form-group > select,
+.form-group > textarea,
+.form-group > .datetime-row {
+    flex: 1;
+}
+
 /* 폼 행 - 아이콘과 입력 요소를 한 줄에 */
 .form-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
+    width: 100%;
 }
 
 .form-row .form-label {
     margin-bottom: 0;
     min-width: 130px;
     flex-shrink: 0;
+    padding-top: 0;
 }
 
 /* 체크박스 인라인 - 같은 줄에 배치 */
@@ -1163,13 +1178,14 @@ body {
         max-height: 85vh;
     }
     
-    .form-row {
+    .form-group {
         flex-direction: column;
         align-items: flex-start;
     }
     
-    .form-row .form-label {
+    .form-label {
         min-width: auto;
+        padding-top: 0;
     }
     
     .checkbox-inline {
