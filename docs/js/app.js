@@ -94,6 +94,34 @@ function setupPersonCheckboxListeners() {
             });
         });
     }
+    
+    // 반복 설정 이벤트 리스너
+    const repeatSelect = document.getElementById('eventRepeat');
+    const repeatOptions = document.getElementById('repeatOptions');
+    const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
+    const repeatEndDate = document.getElementById('eventRepeatEndDate');
+    
+    if (repeatSelect) {
+        repeatSelect.addEventListener('change', function() {
+            if (this.value !== 'none') {
+                repeatOptions.style.display = 'block';
+            } else {
+                repeatOptions.style.display = 'none';
+                if (repeatEndCheckbox) repeatEndCheckbox.checked = false;
+                if (repeatEndDate) repeatEndDate.style.display = 'none';
+            }
+        });
+    }
+    
+    if (repeatEndCheckbox) {
+        repeatEndCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                repeatEndDate.style.display = 'block';
+            } else {
+                repeatEndDate.style.display = 'none';
+            }
+        });
+    }
 }
 
 /**
@@ -362,6 +390,24 @@ function openEventModal(dateInfo = null, event = null) {
             kakaoNotificationEndField.checked = event.extendedProps.kakao_notification_end || false;
         }
         
+        // 반복 설정
+        const repeatSelect = document.getElementById('eventRepeat');
+        const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
+        const repeatEndDate = document.getElementById('eventRepeatEndDate');
+        const repeatOptions = document.getElementById('repeatOptions');
+        
+        if (repeatSelect && event.extendedProps) {
+            repeatSelect.value = event.extendedProps.repeat_type || 'none';
+            if (event.extendedProps.repeat_type && event.extendedProps.repeat_type !== 'none') {
+                repeatOptions.style.display = 'block';
+            }
+        }
+        if (repeatEndCheckbox && event.extendedProps && event.extendedProps.repeat_end_date) {
+            repeatEndCheckbox.checked = true;
+            repeatEndDate.style.display = 'block';
+            repeatEndDate.value = event.extendedProps.repeat_end_date.split('T')[0];
+        }
+        
         console.log('Form filled with event data');
     } else {
         // Creating mode - 새 일정 추가
@@ -510,6 +556,17 @@ async function handleEventFormSubmit(e) {
     const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
     const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
     
+    // 반복 설정
+    const repeatSelect = document.getElementById('eventRepeat');
+    const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
+    const repeatEndDateInput = document.getElementById('eventRepeatEndDate');
+    
+    const repeatType = repeatSelect ? repeatSelect.value : 'none';
+    const hasRepeatEnd = repeatEndCheckbox ? repeatEndCheckbox.checked : false;
+    const repeatEndDate = (hasRepeatEnd && repeatEndDateInput && repeatEndDateInput.value) 
+        ? new Date(repeatEndDateInput.value + 'T23:59:59').toISOString()
+        : null;
+    
     // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
     const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
     
@@ -521,7 +578,9 @@ async function handleEventFormSubmit(e) {
         persons: selectedPersons,  // 복수 담당자 정보 추가
         description: description || null,
         kakao_notification_start: enableNotificationStart,
-        kakao_notification_end: enableNotificationEnd
+        kakao_notification_end: enableNotificationEnd,
+        repeat_type: repeatType,
+        repeat_end_date: repeatEndDate
     };
     
     try {

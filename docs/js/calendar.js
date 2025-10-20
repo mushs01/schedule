@@ -105,6 +105,69 @@ function initCalendar() {
 }
 
 /**
+ * Expand recurring events
+ */
+function expandRecurringEvent(schedule, startDate, endDate) {
+    const events = [];
+    const repeatType = schedule.repeat_type;
+    
+    if (!repeatType || repeatType === 'none') {
+        // 반복 없음 - 원본 일정 하나만 반환
+        return [schedule];
+    }
+    
+    const scheduleStart = new Date(schedule.start);
+    const scheduleEnd = new Date(schedule.end);
+    const duration = scheduleEnd - scheduleStart;
+    
+    // 반복 종료일 (설정되지 않았으면 조회 범위의 끝)
+    const repeatEndDate = schedule.repeat_end_date 
+        ? new Date(schedule.repeat_end_date)
+        : endDate;
+    
+    let currentDate = new Date(scheduleStart);
+    
+    // 반복 일정 생성 (최대 100개로 제한)
+    let count = 0;
+    const maxCount = 100;
+    
+    while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
+        // 조회 범위 내에 있는 경우에만 추가
+        if (currentDate >= startDate) {
+            const eventStart = new Date(currentDate);
+            const eventEnd = new Date(currentDate.getTime() + duration);
+            
+            events.push({
+                ...schedule,
+                start: eventStart.toISOString(),
+                end: eventEnd.toISOString(),
+                id: `${schedule.id}_${currentDate.toISOString()}`, // 고유 ID
+                original_id: schedule.id // 원본 ID 보존
+            });
+        }
+        
+        // 다음 반복 날짜 계산
+        switch (repeatType) {
+            case 'daily':
+                currentDate.setDate(currentDate.getDate() + 1);
+                break;
+            case 'weekly':
+                currentDate.setDate(currentDate.getDate() + 7);
+                break;
+            case 'monthly':
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                break;
+            default:
+                break;
+        }
+        
+        count++;
+    }
+    
+    return events;
+}
+
+/**
  * Load events from API
  */
 async function loadEvents(fetchInfo, successCallback, failureCallback) {
@@ -152,7 +215,20 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         console.log('✨ Filtered schedules:', filteredSchedules.length);
         filteredSchedules.forEach(s => console.log(`  - ${s.title} (${s.person})`));
         
-        const events = filteredSchedules.map(schedule => {
+        // 반복 일정 확장
+        const expandedSchedules = [];
+        filteredSchedules.forEach(schedule => {
+            const expanded = expandRecurringEvent(
+                schedule,
+                new Date(fetchInfo.startStr),
+                new Date(fetchInfo.endStr)
+            );
+            expandedSchedules.push(...expanded);
+        });
+        
+        console.log('🔁 Expanded schedules (with recurring):', expandedSchedules.length);
+        
+        const events = expandedSchedules.map(schedule => {
             // 지난 일정인지 확인
             const now = new Date();
             const scheduleEnd = schedule.end ? new Date(schedule.end) : new Date(schedule.start);

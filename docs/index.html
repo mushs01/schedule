@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=33">
+    <link rel="stylesheet" href="css/style.css?v=34">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -266,6 +266,28 @@
                     <textarea id="eventDescription" rows="3" placeholder="일정에 대한 추가 설명을 입력하세요" class="input-large"></textarea>
                 </div>
                 
+                <!-- 반복 설정 -->
+                <div class="form-group">
+                    <label class="form-label" title="반복">
+                        <span class="material-icons form-icon">repeat</span>
+                    </label>
+                    <div class="repeat-settings">
+                        <select id="eventRepeat" class="repeat-select">
+                            <option value="none">반복 안함</option>
+                            <option value="daily">매일</option>
+                            <option value="weekly">매주</option>
+                            <option value="monthly">매월</option>
+                        </select>
+                        <div id="repeatOptions" style="display: none; margin-top: 8px;">
+                            <label class="repeat-end-label">
+                                <input type="checkbox" id="eventRepeatEnd">
+                                <span>종료일 설정</span>
+                            </label>
+                            <input type="date" id="eventRepeatEndDate" style="display: none; margin-top: 8px;" class="date-input">
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 카카오톡 알림 -->
                 <div class="form-group">
                     <label class="form-label" title="카카오톡 알림">
@@ -416,7 +438,7 @@
     <!-- Custom JS -->
     <script src="js/kakao-notification.js?v=32"></script>
     <script src="js/api.js?v=25"></script>
-    <script src="js/calendar.js?v=32"></script>
-    <script src="js/app.js?v=34"></script>
+    <script src="js/calendar.js?v=33"></script>
+    <script src="js/app.js?v=35"></script>
 </body>
 </html>
