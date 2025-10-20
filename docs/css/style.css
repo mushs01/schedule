@@ -1229,18 +1229,34 @@ body {
     }
     
     .form-group {
-        flex-direction: column;
-        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 12px;
     }
     
     .form-label {
-        min-width: auto;
-        padding-top: 0;
+        min-width: 36px;
+        width: 36px;
+        height: 36px;
+        padding-top: 6px;
+    }
+    
+    .form-label .form-icon {
+        font-size: 22px;
     }
     
     .checkbox-inline {
         width: 100%;
         flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .person-checkboxes {
+        gap: 8px;
+    }
+    
+    .person-checkbox-item {
+        padding: 6px 10px;
+        font-size: 13px;
     }
 }
 
