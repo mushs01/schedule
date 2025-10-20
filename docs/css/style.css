@@ -770,15 +770,30 @@ body {
     margin: 0;
 }
 
-/* 날짜/시간 입력 행 */
-.datetime-row {
+/* 날짜/시간 입력 열 */
+.datetime-column {
+    flex: 1;
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.datetime-row-with-day {
+    display: flex;
+    gap: 6px;
     align-items: center;
 }
 
+.day-of-week {
+    font-size: 12px;
+    color: var(--primary-blue);
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+}
+
 .date-input {
-    flex: 1.5;
+    flex: 1.2;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -787,12 +802,19 @@ body {
 }
 
 .time-input {
-    flex: 1;
+    flex: 0.8;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
+}
+
+/* 기존 datetime-row (하위 호환) */
+.datetime-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .form-group input,
@@ -1297,11 +1319,41 @@ body {
     }
     
     .person-checkboxes {
-        gap: 8px;
+        gap: 6px;
+        justify-content: space-between;
     }
     
     .person-checkbox-item {
-        padding: 6px 10px;
+        padding: 6px 8px;
+        font-size: 12px;
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
+    }
+    
+    .person-checkbox-item span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .datetime-row-with-day {
+        gap: 4px;
+    }
+    
+    .day-of-week {
+        font-size: 11px;
+        min-width: 18px;
+    }
+    
+    .date-input {
+        flex: 1;
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .time-input {
+        flex: 0.7;
+        padding: 8px;
         font-size: 13px;
     }
 }

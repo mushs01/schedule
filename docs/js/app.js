@@ -64,6 +64,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Setup person checkbox listeners
     setupPersonCheckboxListeners();
     
+    // Setup date change listeners for day of week display
+    setupDateChangeListeners();
+    
     // Check API health
     checkAPIHealth();
 });
@@ -95,31 +98,39 @@ function setupPersonCheckboxListeners() {
         });
     }
     
-    // 반복 설정 이벤트 리스너
+    // 반복 설정 이벤트 리스너 (간소화)
     const repeatSelect = document.getElementById('eventRepeat');
-    const repeatOptions = document.getElementById('repeatOptions');
-    const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
-    const repeatEndDate = document.getElementById('eventRepeatEndDate');
     
-    if (repeatSelect) {
-        repeatSelect.addEventListener('change', function() {
-            if (this.value !== 'none') {
-                repeatOptions.style.display = 'block';
-            } else {
-                repeatOptions.style.display = 'none';
-                if (repeatEndCheckbox) repeatEndCheckbox.checked = false;
-                if (repeatEndDate) repeatEndDate.style.display = 'none';
-            }
+    // 반복 설정은 항상 표시, 체크박스 제거했으므로 단순화
+}
+
+/**
+ * Setup date change listeners for day of week display
+ */
+function setupDateChangeListeners() {
+    const startDateInput = document.getElementById('eventStartDate');
+    const endDateInput = document.getElementById('eventEndDate');
+    const startDaySpan = document.getElementById('startDayOfWeek');
+    const endDaySpan = document.getElementById('endDayOfWeek');
+    
+    function updateDayOfWeek(dateInput, daySpan) {
+        if (!dateInput || !daySpan || !dateInput.value) return;
+        
+        const date = new Date(dateInput.value);
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const dayOfWeek = days[date.getDay()];
+        daySpan.textContent = dayOfWeek;
+    }
+    
+    if (startDateInput && startDaySpan) {
+        startDateInput.addEventListener('change', function() {
+            updateDayOfWeek(startDateInput, startDaySpan);
         });
     }
     
-    if (repeatEndCheckbox) {
-        repeatEndCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                repeatEndDate.style.display = 'block';
-            } else {
-                repeatEndDate.style.display = 'none';
-            }
+    if (endDateInput && endDaySpan) {
+        endDateInput.addEventListener('change', function() {
+            updateDayOfWeek(endDateInput, endDaySpan);
         });
     }
 }
@@ -347,6 +358,9 @@ function openEventModal(dateInfo = null, event = null) {
         document.getElementById('eventStartDate').value = formatDateInput(startDate);
         document.getElementById('eventStartTime').value = formatTimeInput(startDate);
         
+        // 요일 업데이트
+        updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
+        
         // 종료 날짜/시간 설정
         if (endDate) {
             document.getElementById('eventEndDate').value = formatDateInput(endDate);
@@ -358,6 +372,9 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventEndDate').value = formatDateInput(defaultEndDate);
             document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
         }
+        
+        // 종료 요일 업데이트
+        updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
         
         // 담당자 설정 (체크박스)
         if (event.extendedProps && event.extendedProps.persons) {
@@ -392,20 +409,13 @@ function openEventModal(dateInfo = null, event = null) {
         
         // 반복 설정
         const repeatSelect = document.getElementById('eventRepeat');
-        const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
-        const repeatEndDate = document.getElementById('eventRepeatEndDate');
-        const repeatOptions = document.getElementById('repeatOptions');
+        const repeatEndDateInput = document.getElementById('eventRepeatEndDate');
         
         if (repeatSelect && event.extendedProps) {
             repeatSelect.value = event.extendedProps.repeat_type || 'none';
-            if (event.extendedProps.repeat_type && event.extendedProps.repeat_type !== 'none') {
-                repeatOptions.style.display = 'block';
-            }
         }
-        if (repeatEndCheckbox && event.extendedProps && event.extendedProps.repeat_end_date) {
-            repeatEndCheckbox.checked = true;
-            repeatEndDate.style.display = 'block';
-            repeatEndDate.value = event.extendedProps.repeat_end_date.split('T')[0];
+        if (repeatEndDateInput && event.extendedProps && event.extendedProps.repeat_end_date) {
+            repeatEndDateInput.value = event.extendedProps.repeat_end_date.split('T')[0];
         }
         
         console.log('Form filled with event data');
@@ -460,6 +470,9 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventStartDate').value = startDateStr;
             document.getElementById('eventStartTime').value = startTimeStr;
             
+            // 요일 업데이트
+            updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
+            
             console.log('Set start date/time:', startDateStr, startTimeStr);
             
             // 종료 날짜/시간 자동 설정
@@ -471,6 +484,9 @@ function openEventModal(dateInfo = null, event = null) {
                 document.getElementById('eventEndDate').value = endDateStr;
                 document.getElementById('eventEndTime').value = endTimeStr;
                 
+                // 요일 업데이트
+                updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
+                
                 console.log('🎯 드래그 선택 - 종료 날짜/시간:', endDateStr, endTimeStr);
             } else {
                 // 단순 클릭의 경우 - 시작 시간 + 1시간
@@ -480,6 +496,9 @@ function openEventModal(dateInfo = null, event = null) {
                 
                 document.getElementById('eventEndDate').value = endDateStr;
                 document.getElementById('eventEndTime').value = endTimeStr;
+                
+                // 요일 업데이트
+                updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
                 
                 console.log('👆 클릭 선택 - 종료 시간 +1시간:', endDateStr, endTimeStr);
             }
@@ -492,6 +511,10 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventStartTime').value = formatTimeInput(now);
             document.getElementById('eventEndDate').value = formatDateInput(oneHourLater);
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
+            
+            // 요일 업데이트
+            updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
+            updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
             
             console.log('📅 기본값 사용 (현재 시간)');
         }
@@ -558,12 +581,10 @@ async function handleEventFormSubmit(e) {
     
     // 반복 설정
     const repeatSelect = document.getElementById('eventRepeat');
-    const repeatEndCheckbox = document.getElementById('eventRepeatEnd');
     const repeatEndDateInput = document.getElementById('eventRepeatEndDate');
     
     const repeatType = repeatSelect ? repeatSelect.value : 'none';
-    const hasRepeatEnd = repeatEndCheckbox ? repeatEndCheckbox.checked : false;
-    const repeatEndDate = (hasRepeatEnd && repeatEndDateInput && repeatEndDateInput.value) 
+    const repeatEndDate = (repeatEndDateInput && repeatEndDateInput.value) 
         ? new Date(repeatEndDateInput.value + 'T23:59:59').toISOString()
         : null;
     
@@ -1071,6 +1092,21 @@ async function checkAPIHealth() {
         console.error('API health check failed:', error);
         showToast('서버 연결에 실패했습니다.', 'error');
     }
+}
+
+/**
+ * Update day of week display
+ */
+function updateDayOfWeekDisplay(dateInputId, daySpanId) {
+    const dateInput = document.getElementById(dateInputId);
+    const daySpan = document.getElementById(daySpanId);
+    
+    if (!dateInput || !daySpan || !dateInput.value) return;
+    
+    const date = new Date(dateInput.value);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const dayOfWeek = days[date.getDay()];
+    daySpan.textContent = dayOfWeek;
 }
 
 /**
