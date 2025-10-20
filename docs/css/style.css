@@ -578,23 +578,22 @@ body {
     gap: 12px;
 }
 
-/* 레이블 스타일 개선 */
+/* 레이블 스타일 개선 - 아이콘만 표시 */
 .form-label {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     margin-bottom: 0;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    line-height: 24px;
-    min-width: 130px;
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
     padding-top: 10px;
+    cursor: help;
 }
 
 .form-label .form-icon {
-    font-size: 20px;
+    font-size: 24px;
     color: var(--text-secondary);
     width: 24px;
     height: 24px;
@@ -604,8 +603,8 @@ body {
     flex-shrink: 0;
 }
 
-.form-label span:last-child {
-    white-space: nowrap;
+.form-label:hover .form-icon {
+    color: var(--primary-blue);
 }
 
 .form-group label {
