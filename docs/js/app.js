@@ -584,8 +584,18 @@ async function handleEventFormSubmit(e) {
     // 카카오톡 알림 설정
     const kakaoNotificationStart = document.getElementById('eventKakaoNotificationStart');
     const kakaoNotificationEnd = document.getElementById('eventKakaoNotificationEnd');
+    
+    console.log('📤 Saving kakao notification settings:');
+    console.log('  - Start element:', kakaoNotificationStart);
+    console.log('  - Start checked:', kakaoNotificationStart?.checked);
+    console.log('  - End element:', kakaoNotificationEnd);
+    console.log('  - End checked:', kakaoNotificationEnd?.checked);
+    
     const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
     const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
+    
+    console.log('  - Final start value:', enableNotificationStart);
+    console.log('  - Final end value:', enableNotificationEnd);
     
     // 반복 설정
     const repeatSelect = document.getElementById('eventRepeat');
