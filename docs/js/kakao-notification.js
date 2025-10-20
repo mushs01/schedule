@@ -72,19 +72,61 @@ function kakaoLogout() {
             showToast('카카오톡 로그아웃 완료', 'success');
             stopNotificationScheduler();
         });
+    } else {
+        // 토큰이 없어도 로컬 상태 정리
+        localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
+        updateLoginUI(false);
+        stopNotificationScheduler();
     }
+}
+
+/**
+ * Check and refresh Kakao access token
+ */
+function checkAndRefreshToken() {
+    return new Promise((resolve) => {
+        const accessToken = Kakao.Auth.getAccessToken();
+        
+        if (!accessToken) {
+            console.log('❌ No access token');
+            resolve(false);
+            return;
+        }
+
+        // 토큰 정보 조회
+        Kakao.API.request({
+            url: '/v1/user/access_token_info',
+            success: function(response) {
+                console.log('✅ Token is valid:', response);
+                resolve(true);
+            },
+            fail: function(error) {
+                console.log('❌ Token validation failed:', error);
+                // 토큰이 유효하지 않으면 재로그인 필요
+                resolve(false);
+            }
+        });
+    });
 }
 
 /**
  * Send test message to Kakao
  */
-function sendTestKakaoMessage() {
+async function sendTestKakaoMessage() {
     console.log('📤 Attempting to send test message...');
     console.log('🔑 Access Token:', Kakao.Auth.getAccessToken());
     
     if (!Kakao.Auth.getAccessToken()) {
         console.error('❌ No access token found');
         showToast('카카오톡 로그인이 필요합니다', 'error');
+        return;
+    }
+
+    // 토큰 유효성 검사 및 갱신
+    const isValid = await checkAndRefreshToken();
+    if (!isValid) {
+        showToast('카카오톡 로그인이 만료되었습니다. 다시 로그인해주세요.', 'error');
+        kakaoLogout();
         return;
     }
 
@@ -98,7 +140,8 @@ function sendTestKakaoMessage() {
                 link: {
                     web_url: window.location.href,
                     mobile_web_url: window.location.href
-                }
+                },
+                button_title: '일정 보기'
             }
         },
         success: function(response) {
@@ -117,6 +160,12 @@ function sendTestKakaoMessage() {
                 errorMsg += `: ${error.msg}`;
             }
             
+            // 401 에러면 로그아웃 처리
+            if (error.code === -401) {
+                errorMsg = '카카오톡 로그인이 만료되었습니다. 다시 로그인해주세요.';
+                kakaoLogout();
+            }
+            
             showToast(errorMsg, 'error');
         }
     });
@@ -125,8 +174,15 @@ function sendTestKakaoMessage() {
 /**
  * Send schedule notification to Kakao
  */
-function sendScheduleNotification(schedule, notificationType = 'start') {
+async function sendScheduleNotification(schedule, notificationType = 'start') {
     if (!Kakao.Auth.getAccessToken()) {
+        return;
+    }
+
+    // 토큰 유효성 검사
+    const isValid = await checkAndRefreshToken();
+    if (!isValid) {
+        console.log('⚠️ Token invalid, cannot send notification');
         return;
     }
 
@@ -171,6 +227,10 @@ function sendScheduleNotification(schedule, notificationType = 'start') {
         },
         fail: function(error) {
             console.error('❌ Failed to send notification:', error);
+            // 401 에러면 로그아웃
+            if (error.code === -401) {
+                kakaoLogout();
+            }
         }
     });
 }
@@ -313,12 +373,21 @@ function updateLoginUI(isLoggedIn) {
 /**
  * Load settings from localStorage
  */
-function loadSettings() {
+async function loadSettings() {
     const isLoggedIn = localStorage.getItem(STORAGE_KEYS.KAKAO_LOGGED_IN) === 'true';
     
     if (isLoggedIn && Kakao.Auth.getAccessToken()) {
-        updateLoginUI(true);
-        startNotificationScheduler();
+        // 토큰 유효성 확인
+        const isValid = await checkAndRefreshToken();
+        if (isValid) {
+            updateLoginUI(true);
+            startNotificationScheduler();
+        } else {
+            // 토큰이 만료되었으면 로그아웃 처리
+            console.log('⚠️ Token expired, logging out...');
+            updateLoginUI(false);
+            localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
+        }
     } else {
         updateLoginUI(false);
         localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
