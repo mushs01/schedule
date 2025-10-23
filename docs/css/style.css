@@ -755,22 +755,25 @@ body {
 }
 
 .person-checkbox-item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 50px;
     height: 40px;
     padding: 0 16px;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 20px;
     background: transparent;
     font-size: 14px;
     font-weight: 500;
+    line-height: 40px;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
     position: relative;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .person-checkbox-item input[type="checkbox"] {
@@ -778,16 +781,19 @@ body {
     opacity: 0;
     width: 0;
     height: 0;
+    pointer-events: none;
 }
 
 .person-checkbox-item:hover {
     background: #f0f0f0;
+    border-color: #e0e0e0;
 }
 
 .person-checkbox-item:has(input:checked) {
-    background: var(--primary-blue);
+    background: #4a4a4a;
+    border-color: #4a4a4a;
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .person-checkbox-item span {
@@ -921,12 +927,12 @@ body {
     border-color: #e0e0e0;
 }
 
-/* 선택된 상태 - 파란색 원과 흰 글씨 */
+/* 선택된 상태 - 짙은 회색 원과 흰 글씨 */
 .weekday-checkbox-item:has(input:checked) {
-    background: var(--primary-blue);
-    border-color: var(--primary-blue);
+    background: #4a4a4a;
+    border-color: #4a4a4a;
     color: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* 매월 라디오 그룹 */
