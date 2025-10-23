@@ -78,6 +78,7 @@ function initCalendar() {
         // Event handlers
         select: handleDateSelect,
         eventClick: handleEventClick,
+        dateClick: handleDateClick,
         // eventDrop: handleEventDrop, // 드래그 앤 드롭 비활성화
         // eventResize: handleEventResize, // 리사이즈 비활성화
         
@@ -305,6 +306,90 @@ function handleEventClick(clickInfo) {
     } else {
         console.error('❌ showEventDetail not found!');
     }
+}
+
+/**
+ * Handle date click (월 일정표에서 날짜 클릭 시)
+ */
+async function handleDateClick(dateClickInfo) {
+    console.log('📅 Date clicked:', dateClickInfo);
+    
+    // 월 보기가 아니면 기본 동작
+    if (calendar.view.type !== 'dayGridMonth') {
+        return;
+    }
+    
+    const clickedDate = dateClickInfo.date;
+    const dateStr = clickedDate.toISOString().split('T')[0];
+    
+    // 해당 날짜의 모든 일정 가져오기
+    const allEvents = calendar.getEvents();
+    const dayEvents = allEvents.filter(event => {
+        const eventDate = event.start.toISOString().split('T')[0];
+        return eventDate === dateStr;
+    });
+    
+    if (dayEvents.length === 0) {
+        // 일정이 없으면 새 일정 추가 모달
+        if (window.openEventModal) {
+            window.openEventModal(dateClickInfo);
+        }
+        return;
+    }
+    
+    // 일정이 있으면 하루 일과 표시
+    showDaySchedule(clickedDate, dayEvents);
+}
+
+/**
+ * Show day schedule modal
+ */
+function showDaySchedule(date, events) {
+    const modal = document.getElementById('eventDetailModal');
+    if (!modal) return;
+    
+    const detail = document.getElementById('eventDetail');
+    if (!detail) return;
+    
+    // 날짜 포맷
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const dateStr = `${date.getMonth() + 1}월 ${date.getDate()}일 (${days[date.getDay()]})`;
+    
+    // 시간순으로 정렬
+    events.sort((a, b) => a.start - b.start);
+    
+    // 일정 목록 생성
+    let eventsHTML = '';
+    events.forEach(event => {
+        const startTime = event.start.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        const endTime = event.end ? event.end.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const personName = window.PERSON_NAMES[event.extendedProps.person] || '전체';
+        const color = event.backgroundColor;
+        
+        eventsHTML += `
+            <div class="day-schedule-item" style="border-left: 4px solid ${color}; padding-left: 12px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-weight: 600; font-size: 14px;">${startTime}${endTime ? ' - ' + endTime : ''}</span>
+                    <span class="event-person-badge" style="background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${personName}</span>
+                </div>
+                <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">${event.title}</div>
+                ${event.extendedProps.description ? `<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${event.extendedProps.description}</div>` : ''}
+            </div>
+        `;
+    });
+    
+    detail.innerHTML = `
+        <div style="margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary);">${dateStr}</h3>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">총 ${events.length}개 일정</div>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            ${eventsHTML}
+        </div>
+    `;
+    
+    // 모달 열기
+    modal.classList.add('active');
 }
 
 /**
