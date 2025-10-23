@@ -576,7 +576,8 @@ body {
     margin-bottom: 16px;
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
+    padding: 0 12px;
 }
 
 /* 레이블 스타일 개선 - 아이콘만 표시 */
@@ -687,10 +688,8 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
-    border: 2px solid var(--border-color);
-    border-radius: 20px;
-    background: #ffffff;
+    padding: 6px 0;
+    background: transparent;
     font-size: 14px;
     color: var(--text-primary);
     cursor: pointer;
@@ -699,8 +698,7 @@ body {
 }
 
 .person-checkbox-item:hover {
-    border-color: var(--primary-blue);
-    background: #f8f9fa;
+    color: var(--primary-blue);
 }
 
 .person-checkbox-item input[type="checkbox"] {
@@ -713,11 +711,6 @@ body {
 
 .person-checkbox-item input[type="checkbox"]:checked + span {
     font-weight: 500;
-}
-
-.person-checkbox-item:has(input:checked) {
-    border-color: var(--primary-blue);
-    background: #e8f0fe;
     color: var(--primary-blue);
 }
 
@@ -848,6 +841,30 @@ body {
 .form-group textarea {
     resize: vertical;
     min-height: 80px;
+}
+
+/* 제목 입력 필드 스타일 */
+.input-title {
+    width: 100%;
+    padding: 14px 12px;
+    border: none;
+    border-bottom: 2px solid var(--border-color);
+    border-radius: 0;
+    font-size: 18px;
+    font-weight: 500;
+    font-family: inherit;
+    background: transparent;
+    transition: border-color 0.2s;
+}
+
+.input-title:focus {
+    outline: none;
+    border-bottom-color: var(--primary-blue);
+}
+
+.input-title::placeholder {
+    color: var(--text-secondary);
+    font-weight: 400;
 }
 
 /* Event Detail */
