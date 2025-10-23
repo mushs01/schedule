@@ -305,6 +305,7 @@ body {
 .fc .fc-timegrid-col {
     background: #ffffff !important;
     border-right: 2px solid #dadce0 !important;
+    position: relative;
 }
 
 .fc .fc-timegrid-col-frame {
@@ -320,14 +321,60 @@ body {
     border-right: 2px solid #dadce0 !important;
 }
 
-/* 타임그리드 전체 열 구분선 */
+/* 타임그리드 전체 열 구분선 - 더 강력하게 */
 .fc .fc-timegrid-body td {
     border-right: 2px solid #dadce0 !important;
 }
 
-/* 타임그리드 슬롯 구분선 */
 .fc .fc-timegrid-slots td {
     border-right: 2px solid #dadce0 !important;
+}
+
+.fc .fc-timegrid-cols table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.fc .fc-timegrid-cols col {
+    border-right: 2px solid #dadce0 !important;
+}
+
+/* 모든 타임그리드 열에 강제 적용 */
+.fc-timegrid .fc-day-sun,
+.fc-timegrid .fc-day-mon,
+.fc-timegrid .fc-day-tue,
+.fc-timegrid .fc-day-wed,
+.fc-timegrid .fc-day-thu,
+.fc-timegrid .fc-day-fri,
+.fc-timegrid .fc-day-sat {
+    border-right: 2px solid #dadce0 !important;
+}
+
+/* 타임그리드 이벤트 컨테이너 - 실제 보이는 영역 */
+.fc-timegrid-event-harness {
+    border-right: 2px solid #dadce0 !important;
+}
+
+/* 타임그리드 더 레인 (타임라인 영역) */
+.fc-timegrid-slot-lane {
+    border-right: 2px solid #dadce0 !important;
+}
+
+/* 일별 구분선을 위한 추가 스타일 */
+.fc-timegrid-col:not(:last-child) {
+    border-right: 2px solid #dadce0 !important;
+}
+
+.fc-timegrid-col::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dadce0;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .fc .fc-timegrid-slot-label {
