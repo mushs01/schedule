@@ -436,6 +436,12 @@ function showDaySchedule(date, events) {
         });
     }
     
+    // 삭제/수정 버튼 숨기기 (월 일정 하루 요약에서는 읽기 전용)
+    const deleteBtn = modal.querySelector('#deleteEventBtn');
+    const editBtn = modal.querySelector('#editEventBtn');
+    if (deleteBtn) deleteBtn.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'none';
+    
     // 모달 열기
     modal.classList.add('active');
 }
