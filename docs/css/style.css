@@ -864,18 +864,22 @@ body {
     align-items: center;
     justify-content: center;
     flex: 1;
-    min-width: 40px;
+    width: 40px;
     height: 40px;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 50%;
     background: transparent;
     font-size: 14px;
     font-weight: 500;
+    line-height: 1;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
     position: relative;
+    text-align: center;
+    padding: 0;
+    margin: 0;
 }
 
 .weekday-checkbox-item input[type="checkbox"] {
@@ -883,6 +887,7 @@ body {
     opacity: 0;
     width: 0;
     height: 0;
+    pointer-events: none;
 }
 
 /* 일요일 - 빨간색 */
@@ -897,19 +902,15 @@ body {
 
 .weekday-checkbox-item:hover {
     background: #f0f0f0;
+    border-color: #e0e0e0;
 }
 
 /* 선택된 상태 - 파란색 원과 흰 글씨 */
 .weekday-checkbox-item:has(input:checked) {
     background: var(--primary-blue);
+    border-color: var(--primary-blue);
     color: #ffffff !important;
     box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
-}
-
-.weekday-checkbox-item span {
-    pointer-events: none;
-    z-index: 1;
-    position: relative;
 }
 
 /* 매월 라디오 그룹 */
