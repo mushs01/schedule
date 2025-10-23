@@ -314,6 +314,11 @@ body {
     border-right: 1px solid #e8eaed !important;
 }
 
+/* 날짜 열 구분 (헤더와 정렬) */
+.fc .fc-timegrid-cols col {
+    border-right: 1px solid #e8eaed !important;
+}
+
 /* 중복 border 제거 */
 .fc .fc-timegrid-col-frame {
     border-right: none !important;
@@ -335,10 +340,6 @@ body {
 .fc .fc-timegrid-cols table {
     border-collapse: separate !important;
     border-spacing: 0 !important;
-}
-
-.fc .fc-timegrid-cols col {
-    border-right: none !important;
 }
 
 /* 모든 타임그리드 요일 열 */
