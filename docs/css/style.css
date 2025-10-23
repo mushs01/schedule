@@ -1170,7 +1170,44 @@ body {
     font-weight: 400;
 }
 
-/* Event Detail */
+/* Event Detail - 새로운 한 줄 스타일 */
+.event-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.event-detail-row:last-child {
+    border-bottom: none;
+}
+
+.event-detail-row .detail-icon {
+    font-size: 20px;
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.event-detail-row .kakao-icon-small {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.event-detail-row .detail-content {
+    flex: 1;
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+/* 이전 스타일 (호환성 유지) */
 .event-detail-item {
     display: flex;
     gap: 12px;
