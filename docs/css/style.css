@@ -273,11 +273,20 @@ body {
 
 .fc .fc-timegrid-col {
     background: #ffffff !important;
-    border-right: 1px solid var(--border-color) !important;
+    border-right: 2px solid var(--border-color) !important;
+}
+
+.fc .fc-timegrid-col-frame {
+    border-right: 2px solid var(--border-color) !important;
+}
+
+.fc .fc-timegrid-axis {
+    border-right: 2px solid var(--border-color) !important;
 }
 
 .fc .fc-day {
     background: #ffffff !important;
+    border-right: 2px solid var(--border-color) !important;
 }
 
 .fc .fc-timegrid-slot-label {
