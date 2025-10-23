@@ -154,8 +154,13 @@ const api = {
                 start_datetime: firebase.firestore.Timestamp.fromDate(startDateTime),
                 end_datetime: scheduleData.end_datetime ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.end_datetime)) : null,
                 person: scheduleData.person,
+                persons: scheduleData.persons || [scheduleData.person],
                 color: color,
                 is_past: isPast,
+                kakao_notification_start: scheduleData.kakao_notification_start === true,
+                kakao_notification_end: scheduleData.kakao_notification_end === true,
+                repeat_type: scheduleData.repeat_type || 'none',
+                repeat_end_date: scheduleData.repeat_end_date || null,
                 created_at: firebase.firestore.Timestamp.fromDate(now),
                 updated_at: firebase.firestore.Timestamp.fromDate(now)
             };
@@ -198,6 +203,21 @@ const api = {
             if (scheduleData.person) {
                 updateData.person = scheduleData.person;
                 updateData.color = PERSON_COLORS[scheduleData.person] || '#808080';
+            }
+            if (scheduleData.persons) {
+                updateData.persons = scheduleData.persons;
+            }
+            if (scheduleData.kakao_notification_start !== undefined) {
+                updateData.kakao_notification_start = scheduleData.kakao_notification_start === true;
+            }
+            if (scheduleData.kakao_notification_end !== undefined) {
+                updateData.kakao_notification_end = scheduleData.kakao_notification_end === true;
+            }
+            if (scheduleData.repeat_type !== undefined) {
+                updateData.repeat_type = scheduleData.repeat_type;
+            }
+            if (scheduleData.repeat_end_date !== undefined) {
+                updateData.repeat_end_date = scheduleData.repeat_end_date;
             }
 
             await docRef.update(updateData);

@@ -376,19 +376,32 @@ function openEventModal(dateInfo = null, event = null) {
         // 종료 요일 업데이트
         updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
         
-        // 담당자 설정 (체크박스)
+        // 담당자 설정 (체크박스) - 모든 체크박스 초기화
+        document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
+        
         if (event.extendedProps && event.extendedProps.persons) {
             // 복수 담당자
             const persons = event.extendedProps.persons;
+            console.log('📋 Setting persons checkboxes:', persons);
             persons.forEach(person => {
-                const checkbox = document.getElementById(`person${person.charAt(0).toUpperCase() + person.slice(1)}`);
-                if (checkbox) checkbox.checked = true;
+                // person 값을 체크박스 ID로 변환: 'all' -> 'personAll', 'dad' -> 'personDad'
+                const checkboxId = `person${person.charAt(0).toUpperCase() + person.slice(1)}`;
+                const checkbox = document.getElementById(checkboxId);
+                console.log(`  - Looking for checkbox: ${checkboxId}, found:`, !!checkbox);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    console.log(`  - Checked: ${checkboxId}`);
+                }
             });
         } else if (event.extendedProps && event.extendedProps.person) {
             // 단일 담당자 (하위 호환성)
             const person = event.extendedProps.person;
-            const checkbox = document.getElementById(`person${person.charAt(0).toUpperCase() + person.slice(1)}`);
-            if (checkbox) checkbox.checked = true;
+            const checkboxId = `person${person.charAt(0).toUpperCase() + person.slice(1)}`;
+            const checkbox = document.getElementById(checkboxId);
+            console.log('📋 Setting single person checkbox:', checkboxId, 'found:', !!checkbox);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
         }
         
         // 설명 설정
@@ -674,8 +687,27 @@ function showEventDetail(event) {
     
     const startDate = new Date(event.start);
     const endDate = event.end ? new Date(event.end) : null;
-    const person = window.PERSON_NAMES[event.extendedProps.person];
-    const color = window.PERSON_COLORS[event.extendedProps.person];
+    
+    // persons 배열 사용 (없으면 person 사용)
+    const persons = event.extendedProps.persons || [event.extendedProps.person];
+    const personBadges = persons.map(p => {
+        const name = window.PERSON_NAMES[p];
+        const color = window.PERSON_COLORS[p];
+        return `<span class="event-person-badge" style="background: ${color};">${name}</span>`;
+    }).join(' ');
+    
+    // 카카오톡 알림 상태
+    const kakaoNotificationStart = event.extendedProps.kakao_notification_start;
+    const kakaoNotificationEnd = event.extendedProps.kakao_notification_end;
+    const hasKakaoNotification = kakaoNotificationStart || kakaoNotificationEnd;
+    
+    let kakaoNotificationText = '';
+    if (hasKakaoNotification) {
+        const notifications = [];
+        if (kakaoNotificationStart) notifications.push('시작 시');
+        if (kakaoNotificationEnd) notifications.push('종료 시');
+        kakaoNotificationText = notifications.join(', ');
+    }
     
     detail.innerHTML = `
         <div class="event-detail-item">
@@ -700,7 +732,7 @@ function showEventDetail(event) {
             <i class="fas fa-user"></i>
             <div>
                 <strong>담당자:</strong> 
-                <span class="event-person-badge" style="background: ${color};">${person}</span>
+                ${personBadges}
             </div>
         </div>
         ${event.extendedProps.description ? `
@@ -708,6 +740,25 @@ function showEventDetail(event) {
             <i class="fas fa-align-left"></i>
             <div>
                 <strong>설명:</strong><br>${event.extendedProps.description}
+            </div>
+        </div>
+        ` : ''}
+        ${hasKakaoNotification ? `
+        <div class="event-detail-item">
+            <i class="fab fa-kickstarter"></i>
+            <div>
+                <strong>카카오톡 알림:</strong> ${kakaoNotificationText}
+            </div>
+        </div>
+        ` : ''}
+        ${event.extendedProps.repeat_type && event.extendedProps.repeat_type !== 'none' ? `
+        <div class="event-detail-item">
+            <i class="fas fa-redo"></i>
+            <div>
+                <strong>반복:</strong> ${event.extendedProps.repeat_type === 'daily' ? '매일' : 
+                                       event.extendedProps.repeat_type === 'weekly' ? '매주' : 
+                                       event.extendedProps.repeat_type === 'monthly' ? '매월' : ''}
+                ${event.extendedProps.repeat_end_date ? ` (${formatDate(new Date(event.extendedProps.repeat_end_date))}까지)` : ''}
             </div>
         </div>
         ` : ''}
