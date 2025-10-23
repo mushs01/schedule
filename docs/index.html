@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=36">
+    <link rel="stylesheet" href="css/style.css?v=37">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -201,7 +201,10 @@
             <form id="eventForm">
                 <!-- 제목 -->
                 <div class="form-group">
-                    <input type="text" id="eventTitle" required placeholder="일정 제목" class="input-title">
+                    <label class="form-label" title="제목">
+                        <span class="material-icons form-icon">title</span>
+                    </label>
+                    <input type="text" id="eventTitle" required placeholder="일정 제목을 입력하세요" class="input-large">
                 </div>
                 
                 <!-- 시작/종료 날짜/시간 -->
@@ -263,7 +266,7 @@
                 <!-- 카카오톡 알림 -->
                 <div class="form-group">
                     <label class="form-label" title="카카오톡 알림">
-                        <img src="icons/kakao-icon.svg" alt="카카오톡" class="kakao-icon">
+                        <span class="material-icons form-icon">notifications</span>
                     </label>
                     <div class="checkbox-inline">
                         <label class="checkbox-label">
@@ -289,57 +292,7 @@
                             <option value="weekly">매주</option>
                             <option value="monthly">매월</option>
                         </select>
-                        
-                        <!-- 매주 요일 선택 -->
-                        <div id="weeklyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
-                            <div class="weekday-checkboxes">
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="0">
-                                    일
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="1">
-                                    월
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="2">
-                                    화
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="3">
-                                    수
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="4">
-                                    목
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="5">
-                                    금
-                                </label>
-                                <label class="weekday-checkbox-item">
-                                    <input type="checkbox" name="repeatWeekday" value="6">
-                                    토
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- 매월 옵션 선택 -->
-                        <div id="monthlyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
-                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">반복 방식:</div>
-                            <div class="monthly-radio-group">
-                                <label class="monthly-radio-item">
-                                    <input type="radio" name="monthlyType" value="dayOfMonth" checked>
-                                    <span id="monthlyDayLabel">매월 같은 날 (예: 매월 15일)</span>
-                                </label>
-                                <label class="monthly-radio-item">
-                                    <input type="radio" name="monthlyType" value="dayOfWeek">
-                                    <span id="monthlyWeekLabel">매월 같은 주/요일 (예: 셋째주 금요일)</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div id="repeatEndOptions" style="margin-top: 12px;">
+                        <div id="repeatEndOptions" style="margin-top: 8px;">
                             <label class="repeat-end-label">
                                 <span style="font-size: 13px; color: var(--text-secondary);">종료일</span>
                             </label>
