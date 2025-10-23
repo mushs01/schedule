@@ -777,6 +777,95 @@ body {
     margin: 0;
 }
 
+/* 반복 상세 옵션 */
+.repeat-detail-options {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* 요일 체크박스 */
+.weekday-checkboxes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.weekday-checkbox-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    position: relative;
+}
+
+.weekday-checkbox-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.weekday-checkbox-item:hover {
+    border-color: var(--primary-blue);
+    background: #f8f9fa;
+}
+
+.weekday-checkbox-item:has(input:checked) {
+    border-color: var(--primary-blue);
+    background: var(--primary-blue);
+    color: #ffffff;
+}
+
+.weekday-checkbox-item span {
+    pointer-events: none;
+}
+
+/* 매월 라디오 그룹 */
+.monthly-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.monthly-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.monthly-radio-item:hover {
+    background: #ffffff;
+}
+
+.monthly-radio-item input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.monthly-radio-item span {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
 /* 날짜/시간 입력 열 */
 .datetime-column {
     flex: 1;

@@ -98,10 +98,65 @@ function setupPersonCheckboxListeners() {
         });
     }
     
-    // 반복 설정 이벤트 리스너 (간소화)
+    // 반복 설정 이벤트 리스너
     const repeatSelect = document.getElementById('eventRepeat');
+    const weeklyOptions = document.getElementById('weeklyOptions');
+    const monthlyOptions = document.getElementById('monthlyOptions');
     
-    // 반복 설정은 항상 표시, 체크박스 제거했으므로 단순화
+    if (repeatSelect) {
+        repeatSelect.addEventListener('change', function() {
+            const value = this.value;
+            
+            // 모든 옵션 숨기기
+            if (weeklyOptions) weeklyOptions.style.display = 'none';
+            if (monthlyOptions) monthlyOptions.style.display = 'none';
+            
+            // 선택에 따라 표시
+            if (value === 'weekly' && weeklyOptions) {
+                weeklyOptions.style.display = 'block';
+            } else if (value === 'monthly' && monthlyOptions) {
+                monthlyOptions.style.display = 'block';
+                updateMonthlyLabels();
+            }
+        });
+    }
+    
+    // 시작 날짜 변경 시 매월 라벨 업데이트
+    const startDateInput = document.getElementById('eventStartDate');
+    if (startDateInput) {
+        startDateInput.addEventListener('change', function() {
+            if (repeatSelect && repeatSelect.value === 'monthly') {
+                updateMonthlyLabels();
+            }
+        });
+    }
+}
+
+/**
+ * Update monthly repeat labels based on start date
+ */
+function updateMonthlyLabels() {
+    const startDateInput = document.getElementById('eventStartDate');
+    const monthlyDayLabel = document.getElementById('monthlyDayLabel');
+    const monthlyWeekLabel = document.getElementById('monthlyWeekLabel');
+    
+    if (!startDateInput || !startDateInput.value) return;
+    
+    const startDate = new Date(startDateInput.value);
+    const dayOfMonth = startDate.getDate();
+    const dayOfWeek = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'][startDate.getDay()];
+    
+    // 몇 번째 주인지 계산
+    const weekOfMonth = Math.ceil(dayOfMonth / 7);
+    const weekNames = ['첫째', '둘째', '셋째', '넷째', '다섯째'];
+    const weekName = weekNames[weekOfMonth - 1] || weekOfMonth + '번째';
+    
+    if (monthlyDayLabel) {
+        monthlyDayLabel.textContent = `매월 같은 날 (매월 ${dayOfMonth}일)`;
+    }
+    if (monthlyWeekLabel) {
+        monthlyWeekLabel.textContent = `매월 같은 주/요일 (매월 ${weekName}주 ${dayOfWeek})`;
+    }
 }
 
 /**
@@ -619,6 +674,22 @@ async function handleEventFormSubmit(e) {
         ? new Date(repeatEndDateInput.value + 'T23:59:59').toISOString()
         : null;
     
+    // 매주 반복 - 선택된 요일들
+    let repeatWeekdays = null;
+    if (repeatType === 'weekly') {
+        const weekdayCheckboxes = document.querySelectorAll('input[name="repeatWeekday"]:checked');
+        if (weekdayCheckboxes.length > 0) {
+            repeatWeekdays = Array.from(weekdayCheckboxes).map(cb => parseInt(cb.value));
+        }
+    }
+    
+    // 매월 반복 - 방식 선택
+    let monthlyType = null;
+    if (repeatType === 'monthly') {
+        const monthlyTypeRadio = document.querySelector('input[name="monthlyType"]:checked');
+        monthlyType = monthlyTypeRadio ? monthlyTypeRadio.value : 'dayOfMonth';
+    }
+    
     // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
     const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
     
@@ -632,7 +703,9 @@ async function handleEventFormSubmit(e) {
         kakao_notification_start: enableNotificationStart,
         kakao_notification_end: enableNotificationEnd,
         repeat_type: repeatType,
-        repeat_end_date: repeatEndDate
+        repeat_end_date: repeatEndDate,
+        repeat_weekdays: repeatWeekdays,  // 매주 요일들
+        monthly_type: monthlyType  // 매월 방식
     };
     
     try {

@@ -161,6 +161,8 @@ const api = {
                 kakao_notification_end: scheduleData.kakao_notification_end === true,
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date || null,
+                repeat_weekdays: scheduleData.repeat_weekdays || null,
+                monthly_type: scheduleData.monthly_type || null,
                 created_at: firebase.firestore.Timestamp.fromDate(now),
                 updated_at: firebase.firestore.Timestamp.fromDate(now)
             };
@@ -218,6 +220,12 @@ const api = {
             }
             if (scheduleData.repeat_end_date !== undefined) {
                 updateData.repeat_end_date = scheduleData.repeat_end_date;
+            }
+            if (scheduleData.repeat_weekdays !== undefined) {
+                updateData.repeat_weekdays = scheduleData.repeat_weekdays;
+            }
+            if (scheduleData.monthly_type !== undefined) {
+                updateData.monthly_type = scheduleData.monthly_type;
             }
 
             await docRef.update(updateData);

@@ -289,7 +289,58 @@
                             <option value="weekly">매주</option>
                             <option value="monthly">매월</option>
                         </select>
-                        <div id="repeatEndOptions" style="margin-top: 8px;">
+                        
+                        <!-- 매주 요일 선택 -->
+                        <div id="weeklyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">반복 요일 선택:</div>
+                            <div class="weekday-checkboxes">
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="0">
+                                    <span>일</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="1">
+                                    <span>월</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="2">
+                                    <span>화</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="3">
+                                    <span>수</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="4">
+                                    <span>목</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="5">
+                                    <span>금</span>
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="6">
+                                    <span>토</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- 매월 옵션 선택 -->
+                        <div id="monthlyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">반복 방식:</div>
+                            <div class="monthly-radio-group">
+                                <label class="monthly-radio-item">
+                                    <input type="radio" name="monthlyType" value="dayOfMonth" checked>
+                                    <span id="monthlyDayLabel">매월 같은 날 (예: 매월 15일)</span>
+                                </label>
+                                <label class="monthly-radio-item">
+                                    <input type="radio" name="monthlyType" value="dayOfWeek">
+                                    <span id="monthlyWeekLabel">매월 같은 주/요일 (예: 셋째주 금요일)</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="repeatEndOptions" style="margin-top: 12px;">
                             <label class="repeat-end-label">
                                 <span style="font-size: 13px; color: var(--text-secondary);">종료일</span>
                             </label>
