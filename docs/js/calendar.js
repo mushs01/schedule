@@ -98,7 +98,7 @@ function initCalendar() {
             }
             
             // 월 보기에서 개별 일정 클릭 방지
-            if (calendar.view.type === 'dayGridMonth') {
+            if (info.view.type === 'dayGridMonth') {
                 info.el.style.cursor = 'default';
                 info.el.style.pointerEvents = 'none';
             }
@@ -289,6 +289,13 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
 function handleDateSelect(selectInfo) {
     console.log('Date selected:', selectInfo);
     console.log('Start:', selectInfo.start, 'End:', selectInfo.end);
+    
+    // 월 보기에서는 날짜 선택 시 일정 추가 모달 열지 않음
+    if (calendar.view.type === 'dayGridMonth') {
+        console.log('❌ Month view: date select disabled');
+        calendar.unselect();
+        return;
+    }
     
     // selectInfo 전체를 전달 (start와 end 포함)
     if (window.openEventModal) {
