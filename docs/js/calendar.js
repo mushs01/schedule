@@ -252,10 +252,17 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
             const scheduleEnd = schedule.end ? new Date(schedule.end) : new Date(schedule.start);
             const isPast = scheduleEnd < now;
             
+            // 담당자 확인 (persons 배열이 있으면 첫 번째 사용, 없으면 person 사용)
+            const person = schedule.persons && schedule.persons.length > 0 
+                ? schedule.persons[0] 
+                : (schedule.person || 'all');
+            
             // 담당자에 따른 색상 선택 (지난 일정이면 어두운 색상)
             const color = isPast 
-                ? window.PERSON_COLORS_PAST[schedule.person] || window.PERSON_COLORS_PAST['all']
-                : window.PERSON_COLORS[schedule.person] || window.PERSON_COLORS['all'];
+                ? window.PERSON_COLORS_PAST[person] || window.PERSON_COLORS_PAST['all']
+                : window.PERSON_COLORS[person] || window.PERSON_COLORS['all'];
+            
+            console.log(`📅 Event: ${schedule.title}, Person: ${person}, Color: ${color}`);
             
             return {
                 id: schedule.id,
@@ -264,10 +271,12 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 end: schedule.end,
                 backgroundColor: color,
                 borderColor: color,
+                textColor: '#ffffff',
                 extendedProps: {
                     id: schedule.id,  // ID를 extendedProps에도 포함
                     description: schedule.description,
-                    person: schedule.person,
+                    person: person,
+                    persons: schedule.persons,
                     isPast: isPast,
                     kakao_notification_start: schedule.kakao_notification_start || false,
                     kakao_notification_end: schedule.kakao_notification_end || false

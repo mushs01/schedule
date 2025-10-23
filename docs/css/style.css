@@ -389,8 +389,7 @@ body {
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
     border: none !important;
-    /* 담당자별 배경 색상 강제 적용 */
-    background-color: var(--fc-event-bg-color) !important;
+    /* 담당자별 배경 색상 - FullCalendar의 inline style 사용 */
 }
 
 .fc .fc-daygrid-event .fc-event-time,
@@ -403,7 +402,6 @@ body {
     font-weight: 500 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    color: white !important;
 }
 
 .fc .fc-daygrid-event-dot {
