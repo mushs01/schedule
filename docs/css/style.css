@@ -273,6 +273,7 @@ body {
 
 .fc .fc-timegrid-col {
     background: #ffffff !important;
+    border-right: 1px solid var(--border-color) !important;
 }
 
 .fc .fc-day {
