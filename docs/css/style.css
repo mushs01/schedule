@@ -617,6 +617,23 @@ body {
     color: var(--primary-blue);
 }
 
+/* 아이콘별 색상 */
+.form-group:nth-child(2) .form-icon {
+    color: #ff6b6b; /* 시간 - 빨강 */
+}
+
+.form-group:nth-child(3) .form-icon {
+    color: #4ecdc4; /* 담당자 - 청록 */
+}
+
+.form-group:nth-child(4) .form-icon {
+    color: #95a5a6; /* 설명 - 회색 */
+}
+
+.form-group:nth-child(6) .form-icon {
+    color: #9b59b6; /* 반복 - 보라 */
+}
+
 /* 카카오톡 아이콘 스타일 */
 .kakao-icon {
     width: 26px;
@@ -701,43 +718,52 @@ body {
 .person-checkboxes {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     flex: 1;
 }
 
 .person-checkbox-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 0;
+    justify-content: center;
+    min-width: 50px;
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 20px;
     background: transparent;
     font-size: 14px;
+    font-weight: 500;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
     user-select: none;
-}
-
-.person-checkbox-item:hover {
-    color: var(--primary-blue);
+    position: relative;
 }
 
 .person-checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    margin: 0;
-    flex-shrink: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.person-checkbox-item input[type="checkbox"]:checked + span {
-    font-weight: 500;
-    color: var(--primary-blue);
+.person-checkbox-item:hover {
+    background: #f0f0f0;
+}
+
+.person-checkbox-item:has(input:checked) {
+    background: var(--primary-blue);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
 }
 
 .person-checkbox-item span {
     white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+    position: relative;
 }
 
 /* 반복 설정 */
@@ -797,15 +823,17 @@ body {
 /* 요일 체크박스 */
 .weekday-checkboxes {
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
 }
 
 .weekday-checkbox-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    flex: 1;
+    min-width: 40px;
     height: 40px;
     border: none;
     border-radius: 50%;
@@ -850,6 +878,7 @@ body {
 .weekday-checkbox-item span {
     pointer-events: none;
     z-index: 1;
+    position: relative;
 }
 
 /* 매월 라디오 그룹 */
