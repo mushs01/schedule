@@ -79,6 +79,11 @@ function initCalendar() {
         select: handleDateSelect,
         eventClick: handleEventClick,
         dateClick: handleDateClick,
+        
+        // 월 보기에서 개별 일정 클릭 방지
+        eventAllow: function(dropLocation, draggedEvent) {
+            return calendar.view.type !== 'dayGridMonth';
+        },
         // eventDrop: handleEventDrop, // 드래그 앤 드롭 비활성화
         // eventResize: handleEventResize, // 리사이즈 비활성화
         
@@ -295,6 +300,13 @@ function handleDateSelect(selectInfo) {
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
     console.log('🖱️ Event clicked:', event);
+    
+    // 월 보기에서는 개별 일정 클릭 무시
+    if (calendar.view.type === 'dayGridMonth') {
+        console.log('❌ Month view: individual event click disabled');
+        return;
+    }
+    
     console.log('📋 Event ID:', event.id);
     console.log('📋 Event extendedProps:', event.extendedProps);
     console.log('📋 Event title:', event.title);
@@ -329,15 +341,7 @@ async function handleDateClick(dateClickInfo) {
         return eventDate === dateStr;
     });
     
-    if (dayEvents.length === 0) {
-        // 일정이 없으면 새 일정 추가 모달
-        if (window.openEventModal) {
-            window.openEventModal(dateClickInfo);
-        }
-        return;
-    }
-    
-    // 일정이 있으면 하루 일과 표시
+    // 월 보기에서는 항상 하루 일정 요약 모달 표시 (일정이 없어도)
     showDaySchedule(clickedDate, dayEvents);
 }
 
@@ -360,33 +364,64 @@ function showDaySchedule(date, events) {
     
     // 일정 목록 생성
     let eventsHTML = '';
-    events.forEach(event => {
-        const startTime = event.start.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-        const endTime = event.end ? event.end.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
-        const personName = window.PERSON_NAMES[event.extendedProps.person] || '전체';
-        const color = event.backgroundColor;
-        
-        eventsHTML += `
-            <div class="day-schedule-item" style="border-left: 4px solid ${color}; padding-left: 12px; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                    <span style="font-weight: 600; font-size: 14px;">${startTime}${endTime ? ' - ' + endTime : ''}</span>
-                    <span class="event-person-badge" style="background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${personName}</span>
-                </div>
-                <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">${event.title}</div>
-                ${event.extendedProps.description ? `<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${event.extendedProps.description}</div>` : ''}
+    if (events.length === 0) {
+        eventsHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <i class="material-icons" style="font-size: 48px; opacity: 0.3; margin-bottom: 12px;">event_busy</i>
+                <div style="font-size: 14px;">일정이 없습니다</div>
             </div>
         `;
-    });
+    } else {
+        events.forEach(event => {
+            const startTime = event.start.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            const endTime = event.end ? event.end.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+            const personName = window.PERSON_NAMES[event.extendedProps.person] || '전체';
+            const color = event.backgroundColor;
+            
+            eventsHTML += `
+                <div class="day-schedule-item" style="border-left: 4px solid ${color}; padding-left: 12px; margin-bottom: 12px; cursor: default;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="font-weight: 600; font-size: 14px;">${startTime}${endTime ? ' - ' + endTime : ''}</span>
+                        <span class="event-person-badge" style="background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${personName}</span>
+                    </div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">${event.title}</div>
+                    ${event.extendedProps.description ? `<div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${event.extendedProps.description}</div>` : ''}
+                </div>
+            `;
+        });
+    }
     
     detail.innerHTML = `
         <div style="margin-bottom: 16px;">
             <h3 style="font-size: 18px; font-weight: 600; color: var(--text-primary);">${dateStr}</h3>
             <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">총 ${events.length}개 일정</div>
         </div>
-        <div style="max-height: 400px; overflow-y: auto;">
+        <div style="max-height: 400px; overflow-y: auto; margin-bottom: 16px;">
             ${eventsHTML}
         </div>
+        <div style="display: flex; justify-content: center; padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <button id="addEventFromDayBtn" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+                <i class="material-icons" style="font-size: 18px;">add</i>
+                <span>일정 추가</span>
+            </button>
+        </div>
     `;
+    
+    // 일정 추가 버튼 이벤트
+    const addBtn = detail.querySelector('#addEventFromDayBtn');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            // 선택한 날짜로 일정 추가 모달 열기
+            if (window.openEventModal) {
+                window.openEventModal({
+                    date: date,
+                    dateStr: date.toISOString().split('T')[0],
+                    allDay: false
+                });
+            }
+        });
+    }
     
     // 모달 열기
     modal.classList.add('active');

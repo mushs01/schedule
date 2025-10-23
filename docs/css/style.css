@@ -388,6 +388,8 @@ body {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    /* 담당자별 음영 색상 (투명도 적용) */
+    opacity: 0.85 !important;
 }
 
 .fc .fc-daygrid-event .fc-event-time {
@@ -398,6 +400,7 @@ body {
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: rgba(0, 0, 0, 0.87) !important;
 }
 
 .fc .fc-daygrid-event-dot {
