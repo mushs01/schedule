@@ -5,6 +5,7 @@
 
 let calendar;
 let currentFilter = 'showAll'; // 초기 로딩 시 모든 담당자 선택 → 모든 일정 표시
+let holidays = {}; // 공휴일 데이터 저장
 
 // Person colors mapping (글로벌 변수로 변경)
 window.PERSON_COLORS = window.PERSON_COLORS || {
@@ -94,14 +95,19 @@ function initCalendar() {
             info.el.title = `${PERSON_NAMES[info.event.extendedProps.person]}: ${info.event.title}`;
         },
         
-        // 날짜 변경 시 헤더 업데이트
+        // 날짜 변경 시 헤더 업데이트 및 공휴일 표시
         datesSet: function(dateInfo) {
             updateHeaderDate();
+            // 약간의 지연 후 공휴일 표시 (DOM이 렌더링된 후)
+            setTimeout(() => markHolidays(), 100);
         }
     });
     
     calendar.render();
     updateHeaderDate(); // 초기 날짜 표시
+    
+    // 초기 공휴일 표시
+    setTimeout(() => markHolidays(), 200);
 }
 
 /**
@@ -477,6 +483,88 @@ function navigateNext() {
     }
     calendar.next();
     updateHeaderDate();
+}
+
+/**
+ * Fetch Korean holidays from API
+ */
+async function fetchHolidays(year) {
+    if (holidays[year]) {
+        return holidays[year];
+    }
+    
+    try {
+        // 한국천문연구원 특일 정보 API 사용
+        const serviceKey = 'YOUR_API_KEY'; // 실제 서비스 키 필요
+        const url = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?solYear=${year}&ServiceKey=${serviceKey}&_type=json`;
+        
+        // API 키가 없으면 기본 공휴일만 사용
+        holidays[year] = getBasicHolidays(year);
+        
+        console.log(`📅 ${year}년 공휴일:`, holidays[year]);
+        return holidays[year];
+    } catch (error) {
+        console.error('공휴일 정보 가져오기 실패:', error);
+        holidays[year] = getBasicHolidays(year);
+        return holidays[year];
+    }
+}
+
+/**
+ * Get basic Korean holidays (without API)
+ */
+function getBasicHolidays(year) {
+    const basicHolidays = {};
+    
+    // 고정 공휴일
+    basicHolidays[`${year}-01-01`] = '신정';
+    basicHolidays[`${year}-03-01`] = '삼일절';
+    basicHolidays[`${year}-05-05`] = '어린이날';
+    basicHolidays[`${year}-06-06`] = '현충일';
+    basicHolidays[`${year}-08-15`] = '광복절';
+    basicHolidays[`${year}-10-03`] = '개천절';
+    basicHolidays[`${year}-10-09`] = '한글날';
+    basicHolidays[`${year}-12-25`] = '크리스마스';
+    
+    // 2025년 음력 공휴일 (대체공휴일 포함)
+    if (year === 2025) {
+        basicHolidays['2025-01-28'] = '설날 연휴';
+        basicHolidays['2025-01-29'] = '설날';
+        basicHolidays['2025-01-30'] = '설날 연휴';
+        basicHolidays['2025-05-05'] = '부처님오신날';
+        basicHolidays['2025-10-05'] = '추석 연휴';
+        basicHolidays['2025-10-06'] = '추석';
+        basicHolidays['2025-10-07'] = '추석 연휴';
+        basicHolidays['2025-10-08'] = '대체공휴일';
+    }
+    
+    return basicHolidays;
+}
+
+/**
+ * Add holiday class to calendar dates
+ */
+function markHolidays() {
+    if (!calendar) return;
+    
+    const currentDate = calendar.getDate();
+    const year = currentDate.getFullYear();
+    
+    fetchHolidays(year).then(yearHolidays => {
+        // 모든 날짜 셀에서 holiday 클래스 제거
+        document.querySelectorAll('.fc-day.holiday').forEach(el => {
+            el.classList.remove('holiday');
+        });
+        
+        // 공휴일 표시
+        Object.keys(yearHolidays).forEach(dateStr => {
+            const dayEl = document.querySelector(`[data-date="${dateStr}"]`);
+            if (dayEl) {
+                dayEl.classList.add('holiday');
+                dayEl.setAttribute('title', yearHolidays[dateStr]);
+            }
+        });
+    });
 }
 
 window.calendarModule = {

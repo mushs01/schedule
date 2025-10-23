@@ -261,8 +261,39 @@ body {
     border-color: var(--border-color);
 }
 
+/* 요일 헤더 색상 */
+.fc .fc-col-header-cell.fc-day-sun {
+    color: #ef5350 !important;
+}
+
+.fc .fc-col-header-cell.fc-day-sat {
+    color: #42a5f5 !important;
+}
+
 .fc .fc-daygrid-day {
     background: #ffffff !important;
+}
+
+/* 일요일 날짜 색상 */
+.fc .fc-day-sun .fc-daygrid-day-number,
+.fc .fc-day-sun .fc-col-header-cell-cushion {
+    color: #ef5350 !important;
+}
+
+/* 토요일 날짜 색상 */
+.fc .fc-day-sat .fc-daygrid-day-number,
+.fc .fc-day-sat .fc-col-header-cell-cushion {
+    color: #42a5f5 !important;
+}
+
+/* 공휴일 스타일 */
+.fc .fc-day.holiday .fc-daygrid-day-number {
+    color: #ef5350 !important;
+    font-weight: 600;
+}
+
+.fc .fc-day.holiday {
+    background: #fff5f5 !important;
 }
 
 .fc .fc-timegrid-slot {
