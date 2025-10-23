@@ -97,6 +97,12 @@ function initCalendar() {
                 info.el.classList.add('past-event');
             }
             
+            // 월 보기에서 개별 일정 클릭 방지
+            if (calendar.view.type === 'dayGridMonth') {
+                info.el.style.cursor = 'default';
+                info.el.style.pointerEvents = 'none';
+            }
+            
             // Add tooltip
             info.el.title = `${PERSON_NAMES[info.event.extendedProps.person]}: ${info.event.title}`;
         },

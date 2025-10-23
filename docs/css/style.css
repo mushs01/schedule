@@ -416,6 +416,15 @@ body {
     overflow: hidden;
 }
 
+/* 월 보기 날짜 셀 클릭 활성화 */
+.fc .fc-daygrid-day {
+    cursor: pointer !important;
+}
+
+.fc .fc-daygrid-day:hover {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
 /* 과거 이벤트 스타일 */
 .fc .past-event {
     opacity: 0.6;
