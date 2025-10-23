@@ -381,14 +381,14 @@ body {
 
 /* 월 일정 표시 스타일 개선 */
 .fc .fc-daygrid-event {
+    border-radius: 3px !important;
+    padding: 2px 4px !important;
+    margin: 1px 2px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    /* 담당자별 배경 색상을 FullCalendar가 설정하도록 허용 */
     border: none !important;
-    border-radius: 3px;
-    padding: 2px 4px;
-    margin: 1px 2px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    /* 담당자별 배경 색상 표시 */
 }
 
 .fc .fc-daygrid-event .fc-event-time {
@@ -396,10 +396,10 @@ body {
 }
 
 .fc .fc-daygrid-event .fc-event-title {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    /* 배경색에 맞는 텍스트 색상 (기본 흰색) */
+    font-weight: 500 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    /* FullCalendar의 기본 텍스트 색상 사용 */
 }
 
 .fc .fc-daygrid-event-dot {
