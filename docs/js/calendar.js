@@ -345,14 +345,29 @@ async function handleDateClick(dateClickInfo) {
     }
     
     const clickedDate = dateClickInfo.date;
-    const dateStr = clickedDate.toISOString().split('T')[0];
+    // 로컬 날짜로 변환하여 비교 (시간대 문제 해결)
+    const year = clickedDate.getFullYear();
+    const month = String(clickedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(clickedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    console.log('📅 Selected date:', dateStr);
     
     // 해당 날짜의 모든 일정 가져오기
     const allEvents = calendar.getEvents();
     const dayEvents = allEvents.filter(event => {
-        const eventDate = event.start.toISOString().split('T')[0];
-        return eventDate === dateStr;
+        // 이벤트 날짜도 로컬 시간으로 변환
+        const eventStart = new Date(event.start);
+        const eventYear = eventStart.getFullYear();
+        const eventMonth = String(eventStart.getMonth() + 1).padStart(2, '0');
+        const eventDay = String(eventStart.getDate()).padStart(2, '0');
+        const eventDateStr = `${eventYear}-${eventMonth}-${eventDay}`;
+        
+        console.log('  - Event:', event.title, 'Date:', eventDateStr);
+        return eventDateStr === dateStr;
     });
+    
+    console.log(`✅ Found ${dayEvents.length} events for ${dateStr}`);
     
     // 월 보기에서는 항상 하루 일정 요약 모달 표시 (일정이 없어도)
     showDaySchedule(clickedDate, dayEvents);

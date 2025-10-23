@@ -380,26 +380,30 @@ body {
 }
 
 /* 월 일정 표시 스타일 개선 */
-.fc .fc-daygrid-event {
+.fc .fc-daygrid-event,
+.fc-daygrid-event {
     border-radius: 3px !important;
     padding: 2px 4px !important;
     margin: 1px 2px !important;
     overflow: hidden !important;
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
-    /* 담당자별 배경 색상을 FullCalendar가 설정하도록 허용 */
     border: none !important;
+    /* 담당자별 배경 색상 강제 적용 */
+    background-color: var(--fc-event-bg-color) !important;
 }
 
-.fc .fc-daygrid-event .fc-event-time {
+.fc .fc-daygrid-event .fc-event-time,
+.fc-daygrid-event .fc-event-time {
     display: none !important;
 }
 
-.fc .fc-daygrid-event .fc-event-title {
+.fc .fc-daygrid-event .fc-event-title,
+.fc-daygrid-event .fc-event-title {
     font-weight: 500 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    /* FullCalendar의 기본 텍스트 색상 사용 */
+    color: white !important;
 }
 
 .fc .fc-daygrid-event-dot {
