@@ -166,12 +166,20 @@ const api = {
                 kakao_notification_start: scheduleData.kakao_notification_start === true,
                 kakao_notification_end: scheduleData.kakao_notification_end === true,
                 repeat_type: scheduleData.repeat_type || 'none',
-                repeat_end_date: scheduleData.repeat_end_date || null,
+                repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
                 repeat_monthly_type: scheduleData.repeat_monthly_type || 'dayOfMonth',
+                exclude_dates: [],
                 created_at: firebase.firestore.Timestamp.fromDate(now),
                 updated_at: firebase.firestore.Timestamp.fromDate(now)
             };
+            
+            console.log('📤 Creating schedule with data:');
+            console.log('  - title:', docData.title);
+            console.log('  - repeat_type:', docData.repeat_type);
+            console.log('  - repeat_end_date:', docData.repeat_end_date);
+            console.log('  - repeat_weekdays:', docData.repeat_weekdays);
+            console.log('  - repeat_monthly_type:', docData.repeat_monthly_type);
 
             const docRef = await db.collection(SCHEDULES_COLLECTION).add(docData);
 
@@ -225,7 +233,7 @@ const api = {
                 updateData.repeat_type = scheduleData.repeat_type;
             }
             if (scheduleData.repeat_end_date !== undefined) {
-                updateData.repeat_end_date = scheduleData.repeat_end_date;
+                updateData.repeat_end_date = scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null;
             }
             if (scheduleData.repeat_weekdays !== undefined) {
                 updateData.repeat_weekdays = scheduleData.repeat_weekdays;
@@ -233,6 +241,12 @@ const api = {
             if (scheduleData.repeat_monthly_type !== undefined) {
                 updateData.repeat_monthly_type = scheduleData.repeat_monthly_type;
             }
+            
+            console.log('📤 Updating schedule with data:');
+            console.log('  - repeat_type:', updateData.repeat_type);
+            console.log('  - repeat_end_date:', updateData.repeat_end_date);
+            console.log('  - repeat_weekdays:', updateData.repeat_weekdays);
+            console.log('  - repeat_monthly_type:', updateData.repeat_monthly_type);
 
             await docRef.update(updateData);
 

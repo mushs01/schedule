@@ -729,10 +729,16 @@ async function handleEventFormSubmit(e) {
         ? new Date(repeatEndDateInput.value + 'T23:59:59').toISOString()
         : null;
     
+    console.log('🔄 반복 설정 수집:');
+    console.log('  - repeatType:', repeatType);
+    console.log('  - repeatEndDate:', repeatEndDate);
+    console.log('  - repeatEndDateInput.value:', repeatEndDateInput?.value);
+    
     // 매주 반복 - 선택된 요일들
     let repeatWeekdays = [];
     if (repeatType === 'weekly') {
         const weekdayCheckboxes = document.querySelectorAll('input[name="repeatWeekday"]:checked');
+        console.log('  - weekdayCheckboxes found:', weekdayCheckboxes.length);
         weekdayCheckboxes.forEach(checkbox => {
             repeatWeekdays.push(parseInt(checkbox.value));
         });
@@ -740,7 +746,9 @@ async function handleEventFormSubmit(e) {
         // 요일이 선택되지 않았으면 시작 날짜의 요일로 설정
         if (repeatWeekdays.length === 0) {
             repeatWeekdays.push(startDateTime.getDay());
+            console.log('  - No weekdays selected, using start date weekday:', startDateTime.getDay());
         }
+        console.log('  - repeatWeekdays:', repeatWeekdays);
     }
     
     // 매월 반복 - 옵션 (dayOfMonth or dayOfWeek)
@@ -750,6 +758,7 @@ async function handleEventFormSubmit(e) {
         if (monthlyTypeRadio) {
             repeatMonthlyType = monthlyTypeRadio.value;
         }
+        console.log('  - repeatMonthlyType:', repeatMonthlyType);
     }
     
     try {
