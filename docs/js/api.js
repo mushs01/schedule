@@ -87,11 +87,13 @@ const api = {
                     
                     // 반복 일정 로그
                     if (schedule.repeat_type !== 'none') {
-                        console.log(`🔄 반복 일정 로드: ${schedule.title}`);
+                        console.log(`🔄 반복 일정 로드: ${schedule.title} (ID: ${doc.id})`);
                         console.log('  - repeat_type:', schedule.repeat_type);
                         console.log('  - repeat_end_date:', schedule.repeat_end_date);
                         console.log('  - repeat_weekdays:', schedule.repeat_weekdays);
                         console.log('  - repeat_monthly_type:', schedule.repeat_monthly_type);
+                        console.log('  - start:', schedule.start);
+                        console.log('  - Raw data.repeat_weekdays:', data.repeat_weekdays);
                     }
                     
                     schedules.push(schedule);

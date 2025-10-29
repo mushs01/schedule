@@ -152,6 +152,8 @@ function expandRecurringEvent(schedule, startDate, endDate) {
     console.log('  - 시작일:', scheduleStart.toISOString());
     console.log('  - 반복 종료일:', repeatEndDate.toISOString());
     console.log('  - 종료일 설정됨:', !!schedule.repeat_end_date);
+    console.log(`  - 조회 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`);
+    console.log('  - repeat_weekdays:', schedule.repeat_weekdays);
     
     let currentDate = new Date(scheduleStart);
     
