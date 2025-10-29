@@ -387,15 +387,23 @@ function setupEventListeners() {
     }
     if (deleteSingleEventBtn) {
         deleteSingleEventBtn.addEventListener('click', () => {
+            console.log('🔵 Single delete button clicked');
             deleteRecurringOption = 'single';
-            closeDeleteRecurringModal();
+            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
+            if (deleteRecurringModal) {
+                deleteRecurringModal.classList.remove('active');
+            }
             executeDelete();
         });
     }
     if (deleteAllEventsBtn) {
         deleteAllEventsBtn.addEventListener('click', () => {
+            console.log('🔴 All delete button clicked');
             deleteRecurringOption = 'all';
-            closeDeleteRecurringModal();
+            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
+            if (deleteRecurringModal) {
+                deleteRecurringModal.classList.remove('active');
+            }
             executeDelete();
         });
     }
@@ -1062,6 +1070,10 @@ async function executeDelete() {
         calendarModule.refresh();
         loadAISummary();
         loadTodaySummary();
+        
+        // 모달 닫기 (detail modal이 아직 열려있을 수 있음)
+        closeEventDetailModal();
+        closeDeleteRecurringModal();
         
         currentEditingEvent = null;
         deleteRecurringOption = null;
