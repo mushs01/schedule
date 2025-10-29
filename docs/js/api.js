@@ -52,6 +52,18 @@ const api = {
                         });
                     }
                     
+                    // repeat_end_date 처리 (Timestamp 또는 문자열 지원)
+                    let repeatEndDate = null;
+                    if (data.repeat_end_date) {
+                        if (typeof data.repeat_end_date === 'string') {
+                            // 이미 ISO 문자열인 경우
+                            repeatEndDate = data.repeat_end_date;
+                        } else if (data.repeat_end_date.toDate) {
+                            // Firestore Timestamp인 경우
+                            repeatEndDate = data.repeat_end_date.toDate().toISOString();
+                        }
+                    }
+                    
                     const schedule = {
                         id: doc.id,
                         title: data.title,
@@ -65,7 +77,7 @@ const api = {
                         kakao_notification_start: data.kakao_notification_start === true,
                         kakao_notification_end: data.kakao_notification_end === true,
                         repeat_type: data.repeat_type || 'none',
-                        repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
+                        repeat_end_date: repeatEndDate,
                         repeat_weekdays: data.repeat_weekdays || [],
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                         exclude_dates: data.exclude_dates || [],
