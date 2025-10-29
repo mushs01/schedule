@@ -314,6 +314,11 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         
         console.log('🔁 Expanded schedules (with recurring):', expandedSchedules.length);
         
+        console.log('📝 Expanded schedules details:');
+        expandedSchedules.forEach(s => {
+            console.log(`  - ${s.title} (${s.person}) - ${s.start} ~ ${s.end}`);
+        });
+        
         const events = expandedSchedules.map(schedule => {
             // 지난 일정인지 확인
             const now = new Date();
@@ -330,9 +335,9 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 ? window.PERSON_COLORS_PAST[person] || window.PERSON_COLORS_PAST['all']
                 : window.PERSON_COLORS[person] || window.PERSON_COLORS['all'];
             
-            console.log(`📅 Event: ${schedule.title}, Person: ${person}, Color: ${color}`);
+            console.log(`📅 Event: ${schedule.title}, Person: ${person}, Color: ${color}, ID: ${schedule.id}`);
             
-            return {
+            const event = {
                 id: schedule.id,
                 title: schedule.title,
                 start: schedule.start,
@@ -354,7 +359,13 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                     repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth'
                 }
             };
+            
+            console.log(`  ✅ Mapped event:`, event);
+            return event;
         });
+        
+        console.log('🎯 Final events to render:', events.length);
+        console.log('Events:', events);
         
         successCallback(events);
     } catch (error) {
