@@ -138,48 +138,113 @@ function expandRecurringEvent(schedule, startDate, endDate) {
     const scheduleEnd = new Date(schedule.end);
     const duration = scheduleEnd - scheduleStart;
     
-    // 반복 종료일 (설정되지 않았으면 조회 범위의 끝)
+    // 반복 종료일 (설정되지 않았으면 1년 후)
     const repeatEndDate = schedule.repeat_end_date 
         ? new Date(schedule.repeat_end_date)
-        : endDate;
+        : new Date(scheduleStart.getTime() + 365 * 24 * 60 * 60 * 1000);
     
     let currentDate = new Date(scheduleStart);
     
-    // 반복 일정 생성 (최대 100개로 제한)
+    // 반복 일정 생성 (최대 500개로 제한)
     let count = 0;
-    const maxCount = 100;
+    const maxCount = 500;
     
-    while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
-        // 조회 범위 내에 있는 경우에만 추가
-        if (currentDate >= startDate) {
-            const eventStart = new Date(currentDate);
-            const eventEnd = new Date(currentDate.getTime() + duration);
+    if (repeatType === 'daily') {
+        // 매일 반복
+        while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
+            if (currentDate >= startDate) {
+                const eventStart = new Date(currentDate);
+                const eventEnd = new Date(currentDate.getTime() + duration);
+                
+                events.push({
+                    ...schedule,
+                    start: eventStart.toISOString(),
+                    end: eventEnd.toISOString(),
+                    id: `${schedule.id}_${currentDate.toISOString()}`,
+                    original_id: schedule.id
+                });
+            }
             
-            events.push({
-                ...schedule,
-                start: eventStart.toISOString(),
-                end: eventEnd.toISOString(),
-                id: `${schedule.id}_${currentDate.toISOString()}`, // 고유 ID
-                original_id: schedule.id // 원본 ID 보존
-            });
+            currentDate.setDate(currentDate.getDate() + 1);
+            count++;
         }
+    } else if (repeatType === 'weekly') {
+        // 매주 반복 - 선택된 요일들에만 생성
+        const repeatWeekdays = schedule.repeat_weekdays || [scheduleStart.getDay()];
         
-        // 다음 반복 날짜 계산
-        switch (repeatType) {
-            case 'daily':
-                currentDate.setDate(currentDate.getDate() + 1);
-                break;
-            case 'weekly':
-                currentDate.setDate(currentDate.getDate() + 7);
-                break;
-            case 'monthly':
+        // 시작일부터 종료일까지 모든 날짜를 확인
+        currentDate = new Date(scheduleStart);
+        while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
+            const dayOfWeek = currentDate.getDay();
+            
+            // 선택된 요일인지 확인
+            if (repeatWeekdays.includes(dayOfWeek) && currentDate >= startDate) {
+                const eventStart = new Date(currentDate);
+                const eventEnd = new Date(currentDate.getTime() + duration);
+                
+                events.push({
+                    ...schedule,
+                    start: eventStart.toISOString(),
+                    end: eventEnd.toISOString(),
+                    id: `${schedule.id}_${currentDate.toISOString()}`,
+                    original_id: schedule.id
+                });
+            }
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+            count++;
+        }
+    } else if (repeatType === 'monthly') {
+        // 매월 반복
+        const monthlyType = schedule.repeat_monthly_type || 'dayOfMonth';
+        const originalDayOfMonth = scheduleStart.getDate();
+        const originalDayOfWeek = scheduleStart.getDay();
+        const originalWeekOfMonth = Math.ceil(originalDayOfMonth / 7);
+        
+        currentDate = new Date(scheduleStart);
+        
+        while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
+            if (currentDate >= startDate) {
+                const eventStart = new Date(currentDate);
+                const eventEnd = new Date(currentDate.getTime() + duration);
+                
+                events.push({
+                    ...schedule,
+                    start: eventStart.toISOString(),
+                    end: eventEnd.toISOString(),
+                    id: `${schedule.id}_${currentDate.toISOString()}`,
+                    original_id: schedule.id
+                });
+            }
+            
+            // 다음 달로 이동
+            if (monthlyType === 'dayOfMonth') {
+                // 매월 같은 날 (예: 매월 15일)
                 currentDate.setMonth(currentDate.getMonth() + 1);
-                break;
-            default:
-                break;
+                // 날짜가 없는 경우 (예: 2월 30일) 마지막 날로 설정
+                if (currentDate.getDate() !== originalDayOfMonth) {
+                    currentDate.setDate(0); // 이전 달 마지막 날
+                }
+            } else {
+                // 매월 같은 주/요일 (예: 둘째주 금요일)
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                currentDate.setDate(1); // 다음 달 1일
+                
+                // 해당 주의 해당 요일 찾기
+                let weekCount = 0;
+                while (currentDate.getMonth() === new Date(scheduleStart.getFullYear(), scheduleStart.getMonth() + count + 1, 1).getMonth()) {
+                    if (currentDate.getDay() === originalDayOfWeek) {
+                        weekCount++;
+                        if (weekCount === originalWeekOfMonth) {
+                            break;
+                        }
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+            
+            count++;
         }
-        
-        count++;
     }
     
     return events;
@@ -279,7 +344,11 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                     persons: schedule.persons,
                     isPast: isPast,
                     kakao_notification_start: schedule.kakao_notification_start || false,
-                    kakao_notification_end: schedule.kakao_notification_end || false
+                    kakao_notification_end: schedule.kakao_notification_end || false,
+                    repeat_type: schedule.repeat_type || 'none',
+                    repeat_end_date: schedule.repeat_end_date || null,
+                    repeat_weekdays: schedule.repeat_weekdays || [],
+                    repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth'
                 }
             };
         });

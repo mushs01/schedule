@@ -98,10 +98,41 @@ function setupPersonCheckboxListeners() {
         });
     }
     
-    // 반복 설정 이벤트 리스너 (간소화)
+    // 반복 설정 이벤트 리스너
     const repeatSelect = document.getElementById('eventRepeat');
+    const weeklyOptions = document.getElementById('weeklyOptions');
+    const monthlyOptions = document.getElementById('monthlyOptions');
+    const repeatEndOptions = document.getElementById('repeatEndOptions');
     
-    // 반복 설정은 항상 표시, 체크박스 제거했으므로 단순화
+    if (repeatSelect) {
+        repeatSelect.addEventListener('change', function() {
+            const repeatValue = this.value;
+            
+            // 모든 옵션 숨기기
+            if (weeklyOptions) weeklyOptions.style.display = 'none';
+            if (monthlyOptions) monthlyOptions.style.display = 'none';
+            if (repeatEndOptions) repeatEndOptions.style.display = 'none';
+            
+            // 선택에 따라 옵션 표시
+            if (repeatValue === 'weekly') {
+                if (weeklyOptions) weeklyOptions.style.display = 'block';
+                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
+            } else if (repeatValue === 'monthly') {
+                if (monthlyOptions) monthlyOptions.style.display = 'block';
+                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
+                // 매월 옵션의 라벨 업데이트
+                updateMonthlyLabels();
+            } else if (repeatValue === 'daily') {
+                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
+            }
+        });
+    }
+    
+    // 시작 날짜 변경 시 매월 옵션 라벨 업데이트
+    const startDateInput = document.getElementById('eventStartDate');
+    if (startDateInput) {
+        startDateInput.addEventListener('change', updateMonthlyLabels);
+    }
 }
 
 /**
@@ -433,8 +464,30 @@ function openEventModal(dateInfo = null, event = null) {
         const repeatEndDateInput = document.getElementById('eventRepeatEndDate');
         
         if (repeatSelect && event.extendedProps) {
-            repeatSelect.value = event.extendedProps.repeat_type || 'none';
+            const repeatType = event.extendedProps.repeat_type || 'none';
+            repeatSelect.value = repeatType;
+            
+            // 반복 옵션 표시 트리거
+            const changeEvent = new Event('change');
+            repeatSelect.dispatchEvent(changeEvent);
+            
+            // 매주 반복 - 요일 체크박스 설정
+            if (repeatType === 'weekly' && event.extendedProps.repeat_weekdays) {
+                const weekdays = event.extendedProps.repeat_weekdays;
+                document.querySelectorAll('input[name="repeatWeekday"]').forEach(checkbox => {
+                    checkbox.checked = weekdays.includes(parseInt(checkbox.value));
+                });
+            }
+            
+            // 매월 반복 - 옵션 설정
+            if (repeatType === 'monthly' && event.extendedProps.repeat_monthly_type) {
+                const monthlyType = event.extendedProps.repeat_monthly_type;
+                document.querySelectorAll('input[name="monthlyType"]').forEach(radio => {
+                    radio.checked = (radio.value === monthlyType);
+                });
+            }
         }
+        
         if (repeatEndDateInput && event.extendedProps && event.extendedProps.repeat_end_date) {
             repeatEndDateInput.value = event.extendedProps.repeat_end_date.split('T')[0];
         }
@@ -619,31 +672,36 @@ async function handleEventFormSubmit(e) {
         ? new Date(repeatEndDateInput.value + 'T23:59:59').toISOString()
         : null;
     
-    // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
-    const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
+    // 매주 반복 - 선택된 요일들
+    let repeatWeekdays = [];
+    if (repeatType === 'weekly') {
+        const weekdayCheckboxes = document.querySelectorAll('input[name="repeatWeekday"]:checked');
+        weekdayCheckboxes.forEach(checkbox => {
+            repeatWeekdays.push(parseInt(checkbox.value));
+        });
+        
+        // 요일이 선택되지 않았으면 시작 날짜의 요일로 설정
+        if (repeatWeekdays.length === 0) {
+            repeatWeekdays.push(startDateTime.getDay());
+        }
+    }
     
-    const scheduleData = {
-        title,
-        start_datetime: startDateTime.toISOString(),
-        end_datetime: endDateTime.toISOString(),
-        person,
-        persons: selectedPersons,  // 복수 담당자 정보 추가
-        description: description || null,
-        kakao_notification_start: enableNotificationStart,
-        kakao_notification_end: enableNotificationEnd,
-        repeat_type: repeatType,
-        repeat_end_date: repeatEndDate
-    };
+    // 매월 반복 - 옵션 (dayOfMonth or dayOfWeek)
+    let repeatMonthlyType = 'dayOfMonth';
+    if (repeatType === 'monthly') {
+        const monthlyTypeRadio = document.querySelector('input[name="monthlyType"]:checked');
+        if (monthlyTypeRadio) {
+            repeatMonthlyType = monthlyTypeRadio.value;
+        }
+    }
     
     try {
         showLoading(true);
         
         if (currentEditingEvent) {
-            // Update existing event
-            // FullCalendar event의 ID는 event.id 또는 event.extendedProps.id에 있을 수 있음
+            // Update existing event - 기존 로직 유지 (단일 일정 수정)
             const eventId = currentEditingEvent.id || currentEditingEvent.extendedProps?.id;
             console.log('📝 Updating event with ID:', eventId);
-            console.log('📋 Schedule data:', scheduleData);
             
             if (!eventId) {
                 console.error('❌ Event ID not found!', currentEditingEvent);
@@ -651,14 +709,76 @@ async function handleEventFormSubmit(e) {
                 return;
             }
             
+            // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
+            const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
+            
+            const scheduleData = {
+                title,
+                start_datetime: startDateTime.toISOString(),
+                end_datetime: endDateTime.toISOString(),
+                person,
+                persons: selectedPersons,
+                description: description || null,
+                kakao_notification_start: enableNotificationStart,
+                kakao_notification_end: enableNotificationEnd,
+                repeat_type: repeatType,
+                repeat_end_date: repeatEndDate,
+                repeat_weekdays: repeatWeekdays,
+                repeat_monthly_type: repeatMonthlyType
+            };
+            
+            console.log('📋 Schedule data:', scheduleData);
             await api.updateSchedule(eventId, scheduleData);
             showToast('일정이 수정되었습니다.', 'success');
         } else {
-            // Create new event
-            console.log('➕ Creating new event');
-            console.log('📋 Schedule data:', scheduleData);
-            await api.createSchedule(scheduleData);
-            showToast('일정이 추가되었습니다.', 'success');
+            // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
+            console.log('➕ Creating new event(s)');
+            console.log('📋 Selected persons:', selectedPersons);
+            
+            // '전체' 선택 시 하나의 일정만 생성
+            if (selectedPersons.includes('all')) {
+                const scheduleData = {
+                    title,
+                    start_datetime: startDateTime.toISOString(),
+                    end_datetime: endDateTime.toISOString(),
+                    person: 'all',
+                    persons: ['all'],
+                    description: description || null,
+                    kakao_notification_start: enableNotificationStart,
+                    kakao_notification_end: enableNotificationEnd,
+                    repeat_type: repeatType,
+                    repeat_end_date: repeatEndDate,
+                    repeat_weekdays: repeatWeekdays,
+                    repeat_monthly_type: repeatMonthlyType
+                };
+                
+                await api.createSchedule(scheduleData);
+                showToast('일정이 추가되었습니다.', 'success');
+            } else {
+                // 복수 담당자 선택 시 각 담당자별로 별도 일정 생성
+                for (const person of selectedPersons) {
+                    const scheduleData = {
+                        title,
+                        start_datetime: startDateTime.toISOString(),
+                        end_datetime: endDateTime.toISOString(),
+                        person: person,
+                        persons: [person],  // 단일 담당자로 설정
+                        description: description || null,
+                        kakao_notification_start: enableNotificationStart,
+                        kakao_notification_end: enableNotificationEnd,
+                        repeat_type: repeatType,
+                        repeat_end_date: repeatEndDate,
+                        repeat_weekdays: repeatWeekdays,
+                        repeat_monthly_type: repeatMonthlyType
+                    };
+                    
+                    console.log(`📋 Creating schedule for ${person}:`, scheduleData);
+                    await api.createSchedule(scheduleData);
+                }
+                
+                const personCount = selectedPersons.length;
+                showToast(`${personCount}개의 일정이 추가되었습니다.`, 'success');
+            }
         }
         
         // Refresh calendar, AI summary, and today's summary
@@ -1165,6 +1285,36 @@ function updateDayOfWeekDisplay(dateInputId, daySpanId) {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const dayOfWeek = days[date.getDay()];
     daySpan.textContent = dayOfWeek;
+}
+
+/**
+ * Update monthly repeat option labels
+ */
+function updateMonthlyLabels() {
+    const startDateInput = document.getElementById('eventStartDate');
+    if (!startDateInput || !startDateInput.value) return;
+    
+    const date = new Date(startDateInput.value);
+    const dayOfMonth = date.getDate();
+    const dayOfWeek = date.getDay();
+    const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    
+    // 몇째 주인지 계산
+    const weekOfMonth = Math.ceil(dayOfMonth / 7);
+    const weekNames = ['첫째', '둘째', '셋째', '넷째', '다섯째'];
+    const weekName = weekNames[weekOfMonth - 1] || '마지막';
+    
+    // 라벨 업데이트
+    const monthlyDayLabel = document.getElementById('monthlyDayLabel');
+    const monthlyWeekLabel = document.getElementById('monthlyWeekLabel');
+    
+    if (monthlyDayLabel) {
+        monthlyDayLabel.textContent = `매월 같은 날 (예: 매월 ${dayOfMonth}일)`;
+    }
+    
+    if (monthlyWeekLabel) {
+        monthlyWeekLabel.textContent = `매월 같은 주/요일 (예: ${weekName}주 ${days[dayOfWeek]})`;
+    }
 }
 
 /**

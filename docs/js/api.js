@@ -59,10 +59,15 @@ const api = {
                         start: data.start_datetime.toDate().toISOString(),
                         end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
                         person: data.person,
+                        persons: data.persons,
                         color: data.color,
                         isPast: data.is_past || false,
                         kakao_notification_start: data.kakao_notification_start === true,
                         kakao_notification_end: data.kakao_notification_end === true,
+                        repeat_type: data.repeat_type || 'none',
+                        repeat_end_date: data.repeat_end_date || null,
+                        repeat_weekdays: data.repeat_weekdays || [],
+                        repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
                     });
@@ -161,8 +166,8 @@ const api = {
                 kakao_notification_end: scheduleData.kakao_notification_end === true,
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date || null,
-                repeat_weekdays: scheduleData.repeat_weekdays || null,
-                monthly_type: scheduleData.monthly_type || null,
+                repeat_weekdays: scheduleData.repeat_weekdays || [],
+                repeat_monthly_type: scheduleData.repeat_monthly_type || 'dayOfMonth',
                 created_at: firebase.firestore.Timestamp.fromDate(now),
                 updated_at: firebase.firestore.Timestamp.fromDate(now)
             };
@@ -224,8 +229,8 @@ const api = {
             if (scheduleData.repeat_weekdays !== undefined) {
                 updateData.repeat_weekdays = scheduleData.repeat_weekdays;
             }
-            if (scheduleData.monthly_type !== undefined) {
-                updateData.monthly_type = scheduleData.monthly_type;
+            if (scheduleData.repeat_monthly_type !== undefined) {
+                updateData.repeat_monthly_type = scheduleData.repeat_monthly_type;
             }
 
             await docRef.update(updateData);
