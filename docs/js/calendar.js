@@ -213,7 +213,9 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         currentDate = scheduleStart < startDate ? new Date(startDate) : new Date(scheduleStart);
         console.log(`    📅 실제 시작일: ${currentDate.toISOString()}`);
         while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
-            const dayOfWeek = currentDate.getDay();
+            // 한국 시간 기준으로 요일 계산 (UTC+9)
+            const koreanTime = new Date(currentDate.getTime() + 9 * 60 * 60 * 1000);
+            const dayOfWeek = koreanTime.getUTCDay();
             
             // 선택된 요일인지 확인
             if (repeatWeekdays.includes(dayOfWeek) && currentDate >= startDate) {
@@ -225,7 +227,7 @@ function expandRecurringEvent(schedule, startDate, endDate) {
                 if (excludeDates.includes(dateStr)) {
                     console.log(`    ⏭️ 제외 날짜: ${dateStr}`);
                 } else {
-                    console.log(`    ✅ 일정 추가: ${eventStart.toISOString()} (요일: ${dayOfWeek})`);
+                    console.log(`    ✅ 일정 추가: ${eventStart.toISOString()} (한국시간 요일: ${dayOfWeek})`);
                     
                     events.push({
                         ...schedule,
@@ -243,10 +245,12 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         
         console.log(`  📊 매주 반복 결과: ${events.length}개 일정 생성`);
     } else if (repeatType === 'monthly') {
-        // 매월 반복
+        // 매월 반복 (한국 시간 기준)
         const monthlyType = schedule.repeat_monthly_type || 'dayOfMonth';
-        const originalDayOfMonth = scheduleStart.getDate();
-        const originalDayOfWeek = scheduleStart.getDay();
+        // 한국 시간 기준으로 날짜 정보 추출
+        const koreanStartTime = new Date(scheduleStart.getTime() + 9 * 60 * 60 * 1000);
+        const originalDayOfMonth = koreanStartTime.getUTCDate();
+        const originalDayOfWeek = koreanStartTime.getUTCDay();
         const originalWeekOfMonth = Math.ceil(originalDayOfMonth / 7);
         
         currentDate = new Date(scheduleStart);
