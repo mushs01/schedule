@@ -142,10 +142,16 @@ function expandRecurringEvent(schedule, startDate, endDate) {
     const scheduleEnd = new Date(schedule.end);
     const duration = scheduleEnd - scheduleStart;
     
-    // 반복 종료일 (설정되지 않았으면 조회 범위 끝에서 1년 후)
+    // 반복 종료일 (설정되지 않았으면 시작일로부터 1년 후)
     const repeatEndDate = schedule.repeat_end_date 
         ? new Date(schedule.repeat_end_date)
-        : new Date(endDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+        : new Date(scheduleStart.getTime() + 365 * 24 * 60 * 60 * 1000);
+    
+    console.log('🔄 반복 일정 확장:');
+    console.log('  - 제목:', schedule.title);
+    console.log('  - 시작일:', scheduleStart.toISOString());
+    console.log('  - 반복 종료일:', repeatEndDate.toISOString());
+    console.log('  - 종료일 설정됨:', !!schedule.repeat_end_date);
     
     let currentDate = new Date(scheduleStart);
     
