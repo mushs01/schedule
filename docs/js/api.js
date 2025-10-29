@@ -68,6 +68,7 @@ const api = {
                         repeat_end_date: data.repeat_end_date || null,
                         repeat_weekdays: data.repeat_weekdays || [],
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
+                        exclude_dates: data.exclude_dates || [],
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
                     });
@@ -253,6 +254,40 @@ const api = {
             return { success: true };
         } catch (error) {
             console.error('Error deleting schedule:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Add exclude date to recurring schedule
+     */
+    async addExcludeDate(id, excludeDate) {
+        try {
+            const db = window.db;
+            const docRef = db.collection(SCHEDULES_COLLECTION).doc(id);
+            
+            // 현재 제외 날짜 목록 가져오기
+            const doc = await docRef.get();
+            if (!doc.exists) {
+                throw new Error('Schedule not found');
+            }
+            
+            const currentExcludeDates = doc.data().exclude_dates || [];
+            
+            // 제외 날짜 추가 (중복 방지)
+            if (!currentExcludeDates.includes(excludeDate)) {
+                currentExcludeDates.push(excludeDate);
+            }
+            
+            // 업데이트
+            await docRef.update({
+                exclude_dates: currentExcludeDates,
+                updated_at: firebase.firestore.Timestamp.fromDate(new Date())
+            });
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Error adding exclude date:', error);
             throw error;
         }
     },

@@ -128,6 +128,7 @@ function initCalendar() {
 function expandRecurringEvent(schedule, startDate, endDate) {
     const events = [];
     const repeatType = schedule.repeat_type || 'none';
+    const excludeDates = schedule.exclude_dates || [];
     
     console.log(`🔄 expandRecurringEvent: ${schedule.title}, repeatType: ${repeatType}`);
     
@@ -158,14 +159,18 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             if (currentDate >= startDate) {
                 const eventStart = new Date(currentDate);
                 const eventEnd = new Date(currentDate.getTime() + duration);
+                const dateStr = eventStart.toISOString().split('T')[0];
                 
-                events.push({
-                    ...schedule,
-                    start: eventStart.toISOString(),
-                    end: eventEnd.toISOString(),
-                    id: `${schedule.id}_${currentDate.toISOString()}`,
-                    original_id: schedule.id
-                });
+                // 제외 날짜 확인
+                if (!excludeDates.includes(dateStr)) {
+                    events.push({
+                        ...schedule,
+                        start: eventStart.toISOString(),
+                        end: eventEnd.toISOString(),
+                        id: `${schedule.id}_${currentDate.toISOString()}`,
+                        original_id: schedule.id
+                    });
+                }
             }
             
             currentDate.setDate(currentDate.getDate() + 1);
@@ -206,16 +211,22 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             if (repeatWeekdays.includes(dayOfWeek) && currentDate >= startDate) {
                 const eventStart = new Date(currentDate);
                 const eventEnd = new Date(currentDate.getTime() + duration);
+                const dateStr = eventStart.toISOString().split('T')[0];
                 
-                console.log(`    ✅ 일정 추가: ${eventStart.toISOString()} (요일: ${dayOfWeek})`);
-                
-                events.push({
-                    ...schedule,
-                    start: eventStart.toISOString(),
-                    end: eventEnd.toISOString(),
-                    id: `${schedule.id}_${currentDate.toISOString()}`,
-                    original_id: schedule.id
-                });
+                // 제외 날짜 확인
+                if (excludeDates.includes(dateStr)) {
+                    console.log(`    ⏭️ 제외 날짜: ${dateStr}`);
+                } else {
+                    console.log(`    ✅ 일정 추가: ${eventStart.toISOString()} (요일: ${dayOfWeek})`);
+                    
+                    events.push({
+                        ...schedule,
+                        start: eventStart.toISOString(),
+                        end: eventEnd.toISOString(),
+                        id: `${schedule.id}_${currentDate.toISOString()}`,
+                        original_id: schedule.id
+                    });
+                }
             }
             
             currentDate.setDate(currentDate.getDate() + 1);
@@ -236,14 +247,18 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             if (currentDate >= startDate) {
                 const eventStart = new Date(currentDate);
                 const eventEnd = new Date(currentDate.getTime() + duration);
+                const dateStr = eventStart.toISOString().split('T')[0];
                 
-                events.push({
-                    ...schedule,
-                    start: eventStart.toISOString(),
-                    end: eventEnd.toISOString(),
-                    id: `${schedule.id}_${currentDate.toISOString()}`,
-                    original_id: schedule.id
-                });
+                // 제외 날짜 확인
+                if (!excludeDates.includes(dateStr)) {
+                    events.push({
+                        ...schedule,
+                        start: eventStart.toISOString(),
+                        end: eventEnd.toISOString(),
+                        id: `${schedule.id}_${currentDate.toISOString()}`,
+                        original_id: schedule.id
+                    });
+                }
             }
             
             // 다음 달로 이동

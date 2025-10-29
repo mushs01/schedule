@@ -924,15 +924,51 @@ function handleEditEvent() {
  * Handle delete event button
  */
 async function handleDeleteEvent() {
-    if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) {
-        return;
+    const isRecurring = currentEditingEvent.extendedProps.repeat_type && 
+                       currentEditingEvent.extendedProps.repeat_type !== 'none';
+    
+    let deleteOption = 'single';
+    
+    if (isRecurring) {
+        // 반복 일정인 경우 삭제 옵션 선택
+        const message = '반복 일정입니다. 어떻게 삭제하시겠습니까?\n\n' +
+                       '확인: 모든 반복 일정 삭제\n' +
+                       '취소: 이 일정만 삭제';
+        
+        if (confirm(message)) {
+            deleteOption = 'all';
+        } else {
+            deleteOption = 'single';
+        }
+    } else {
+        // 일반 일정인 경우 기존 확인
+        if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) {
+            return;
+        }
     }
     
     try {
         showLoading(true);
         
-        await api.deleteSchedule(currentEditingEvent.id);
-        showToast('일정이 삭제되었습니다.', 'success');
+        if (deleteOption === 'all') {
+            // 모든 반복 일정 삭제 (원본 일정 삭제)
+            const originalId = currentEditingEvent.extendedProps.original_id || currentEditingEvent.id;
+            await api.deleteSchedule(originalId);
+            showToast('모든 반복 일정이 삭제되었습니다.', 'success');
+        } else {
+            // 단일 일정 삭제
+            if (isRecurring) {
+                // 특정 날짜의 반복 일정만 제외
+                const originalId = currentEditingEvent.extendedProps.original_id || currentEditingEvent.id;
+                const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
+                
+                await api.addExcludeDate(originalId, excludeDate);
+                showToast('해당 날짜의 일정이 삭제되었습니다.', 'success');
+            } else {
+                await api.deleteSchedule(currentEditingEvent.id);
+                showToast('일정이 삭제되었습니다.', 'success');
+            }
+        }
         
         calendarModule.refresh();
         loadAISummary();
