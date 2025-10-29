@@ -985,31 +985,59 @@ function handleDeleteEvent() {
  * Execute delete based on selected option
  */
 async function executeDelete() {
+    console.log('🗑️ executeDelete called');
+    console.log('  - deleteRecurringOption:', deleteRecurringOption);
+    console.log('  - currentEditingEvent:', currentEditingEvent);
+    
     if (!deleteRecurringOption || !currentEditingEvent) {
+        console.error('❌ Missing deleteRecurringOption or currentEditingEvent');
         return;
     }
     
     const isRecurring = currentEditingEvent.extendedProps.repeat_type && 
                        currentEditingEvent.extendedProps.repeat_type !== 'none';
     
+    console.log('  - isRecurring:', isRecurring);
+    console.log('  - repeat_type:', currentEditingEvent.extendedProps.repeat_type);
+    
     try {
         showLoading(true);
         
         if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
-            const originalId = currentEditingEvent.extendedProps.original_id || currentEditingEvent.id;
+            // ID에서 _timestamp 부분 제거하여 원본 ID 추출
+            let originalId = currentEditingEvent.id;
+            if (originalId.includes('_')) {
+                originalId = originalId.split('_')[0];
+            }
+            
+            console.log('  - Deleting all recurring events');
+            console.log('  - Original ID:', originalId);
+            console.log('  - Current event ID:', currentEditingEvent.id);
+            
             await api.deleteSchedule(originalId);
             showToast('모든 반복 일정이 삭제되었습니다.', 'success');
         } else {
             // 단일 일정 삭제
             if (isRecurring) {
                 // 특정 날짜의 반복 일정만 제외
-                const originalId = currentEditingEvent.extendedProps.original_id || currentEditingEvent.id;
+                let originalId = currentEditingEvent.id;
+                if (originalId.includes('_')) {
+                    originalId = originalId.split('_')[0];
+                }
+                
                 const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
+                
+                console.log('  - Excluding single recurring event');
+                console.log('  - Original ID:', originalId);
+                console.log('  - Exclude date:', excludeDate);
                 
                 await api.addExcludeDate(originalId, excludeDate);
                 showToast('해당 날짜의 일정이 삭제되었습니다.', 'success');
             } else {
+                console.log('  - Deleting single non-recurring event');
+                console.log('  - Event ID:', currentEditingEvent.id);
+                
                 await api.deleteSchedule(currentEditingEvent.id);
                 showToast('일정이 삭제되었습니다.', 'success');
             }
@@ -1022,8 +1050,8 @@ async function executeDelete() {
         currentEditingEvent = null;
         deleteRecurringOption = null;
     } catch (error) {
-        console.error('Error deleting event:', error);
-        showToast('일정 삭제에 실패했습니다.', 'error');
+        console.error('❌ Error deleting event:', error);
+        showToast('일정 삭제에 실패했습니다: ' + error.message, 'error');
     } finally {
         showLoading(false);
     }
