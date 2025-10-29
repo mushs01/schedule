@@ -175,6 +175,14 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         // 매주 반복 - 선택된 요일들에만 생성
         const repeatWeekdays = schedule.repeat_weekdays || [scheduleStart.getDay()];
         
+        console.log(`  📅 매주 반복 설정:`);
+        console.log(`    - 시작일: ${scheduleStart.toISOString()}`);
+        console.log(`    - 종료일: ${repeatEndDate.toISOString()}`);
+        console.log(`    - 조회 시작: ${startDate.toISOString()}`);
+        console.log(`    - 조회 종료: ${endDate.toISOString()}`);
+        console.log(`    - 반복 요일: ${repeatWeekdays}`);
+        console.log(`    - 시작 요일: ${scheduleStart.getDay()}`);
+        
         // 시작일부터 종료일까지 모든 날짜를 확인
         currentDate = new Date(scheduleStart);
         while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
@@ -184,6 +192,8 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             if (repeatWeekdays.includes(dayOfWeek) && currentDate >= startDate) {
                 const eventStart = new Date(currentDate);
                 const eventEnd = new Date(currentDate.getTime() + duration);
+                
+                console.log(`    ✅ 일정 추가: ${eventStart.toISOString()} (요일: ${dayOfWeek})`);
                 
                 events.push({
                     ...schedule,
@@ -197,6 +207,8 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             currentDate.setDate(currentDate.getDate() + 1);
             count++;
         }
+        
+        console.log(`  📊 매주 반복 결과: ${events.length}개 일정 생성`);
     } else if (repeatType === 'monthly') {
         // 매월 반복
         const monthlyType = schedule.repeat_monthly_type || 'dayOfMonth';
