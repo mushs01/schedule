@@ -127,10 +127,13 @@ function initCalendar() {
  */
 function expandRecurringEvent(schedule, startDate, endDate) {
     const events = [];
-    const repeatType = schedule.repeat_type;
+    const repeatType = schedule.repeat_type || 'none';
     
-    if (!repeatType || repeatType === 'none') {
+    console.log(`🔄 expandRecurringEvent: ${schedule.title}, repeatType: ${repeatType}`);
+    
+    if (repeatType === 'none') {
         // 반복 없음 - 원본 일정 하나만 반환
+        console.log(`  ✅ 반복 없음 - 원본 반환`);
         return [schedule];
     }
     
