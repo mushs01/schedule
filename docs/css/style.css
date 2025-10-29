@@ -950,19 +950,12 @@ body {
     margin-right: 0;
 }
 
-/* 모바일에서 여백 조정 */
+/* 모바일에서 여백 조정 - 다른 form-group과 동일하게 */
 @media (max-width: 768px) {
     .repeat-detail-options {
-        margin-left: -12px;
-        margin-right: -12px;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-    
-    #repeatEndOptions {
-        margin-left: -12px;
-        margin-right: -12px;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 8px;
     }
 }
 

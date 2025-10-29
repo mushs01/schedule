@@ -271,12 +271,12 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         // 클라이언트 측 필터링
         let filteredSchedules = schedules;
         
-        if (currentFilter === 'none' || !currentFilter) {
+        if (currentFilter === 'none') {
             // 아무것도 선택 안 함
             filteredSchedules = [];
             console.log('❌ No filter - showing nothing');
-        } else if (currentFilter === 'showAll') {
-            // 모든 담당자 선택 - 전체 일정 표시
+        } else if (currentFilter === 'showAll' || !currentFilter) {
+            // 모든 담당자 선택 또는 필터 없음 - 전체 일정 표시
             filteredSchedules = schedules;
             console.log('✅ Show all schedules - no filtering');
         } else if (Array.isArray(currentFilter)) {
