@@ -938,11 +938,10 @@ body {
 
 /* 반복 상세 옵션 */
 .repeat-detail-options {
-    padding: 12px;
+    padding: 10px;
     background: #f8f9fa;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    margin-right: 0;
 }
 
 /* 반복 종료일 옵션 */
@@ -953,8 +952,6 @@ body {
 /* 모바일에서 여백 조정 - 다른 form-group과 동일하게 */
 @media (max-width: 768px) {
     .repeat-detail-options {
-        margin-left: 0;
-        margin-right: 0;
         border-radius: 8px;
     }
 }
