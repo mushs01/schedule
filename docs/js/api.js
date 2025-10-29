@@ -52,7 +52,7 @@ const api = {
                         });
                     }
                     
-                    schedules.push({
+                    const schedule = {
                         id: doc.id,
                         title: data.title,
                         description: data.description,
@@ -65,13 +65,24 @@ const api = {
                         kakao_notification_start: data.kakao_notification_start === true,
                         kakao_notification_end: data.kakao_notification_end === true,
                         repeat_type: data.repeat_type || 'none',
-                        repeat_end_date: data.repeat_end_date || null,
+                        repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
                         repeat_weekdays: data.repeat_weekdays || [],
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                         exclude_dates: data.exclude_dates || [],
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
-                    });
+                    };
+                    
+                    // 반복 일정 로그
+                    if (schedule.repeat_type !== 'none') {
+                        console.log(`🔄 반복 일정 로드: ${schedule.title}`);
+                        console.log('  - repeat_type:', schedule.repeat_type);
+                        console.log('  - repeat_end_date:', schedule.repeat_end_date);
+                        console.log('  - repeat_weekdays:', schedule.repeat_weekdays);
+                        console.log('  - repeat_monthly_type:', schedule.repeat_monthly_type);
+                    }
+                    
+                    schedules.push(schedule);
                 } catch (dateError) {
                     console.error('Error parsing schedule date:', doc.id, dateError);
                 }
