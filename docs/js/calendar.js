@@ -173,7 +173,13 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         }
     } else if (repeatType === 'weekly') {
         // 매주 반복 - 선택된 요일들에만 생성
-        const repeatWeekdays = schedule.repeat_weekdays || [scheduleStart.getDay()];
+        let repeatWeekdays = schedule.repeat_weekdays || [];
+        
+        // repeat_weekdays가 비어있으면 시작 요일을 기본값으로 사용
+        if (!Array.isArray(repeatWeekdays) || repeatWeekdays.length === 0) {
+            repeatWeekdays = [scheduleStart.getDay()];
+            console.log(`  ⚠️ repeat_weekdays가 비어있어서 시작 요일(${scheduleStart.getDay()})로 설정`);
+        }
         
         console.log(`  📅 매주 반복 설정:`);
         console.log(`    - 원본 시작일: ${scheduleStart.toISOString()}`);
