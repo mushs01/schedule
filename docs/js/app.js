@@ -961,18 +961,34 @@ function handleEditEvent() {
  * Handle delete event button
  */
 function handleDeleteEvent() {
+    console.log('🗑️ handleDeleteEvent called');
+    console.log('  - currentEditingEvent:', currentEditingEvent);
+    console.log('  - repeat_type:', currentEditingEvent?.extendedProps?.repeat_type);
+    
+    if (!currentEditingEvent) {
+        console.error('❌ No currentEditingEvent');
+        return;
+    }
+    
     const isRecurring = currentEditingEvent.extendedProps.repeat_type && 
                        currentEditingEvent.extendedProps.repeat_type !== 'none';
     
+    console.log('  - isRecurring:', isRecurring);
+    
     if (isRecurring) {
         // 반복 일정인 경우 모달 표시
+        console.log('✅ Opening delete recurring modal');
         closeEventDetailModal();
         deleteRecurringOption = null;
         if (deleteRecurringModal) {
             deleteRecurringModal.classList.add('active');
+            console.log('✅ Delete recurring modal opened');
+        } else {
+            console.error('❌ deleteRecurringModal not found');
         }
     } else {
         // 일반 일정인 경우 기존 확인
+        console.log('✅ Non-recurring event - showing confirm dialog');
         if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) {
             return;
         }
