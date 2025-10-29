@@ -141,10 +141,10 @@ function expandRecurringEvent(schedule, startDate, endDate) {
     const scheduleEnd = new Date(schedule.end);
     const duration = scheduleEnd - scheduleStart;
     
-    // 반복 종료일 (설정되지 않았으면 1년 후)
+    // 반복 종료일 (설정되지 않았으면 조회 범위 끝에서 1년 후)
     const repeatEndDate = schedule.repeat_end_date 
         ? new Date(schedule.repeat_end_date)
-        : new Date(scheduleStart.getTime() + 365 * 24 * 60 * 60 * 1000);
+        : new Date(endDate.getTime() + 365 * 24 * 60 * 60 * 1000);
     
     let currentDate = new Date(scheduleStart);
     
@@ -176,15 +176,23 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         const repeatWeekdays = schedule.repeat_weekdays || [scheduleStart.getDay()];
         
         console.log(`  📅 매주 반복 설정:`);
-        console.log(`    - 시작일: ${scheduleStart.toISOString()}`);
-        console.log(`    - 종료일: ${repeatEndDate.toISOString()}`);
+        console.log(`    - 원본 시작일: ${scheduleStart.toISOString()}`);
+        console.log(`    - 반복 종료일: ${repeatEndDate.toISOString()}`);
         console.log(`    - 조회 시작: ${startDate.toISOString()}`);
         console.log(`    - 조회 종료: ${endDate.toISOString()}`);
         console.log(`    - 반복 요일: ${repeatWeekdays}`);
         console.log(`    - 시작 요일: ${scheduleStart.getDay()}`);
         
-        // 시작일부터 종료일까지 모든 날짜를 확인
-        currentDate = new Date(scheduleStart);
+        // 시작일을 조회 범위 시작일 이전으로 설정 (과거 일정도 현재 기간에 반복 표시)
+        // 단, 반복 종료일이 조회 시작일보다 이전이면 스킵
+        if (repeatEndDate < startDate) {
+            console.log(`    ⚠️ 반복 종료일이 조회 시작일보다 이전 - 스킵`);
+            return events;
+        }
+        
+        // 조회 시작일 이전부터 시작 (반복 일정이므로)
+        currentDate = scheduleStart < startDate ? new Date(startDate) : new Date(scheduleStart);
+        console.log(`    📅 실제 시작일: ${currentDate.toISOString()}`);
         while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
             const dayOfWeek = currentDate.getDay();
             
