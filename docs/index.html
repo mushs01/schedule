@@ -469,6 +469,39 @@
         <span id="toastMessage"></span>
     </div>
 
+    <!-- Delete Recurring Event Modal -->
+    <div class="modal" id="deleteRecurringModal">
+        <div class="modal-content gcal-modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>반복 일정 삭제</h2>
+                <button class="icon-btn" id="closeDeleteRecurringBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body" style="padding: 24px;">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    이 일정은 반복 일정입니다.<br>
+                    어떻게 삭제하시겠습니까?
+                </p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn btn-primary" id="deleteSingleEventBtn" style="width: 100%; justify-content: center;">
+                        <span class="material-icons">event</span>
+                        <span>이 일정만 삭제</span>
+                    </button>
+                    <button class="btn btn-primary" id="deleteAllEventsBtn" style="width: 100%; justify-content: center; background: #d32f2f;">
+                        <span class="material-icons">event_repeat</span>
+                        <span>모든 반복 일정 삭제</span>
+                    </button>
+                    <button class="btn btn-text" id="cancelDeleteBtn" style="width: 100%; justify-content: center;">
+                        <span>취소</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
@@ -486,6 +519,6 @@
     <script src="js/kakao-notification.js?v=34"></script>
     <script src="js/api.js?v=27"></script>
     <script src="js/calendar.js?v=36"></script>
-    <script src="js/app.js?v=39"></script>
+    <script src="js/app.js?v=40"></script>
 </body>
 </html>

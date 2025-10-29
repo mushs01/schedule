@@ -5,12 +5,14 @@
 
 // Global state
 let currentEditingEvent = null;
+let deleteRecurringOption = null; // 'single', 'all', or null
 
 // DOM Elements - will be initialized after DOM loads
 let eventModal;
 let eventDetailModal;
 let searchModal;
 let settingsModal;
+let deleteRecurringModal;
 let eventForm;
 let loadingOverlay;
 let toast;
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     eventDetailModal = document.getElementById('eventDetailModal');
     searchModal = document.getElementById('searchModal');
     settingsModal = document.getElementById('settingsModal');
+    deleteRecurringModal = document.getElementById('deleteRecurringModal');
     eventForm = document.getElementById('eventForm');
     loadingOverlay = document.getElementById('loadingOverlay');
     toast = document.getElementById('toast');
@@ -35,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         eventDetailModal: !!eventDetailModal,
         searchModal: !!searchModal,
         settingsModal: !!settingsModal,
+        deleteRecurringModal: !!deleteRecurringModal,
         eventForm: !!eventForm,
         loadingOverlay: !!loadingOverlay,
         toast: !!toast
@@ -360,6 +364,39 @@ function setupEventListeners() {
     if (settingsModal) {
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) closeSettingsModal();
+        });
+    }
+    
+    if (deleteRecurringModal) {
+        deleteRecurringModal.addEventListener('click', (e) => {
+            if (e.target === deleteRecurringModal) closeDeleteRecurringModal();
+        });
+    }
+    
+    // Delete recurring event modal buttons
+    const closeDeleteRecurringBtn = document.getElementById('closeDeleteRecurringBtn');
+    const deleteSingleEventBtn = document.getElementById('deleteSingleEventBtn');
+    const deleteAllEventsBtn = document.getElementById('deleteAllEventsBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    
+    if (closeDeleteRecurringBtn) {
+        closeDeleteRecurringBtn.addEventListener('click', closeDeleteRecurringModal);
+    }
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeDeleteRecurringModal);
+    }
+    if (deleteSingleEventBtn) {
+        deleteSingleEventBtn.addEventListener('click', () => {
+            deleteRecurringOption = 'single';
+            closeDeleteRecurringModal();
+            executeDelete();
+        });
+    }
+    if (deleteAllEventsBtn) {
+        deleteAllEventsBtn.addEventListener('click', () => {
+            deleteRecurringOption = 'all';
+            closeDeleteRecurringModal();
+            executeDelete();
         });
     }
 }
@@ -923,34 +960,42 @@ function handleEditEvent() {
 /**
  * Handle delete event button
  */
-async function handleDeleteEvent() {
+function handleDeleteEvent() {
     const isRecurring = currentEditingEvent.extendedProps.repeat_type && 
                        currentEditingEvent.extendedProps.repeat_type !== 'none';
     
-    let deleteOption = 'single';
-    
     if (isRecurring) {
-        // 반복 일정인 경우 삭제 옵션 선택
-        const message = '반복 일정입니다. 어떻게 삭제하시겠습니까?\n\n' +
-                       '확인: 모든 반복 일정 삭제\n' +
-                       '취소: 이 일정만 삭제';
-        
-        if (confirm(message)) {
-            deleteOption = 'all';
-        } else {
-            deleteOption = 'single';
+        // 반복 일정인 경우 모달 표시
+        closeEventDetailModal();
+        deleteRecurringOption = null;
+        if (deleteRecurringModal) {
+            deleteRecurringModal.classList.add('active');
         }
     } else {
         // 일반 일정인 경우 기존 확인
         if (!confirm('정말로 이 일정을 삭제하시겠습니까?')) {
             return;
         }
+        deleteRecurringOption = 'single';
+        executeDelete();
     }
+}
+
+/**
+ * Execute delete based on selected option
+ */
+async function executeDelete() {
+    if (!deleteRecurringOption || !currentEditingEvent) {
+        return;
+    }
+    
+    const isRecurring = currentEditingEvent.extendedProps.repeat_type && 
+                       currentEditingEvent.extendedProps.repeat_type !== 'none';
     
     try {
         showLoading(true);
         
-        if (deleteOption === 'all') {
+        if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
             const originalId = currentEditingEvent.extendedProps.original_id || currentEditingEvent.id;
             await api.deleteSchedule(originalId);
@@ -974,13 +1019,24 @@ async function handleDeleteEvent() {
         loadAISummary();
         loadTodaySummary();
         
-        closeEventDetailModal();
+        currentEditingEvent = null;
+        deleteRecurringOption = null;
     } catch (error) {
         console.error('Error deleting event:', error);
         showToast('일정 삭제에 실패했습니다.', 'error');
     } finally {
         showLoading(false);
     }
+}
+
+/**
+ * Close delete recurring modal
+ */
+function closeDeleteRecurringModal() {
+    if (deleteRecurringModal) {
+        deleteRecurringModal.classList.remove('active');
+    }
+    deleteRecurringOption = null;
 }
 
 /**
