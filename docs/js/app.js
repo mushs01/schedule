@@ -102,30 +102,42 @@ function setupPersonCheckboxListeners() {
     const repeatSelect = document.getElementById('eventRepeat');
     const weeklyOptions = document.getElementById('weeklyOptions');
     const monthlyOptions = document.getElementById('monthlyOptions');
-    const repeatEndOptions = document.getElementById('repeatEndOptions');
     
     if (repeatSelect) {
         repeatSelect.addEventListener('change', function() {
             const repeatValue = this.value;
             
-            // 모든 옵션 숨기기
-            if (weeklyOptions) weeklyOptions.style.display = 'none';
-            if (monthlyOptions) monthlyOptions.style.display = 'none';
-            if (repeatEndOptions) repeatEndOptions.style.display = 'none';
+            console.log('🔄 반복 설정 변경:', repeatValue);
+            
+            // 매주/매월 옵션 숨기기
+            if (weeklyOptions) {
+                weeklyOptions.style.display = 'none';
+                console.log('  - weeklyOptions 숨김');
+            }
+            if (monthlyOptions) {
+                monthlyOptions.style.display = 'none';
+                console.log('  - monthlyOptions 숨김');
+            }
             
             // 선택에 따라 옵션 표시
             if (repeatValue === 'weekly') {
-                if (weeklyOptions) weeklyOptions.style.display = 'block';
-                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
+                if (weeklyOptions) {
+                    weeklyOptions.style.display = 'block';
+                    console.log('  - weeklyOptions 표시');
+                }
             } else if (repeatValue === 'monthly') {
-                if (monthlyOptions) monthlyOptions.style.display = 'block';
-                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
+                if (monthlyOptions) {
+                    monthlyOptions.style.display = 'block';
+                    console.log('  - monthlyOptions 표시');
+                }
                 // 매월 옵션의 라벨 업데이트
                 updateMonthlyLabels();
-            } else if (repeatValue === 'daily') {
-                if (repeatEndOptions) repeatEndOptions.style.display = 'block';
             }
         });
+        
+        console.log('✅ 반복 설정 이벤트 리스너 등록 완료');
+    } else {
+        console.error('❌ repeatSelect 요소를 찾을 수 없음');
     }
     
     // 시작 날짜 변경 시 매월 옵션 라벨 업데이트
