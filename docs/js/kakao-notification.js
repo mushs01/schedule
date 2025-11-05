@@ -115,14 +115,49 @@ function checkAndRefreshToken() {
             url: '/v1/user/access_token_info',
             success: function(response) {
                 console.log('✅ Token is valid:', response);
-                resolve(true);
+                
+                // 토큰 만료 시간 확인 (초 단위)
+                const expiresIn = response.expires_in;
+                console.log(`⏰ 토큰 남은 시간: ${Math.floor(expiresIn / 60)}분`);
+                
+                // 만료 1시간 전이면 자동 갱신
+                if (expiresIn < 3600) {
+                    console.log('🔄 토큰 갱신 필요, 자동 갱신 시도...');
+                    refreshAccessToken().then(refreshed => {
+                        resolve(refreshed);
+                    });
+                } else {
+                    resolve(true);
+                }
             },
             fail: function(error) {
                 console.log('❌ Token validation failed:', error);
-                // 토큰이 유효하지 않으면 재로그인 필요
-                resolve(false);
+                // 토큰이 만료되었을 수 있으니 갱신 시도
+                console.log('🔄 토큰 갱신 시도...');
+                refreshAccessToken().then(refreshed => {
+                    resolve(refreshed);
+                });
             }
         });
+    });
+}
+
+/**
+ * Refresh Kakao access token using refresh token
+ */
+function refreshAccessToken() {
+    return new Promise((resolve) => {
+        Kakao.Auth.refreshAccessToken()
+            .then(function(res) {
+                console.log('✅ 토큰 갱신 성공');
+                console.log('새로운 액세스 토큰:', Kakao.Auth.getAccessToken());
+                resolve(true);
+            })
+            .catch(function(err) {
+                console.error('❌ 토큰 갱신 실패:', err);
+                console.log('ℹ️ 다시 로그인이 필요합니다');
+                resolve(false);
+            });
     });
 }
 
@@ -373,6 +408,23 @@ function startNotificationScheduler() {
     // Check every minute with error handling
     notificationInterval = setInterval(async () => {
         try {
+            // 토큰 자동 갱신 체크 (10분마다)
+            const now = Date.now();
+            const lastCheck = parseInt(localStorage.getItem('last_token_check') || '0');
+            if (now - lastCheck > 10 * 60 * 1000) { // 10분
+                console.log('🔄 정기 토큰 체크...');
+                const isValid = await checkAndRefreshToken();
+                if (!isValid) {
+                    console.log('⚠️ 토큰 갱신 실패, 알림 중지');
+                    stopNotificationScheduler();
+                    updateLoginUI(false);
+                    localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
+                    showToast('카카오톡 로그인이 만료되었습니다. 다시 로그인해주세요.', 'warning');
+                    return;
+                }
+                localStorage.setItem('last_token_check', now.toString());
+            }
+            
             await checkAndSendNotifications();
         } catch (error) {
             console.error('❌ Error in notification scheduler:', error);
@@ -385,7 +437,7 @@ function startNotificationScheduler() {
         console.error('❌ Error in initial notification check:', error);
     });
     
-    console.log('✅ Notification scheduler started - checking every 1 minute');
+    console.log('✅ Notification scheduler started (토큰 자동 갱신 활성화)');
     console.log('⏰ Next check in 60 seconds');
 }
 
