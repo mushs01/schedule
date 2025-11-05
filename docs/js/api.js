@@ -108,6 +108,12 @@ const api = {
             // Filter by date range
             if (filters.startDate || filters.endDate) {
                 filteredSchedules = schedules.filter(schedule => {
+                    // 반복 일정은 날짜 필터링하지 않음 (클라이언트에서 확장할 것이므로)
+                    if (schedule.repeat_type && schedule.repeat_type !== 'none') {
+                        console.log(`🔄 반복 일정은 날짜 필터 제외: ${schedule.title}`);
+                        return true;
+                    }
+                    
                     const scheduleDate = new Date(schedule.start);
                     if (filters.startDate && scheduleDate < new Date(filters.startDate)) {
                         return false;
