@@ -459,14 +459,18 @@ body {
 
 /* 현재 시간 표시 (일/주 일정) */
 .fc .fc-timegrid-now-indicator-line {
-    border-color: #ea4335 !important;
-    border-width: 2px !important;
+    border-top: 2px solid #ea4335 !important;
+    margin: 0 !important;
 }
 
 .fc .fc-timegrid-now-indicator-arrow {
-    border-color: #ea4335 !important;
-    border-width: 6px !important;
+    background: #ea4335 !important;
+    border-radius: 50% !important;
+    border: none !important;
+    width: 12px !important;
+    height: 12px !important;
     margin-top: -6px !important;
+    margin-left: -1px !important;
 }
 
 /* 과거 이벤트 스타일 */
