@@ -938,9 +938,10 @@ function fixNowIndicatorPosition() {
         return;
     }
     
-    // 동그라미를 날짜 열의 왼쪽 경계에 위치시키기
+    // 동그라미를 빨간선 왼쪽 끝에 위치시키기
     nowIndicatorArrow.style.position = 'absolute';
     nowIndicatorArrow.style.left = '-6px'; // 동그라미 반지름만큼 왼쪽으로
+    nowIndicatorArrow.style.top = '-6px'; // 빨간선 높이에 맞춤
     
     console.log('✅ 현재 시간 표시 위치 수정 완료');
 }

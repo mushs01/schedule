@@ -443,7 +443,7 @@ body {
     z-index: 3 !important;
 }
 
-/* 현재 시간 동그라미 - 날짜 열 왼쪽 경계에 위치 */
+/* 현재 시간 동그라미 - 빨간선 왼쪽 끝에 위치 */
 .fc .fc-timegrid-now-indicator-arrow {
     width: 12px !important;
     height: 12px !important;
@@ -452,8 +452,7 @@ body {
     border: none !important;
     position: absolute !important;
     left: -6px !important; /* 동그라미를 왼쪽 경계에 위치 */
-    top: 50% !important;
-    margin-top: -6px !important;
+    top: -6px !important; /* 빨간선 높이에 맞춤 */
     z-index: 4 !important;
 }
 
