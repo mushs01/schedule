@@ -112,10 +112,9 @@ function initCalendar() {
                 info.el.classList.add('past-event');
             }
             
-            // 월 보기에서 개별 일정 클릭 방지 및 담당자별 배경색 설정
+            // 월 보기에서 담당자별 배경색 설정
             if (info.view.type === 'dayGridMonth') {
-                info.el.style.cursor = 'default';
-                info.el.style.pointerEvents = 'none';
+                info.el.style.cursor = 'pointer'; // 클릭 가능 표시
                 
                 // 담당자별 배경색 설정 (과거 일정은 회색톤)
                 const person = info.event.extendedProps.person || 'all';
@@ -498,12 +497,6 @@ function handleDateSelect(selectInfo) {
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
     console.log('🖱️ Event clicked:', event);
-    
-    // 월 보기에서는 개별 일정 클릭 무시
-    if (calendar.view.type === 'dayGridMonth') {
-        console.log('❌ Month view: individual event click disabled');
-        return;
-    }
     
     console.log('📋 Event ID:', event.id);
     console.log('📋 Event extendedProps:', event.extendedProps);
