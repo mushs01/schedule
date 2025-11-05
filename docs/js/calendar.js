@@ -117,18 +117,21 @@ function initCalendar() {
                 info.el.style.cursor = 'default';
                 info.el.style.pointerEvents = 'none';
                 
-                // 담당자별 배경색 및 테두리 색상 설정
+                // 담당자별 배경색 설정 (원래 색상 그대로)
                 const person = info.event.extendedProps.person || 'all';
                 const baseColor = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'];
                 
-                // 배경색 (연한 색상, 20% 투명도)
-                const bgColor = hexToRgba(baseColor, 0.2);
-                
-                // 직접 스타일 적용
-                info.el.style.backgroundColor = bgColor;
+                // 직접 스타일 적용 - 배경색 진하게
+                info.el.style.backgroundColor = baseColor;
                 info.el.style.borderLeftColor = baseColor;
                 info.el.style.borderLeftWidth = '3px';
                 info.el.style.borderLeftStyle = 'solid';
+                
+                // 텍스트 색상을 흰색으로
+                const titleEl = info.el.querySelector('.fc-event-title');
+                if (titleEl) {
+                    titleEl.style.color = '#ffffff';
+                }
             }
             
             // Add tooltip

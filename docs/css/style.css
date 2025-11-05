@@ -392,14 +392,14 @@ body {
     /* 담당자별 배경 색상 - JavaScript에서 설정 */
 }
 
-/* 월 일정 담당자별 배경색 (음영 표시) */
+/* 월 일정 담당자별 배경색 */
 .fc .fc-daygrid-event {
     border-left: 3px solid transparent !important;
 }
 
-/* 월 일정 텍스트 색상 */
+/* 월 일정 텍스트 색상 (JavaScript에서 흰색으로 설정) */
 .fc .fc-daygrid-event .fc-event-title {
-    color: var(--text-primary) !important;
+    font-weight: 500 !important;
 }
 
 .fc .fc-daygrid-event .fc-event-time,
@@ -948,7 +948,7 @@ body {
 
 /* 반복 상세 옵션 */
 .repeat-detail-options {
-    padding: 10px 12px;
+    padding: 10px 0;
     background: #f8f9fa;
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -972,6 +972,7 @@ body {
     gap: 4px;
     flex-wrap: nowrap;
     justify-content: space-between;
+    padding: 0 10px;
 }
 
 .weekday-checkbox-item {
@@ -1036,6 +1037,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 0 10px;
 }
 
 .monthly-radio-item {
