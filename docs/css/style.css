@@ -430,10 +430,25 @@ body {
 /* 월 보기 날짜 셀 클릭 활성화 */
 .fc .fc-daygrid-day {
     cursor: pointer !important;
+    touch-action: auto !important;
 }
 
 .fc .fc-daygrid-day:hover {
     background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* 월 일정 전체 영역 터치 허용 */
+.fc-dayGridMonth-view,
+.fc-dayGridMonth-view .fc-scroller,
+.fc-dayGridMonth-view .fc-daygrid-body {
+    touch-action: pan-y !important;
+    pointer-events: auto !important;
+}
+
+/* 월 일정의 이벤트는 클릭 가능 */
+.fc-dayGridMonth-view .fc-daygrid-event {
+    pointer-events: auto !important;
+    touch-action: auto !important;
 }
 
 /* 과거 이벤트 스타일 */
