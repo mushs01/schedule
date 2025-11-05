@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=56">
+    <link rel="stylesheet" href="css/style.css?v=57">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -51,9 +51,6 @@
         </div>
         
         <div class="gcal-header-center">
-            <button class="icon-btn" id="todayBtn">
-                <span>오늘</span>
-            </button>
             <h2 class="current-month" id="currentMonth">2025년 10월</h2>
         </div>
         
@@ -135,6 +132,9 @@
         <main class="gcal-content">
             <div class="view-selector">
                 <div class="view-nav">
+                    <button class="icon-btn" id="todayBtn" style="min-width: 50px;">
+                        <span>오늘</span>
+                    </button>
                     <button class="icon-btn nav-btn" id="prevViewBtn">
                         <span class="material-icons">chevron_left</span>
                     </button>
