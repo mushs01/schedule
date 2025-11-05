@@ -251,6 +251,22 @@ body {
 
 .fc .fc-scrollgrid {
     background: #ffffff !important;
+    border: none !important;
+}
+
+/* 스크롤 그리드 내부 테두리 제거 */
+.fc .fc-scrollgrid-section > * {
+    border-left: none !important;
+}
+
+/* 첫 번째 열(시간 레이블 열)의 오른쪽 경계선 제거 */
+.fc .fc-timegrid-axis-chunk {
+    border-right: none !important;
+}
+
+/* 캘린더 전체 테두리 제거 */
+.fc .fc-view-harness {
+    border: none !important;
 }
 
 .fc .fc-col-header-cell {
@@ -305,12 +321,25 @@ body {
     border-top: none !important; /* 시간 레이블 영역 가로선 제거 */
 }
 
-/* 시간 축 (왼쪽 레이블) - 경계선 제거 */
+/* 시간 축 (왼쪽 레이블) - 모든 경계선 제거 */
 .fc .fc-timegrid-axis {
-    border-right: none !important;
-    border-top: none !important;
-    border-left: none !important;
+    border: none !important;
     position: relative !important;
+}
+
+/* 시간 레이블이 있는 열 전체 경계선 제거 */
+.fc .fc-timegrid-axis-frame {
+    border: none !important;
+}
+
+/* 시간 슬롯 열의 왼쪽 경계선 제거 */
+.fc .fc-timegrid-slots table {
+    border-left: none !important;
+}
+
+/* 헤더의 첫 번째 셀(빈 셀) 경계선 제거 */
+.fc .fc-col-header .fc-timegrid-axis {
+    border: none !important;
 }
 
 /* 시간 슬롯 셀 - 가로/세로선 제거 */
