@@ -168,6 +168,13 @@ function initCalendar() {
                     scrollToCurrentTime();
                 }, 300);
             }
+            
+            // 주간 뷰일 때 날짜 헤더에 스와이프 제스처 추가
+            if (calendar.view.type === 'timeGridWeek') {
+                setTimeout(() => {
+                    addSwipeGestureToDateHeader();
+                }, 100);
+            }
         }
     });
     
@@ -1014,6 +1021,58 @@ function markHolidays() {
             }
         });
     });
+}
+
+/**
+ * Add swipe gesture to date header for week navigation
+ */
+function addSwipeGestureToDateHeader() {
+    const dateHeader = document.querySelector('.fc-col-header');
+    
+    if (!dateHeader || dateHeader.dataset.swipeEnabled === 'true') {
+        return; // 이미 스와이프가 설정되어 있으면 중복 방지
+    }
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let touchStartY = 0;
+    let touchEndY = 0;
+    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+    
+    const handleTouchStart = (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    };
+    
+    const handleTouchEnd = (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+    };
+    
+    const handleSwipe = () => {
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        
+        // 수평 스와이프가 수직 스와이프보다 크면 (좌우 스와이프 감지)
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            if (deltaX > 0) {
+                // 오른쪽으로 스와이프 → 이전 주
+                console.log('👈 이전 주로 이동');
+                navigatePrev();
+            } else {
+                // 왼쪽으로 스와이프 → 다음 주
+                console.log('👉 다음 주로 이동');
+                navigateNext();
+            }
+        }
+    };
+    
+    dateHeader.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dateHeader.addEventListener('touchend', handleTouchEnd, { passive: true });
+    dateHeader.dataset.swipeEnabled = 'true'; // 중복 방지 플래그
+    
+    console.log('✅ 날짜 헤더 스와이프 제스처 활성화');
 }
 
 window.calendarModule = {
