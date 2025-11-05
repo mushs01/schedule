@@ -151,10 +151,10 @@ function initCalendar() {
         // 날짜 변경 시 헤더 업데이트 및 공휴일 표시
         datesSet: function(dateInfo) {
             updateHeaderDate();
-            // 약간의 지연 후 공휴일 표시 및 커스텀 선 그리기 (DOM이 렌더링된 후)
+            // 약간의 지연 후 공휴일 표시 및 현재 시간 표시 수정 (DOM이 렌더링된 후)
             setTimeout(() => {
                 markHolidays();
-                drawTimegridCustomLines();
+                fixNowIndicatorPosition();
             }, 100);
         }
     });
@@ -909,48 +909,40 @@ function markHolidays() {
 }
 
 /**
- * 타임그리드에 커스텀 선 그리기 (시간 구분선 및 날짜 구분선)
+ * 현재 시간 표시(빨간 동그라미) 위치를 해당 날짜 열 왼쪽으로 이동
  */
-function drawTimegridCustomLines() {
+function fixNowIndicatorPosition() {
     // 타임그리드 뷰가 아니면 리턴
     if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) {
         return;
     }
     
-    // 기존 커스텀 선 제거
-    document.querySelectorAll('.custom-time-line, .custom-date-line').forEach(el => el.remove());
+    // 현재 시간 표시 요소 찾기
+    const nowIndicatorArrow = document.querySelector('.fc-timegrid-now-indicator-arrow');
+    if (!nowIndicatorArrow) {
+        console.log('⚠️ 현재 시간 표시 없음');
+        return;
+    }
     
-    // 1. 시간 구분선 그리기 (시간 레이블 오른쪽부터 시작)
-    const timeSlots = document.querySelectorAll('.fc-timegrid-slot-label-frame');
-    timeSlots.forEach(slot => {
-        const slotCell = slot.closest('td');
-        if (!slotCell) return;
-        
-        // 시간 레이블의 오른쪽 끝 위치에서 가로선 시작
-        const line = document.createElement('div');
-        line.className = 'custom-time-line';
-        line.style.cssText = `
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: -1px;
-            height: 1px;
-            background: #dadce0;
-            pointer-events: none;
-            z-index: 1;
-        `;
-        slotCell.style.position = 'relative';
-        slotCell.appendChild(line);
-    });
+    // 동그라미가 있는 컨테이너 찾기
+    const container = nowIndicatorArrow.closest('.fc-timegrid-now-indicator-container');
+    if (!container) {
+        console.log('⚠️ 현재 시간 컨테이너 없음');
+        return;
+    }
     
-    // 2. 날짜 구분선 그리기 (세로선)
-    const dateCols = document.querySelectorAll('.fc-timegrid-col');
-    dateCols.forEach(col => {
-        // 이미 border-right가 있으므로 추가 작업 불필요
-        // CSS로 처리됨
-    });
+    // 해당 날짜 열 찾기
+    const parentCol = container.closest('.fc-timegrid-col');
+    if (!parentCol) {
+        console.log('⚠️ 날짜 열 없음');
+        return;
+    }
     
-    console.log('✅ 타임그리드 커스텀 선 그리기 완료');
+    // 동그라미를 날짜 열의 왼쪽 경계에 위치시키기
+    nowIndicatorArrow.style.position = 'absolute';
+    nowIndicatorArrow.style.left = '-6px'; // 동그라미 반지름만큼 왼쪽으로
+    
+    console.log('✅ 현재 시간 표시 위치 수정 완료');
 }
 
 window.calendarModule = {

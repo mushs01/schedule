@@ -302,7 +302,7 @@ body {
 /* 타임그리드 슬롯 높이 */
 .fc .fc-timegrid-slot {
     height: 40px !important;
-    border-top: none !important; /* 기본 가로선 제거 - 커스텀 선으로 대체 */
+    border-top: 1px solid #dadce0 !important; /* 기본 가로선 유지 (폴백) */
 }
 
 /* 시간 축 (왼쪽 레이블) - 오른쪽 경계선 */
@@ -321,25 +321,17 @@ body {
     border-right: 1px solid #dadce0 !important;
 }
 
-/* 커스텀 시간 구분선 */
-.custom-time-line {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: -1px !important;
-    height: 1px !important;
-    background: #dadce0 !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-}
-
-/* 시간 표시 레이블 */
+/* 시간 표시 레이블 - 선 위에 위치하도록 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
     padding-right: 8px !important;
     text-align: right !important;
     vertical-align: top !important;
     padding-top: 0 !important;
+    position: relative !important;
+    top: -8px !important; /* 시간 텍스트를 위로 올려서 선과 교차하도록 */
+    background: #ffffff !important; /* 선 위에 텍스트가 선명하게 보이도록 */
+    display: inline-block !important;
 }
 
 /* 시간 슬롯 기본 설정 */
@@ -351,6 +343,10 @@ body {
 .fc .fc-timegrid-slot-label-frame {
     text-align: right !important;
     padding-right: 8px !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: flex-end !important;
 }
 
 .fc .fc-event {
@@ -447,22 +443,25 @@ body {
     z-index: 3 !important;
 }
 
-/* 현재 시간 동그라미 - 날짜 열 왼쪽 경계에 정확히 위치 */
+/* 현재 시간 동그라미 - 날짜 열 왼쪽 경계에 위치 */
 .fc .fc-timegrid-now-indicator-arrow {
     width: 12px !important;
     height: 12px !important;
     border-radius: 50% !important;
     background-color: #ea4335 !important;
     border: none !important;
-    margin-left: -6px !important;
+    position: absolute !important;
+    left: -6px !important; /* 동그라미를 왼쪽 경계에 위치 */
+    top: 50% !important;
     margin-top: -6px !important;
     z-index: 4 !important;
 }
 
-/* 현재 시간 컨테이너 - 각 날짜 열에 개별 적용 */
+/* 현재 시간 컨테이너 */
 .fc .fc-timegrid-now-indicator-container {
     overflow: visible !important;
     z-index: 3 !important;
+    position: relative !important;
 }
 
 /* 과거 이벤트 스타일 */
