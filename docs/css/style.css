@@ -302,12 +302,13 @@ body {
 /* 타임그리드 슬롯 높이 */
 .fc .fc-timegrid-slot {
     height: 40px !important;
-    border-top: 1px solid #dadce0 !important;
+    border-top: none !important; /* 기본 가로선 제거 - 커스텀 선으로 대체 */
 }
 
 /* 시간 축 (왼쪽 레이블) - 오른쪽 경계선 */
 .fc .fc-timegrid-axis {
     border-right: 1px solid #dadce0 !important;
+    position: relative !important;
 }
 
 /* 날짜 열 세로 구분선 */
@@ -318,6 +319,18 @@ body {
 /* 헤더 날짜 셀 구분선 */
 .fc .fc-col-header-cell {
     border-right: 1px solid #dadce0 !important;
+}
+
+/* 커스텀 시간 구분선 */
+.custom-time-line {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: -1px !important;
+    height: 1px !important;
+    background: #dadce0 !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
 }
 
 /* 시간 표시 레이블 */

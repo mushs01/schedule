@@ -151,8 +151,11 @@ function initCalendar() {
         // 날짜 변경 시 헤더 업데이트 및 공휴일 표시
         datesSet: function(dateInfo) {
             updateHeaderDate();
-            // 약간의 지연 후 공휴일 표시 (DOM이 렌더링된 후)
-            setTimeout(() => markHolidays(), 100);
+            // 약간의 지연 후 공휴일 표시 및 커스텀 선 그리기 (DOM이 렌더링된 후)
+            setTimeout(() => {
+                markHolidays();
+                drawTimegridCustomLines();
+            }, 100);
         }
     });
     
@@ -903,6 +906,51 @@ function markHolidays() {
             }
         });
     });
+}
+
+/**
+ * 타임그리드에 커스텀 선 그리기 (시간 구분선 및 날짜 구분선)
+ */
+function drawTimegridCustomLines() {
+    // 타임그리드 뷰가 아니면 리턴
+    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) {
+        return;
+    }
+    
+    // 기존 커스텀 선 제거
+    document.querySelectorAll('.custom-time-line, .custom-date-line').forEach(el => el.remove());
+    
+    // 1. 시간 구분선 그리기 (시간 레이블 오른쪽부터 시작)
+    const timeSlots = document.querySelectorAll('.fc-timegrid-slot-label-frame');
+    timeSlots.forEach(slot => {
+        const slotCell = slot.closest('td');
+        if (!slotCell) return;
+        
+        // 시간 레이블의 오른쪽 끝 위치에서 가로선 시작
+        const line = document.createElement('div');
+        line.className = 'custom-time-line';
+        line.style.cssText = `
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -1px;
+            height: 1px;
+            background: #dadce0;
+            pointer-events: none;
+            z-index: 1;
+        `;
+        slotCell.style.position = 'relative';
+        slotCell.appendChild(line);
+    });
+    
+    // 2. 날짜 구분선 그리기 (세로선)
+    const dateCols = document.querySelectorAll('.fc-timegrid-col');
+    dateCols.forEach(col => {
+        // 이미 border-right가 있으므로 추가 작업 불필요
+        // CSS로 처리됨
+    });
+    
+    console.log('✅ 타임그리드 커스텀 선 그리기 완료');
 }
 
 window.calendarModule = {
