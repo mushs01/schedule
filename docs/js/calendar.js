@@ -209,8 +209,9 @@ function expandRecurringEvent(schedule, startDate, endDate) {
             return events;
         }
         
-        // 조회 시작일 이전부터 시작 (반복 일정이므로)
-        currentDate = scheduleStart < startDate ? new Date(startDate) : new Date(scheduleStart);
+        // 원본 일정의 시작일부터 시작하되, 조회 범위 밖의 일정은 나중에 필터링
+        // 이렇게 해야 원본 일정도 포함됨
+        currentDate = new Date(scheduleStart);
         console.log(`    📅 실제 시작일: ${currentDate.toISOString()}`);
         while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
             // 한국 시간 기준으로 요일 계산 (UTC+9)
