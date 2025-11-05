@@ -451,6 +451,18 @@ body {
     touch-action: auto !important;
 }
 
+/* 현재 시간 표시 (일/주 일정) */
+.fc .fc-timegrid-now-indicator-line {
+    border-color: #ea4335 !important;
+    border-width: 2px !important;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+    border-color: #ea4335 !important;
+    border-width: 6px !important;
+    margin-top: -6px !important;
+}
+
 /* 과거 이벤트 스타일 */
 .fc .past-event {
     opacity: 0.6;
