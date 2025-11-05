@@ -25,7 +25,24 @@ function initKakao() {
         Kakao.init(KAKAO_APP_KEY);
         console.log('✅ Kakao SDK initialized');
     }
+    
+    // 페이지 로드 시 토큰 복원 시도
+    restoreKakaoSession();
+    
     loadSettings();
+}
+
+/**
+ * Restore Kakao session from stored token
+ */
+function restoreKakaoSession() {
+    const accessToken = Kakao.Auth.getAccessToken();
+    if (accessToken) {
+        console.log('✅ Kakao 액세스 토큰 복원됨');
+        // 토큰 유효성 체크는 loadSettings에서 수행
+    } else {
+        console.log('ℹ️ 저장된 Kakao 액세스 토큰 없음');
+    }
 }
 
 /**
@@ -406,21 +423,26 @@ function updateLoginUI(isLoggedIn) {
  * Load settings from localStorage
  */
 async function loadSettings() {
-    const isLoggedIn = localStorage.getItem(STORAGE_KEYS.KAKAO_LOGGED_IN) === 'true';
+    const accessToken = Kakao.Auth.getAccessToken();
     
-    if (isLoggedIn && Kakao.Auth.getAccessToken()) {
+    // 액세스 토큰이 있으면 자동 로그인 상태 유지
+    if (accessToken) {
+        console.log('🔄 저장된 토큰으로 로그인 상태 확인 중...');
         // 토큰 유효성 확인
         const isValid = await checkAndRefreshToken();
         if (isValid) {
+            console.log('✅ 로그인 상태 유지됨');
+            localStorage.setItem(STORAGE_KEYS.KAKAO_LOGGED_IN, 'true');
             updateLoginUI(true);
             startNotificationScheduler();
         } else {
             // 토큰이 만료되었으면 로그아웃 처리
-            console.log('⚠️ Token expired, logging out...');
+            console.log('⚠️ 토큰 만료됨, 로그아웃 처리');
             updateLoginUI(false);
             localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
         }
     } else {
+        console.log('ℹ️ 로그인되지 않음');
         updateLoginUI(false);
         localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
     }

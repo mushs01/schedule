@@ -83,9 +83,11 @@ function initCalendar() {
             if (date.date.hour === 6) {
                 return '';
             }
-            // 나머지 시간은 24시간 형식으로 표시
+            // 12시간 형식으로 변환 (오전/오후)
             const hour = date.date.hour;
-            return hour + ':00';
+            const period = hour < 12 ? '오전' : '오후';
+            const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+            return `${period} ${hour12}시`;
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         contentHeight: 'auto', // 콘텐츠 높이는 auto
