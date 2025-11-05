@@ -336,6 +336,13 @@ body {
 
 /* ===== 타임그리드 레이아웃 ===== */
 
+/* 타임그리드 스크롤러 높이 제한 */
+.fc-timeGridWeek-view .fc-scroller,
+.fc-timeGridDay-view .fc-scroller {
+    max-height: 70vh !important; /* 뷰포트 높이의 70%로 제한하여 스크롤 활성화 */
+    overflow-y: auto !important;
+}
+
 /* 타임그리드 슬롯 높이 */
 .fc .fc-timegrid-slot {
     height: 40px !important;

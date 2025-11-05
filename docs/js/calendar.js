@@ -88,7 +88,8 @@ function initCalendar() {
             return hour + ':00';
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
-        height: 'auto',
+        contentHeight: 'auto', // 콘텐츠 높이는 auto
+        expandRows: false, // 행 확장 방지하여 스크롤 활성화
         nowIndicator: true,
         editable: false, // 드래그로 일정 이동 비활성화
         selectable: true, // 빈 시간대 선택은 유지 (일정 추가용)
