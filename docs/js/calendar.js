@@ -78,11 +78,14 @@ function initCalendar() {
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
         slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
-        slotLabelFormat: {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false,
-            meridiem: false
+        slotLabelFormat: function(date) {
+            // 06:00은 빈 문자열 반환
+            if (date.date.hour === 6) {
+                return '';
+            }
+            // 나머지 시간은 24시간 형식으로 표시
+            const hour = date.date.hour;
+            return hour + ':00';
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         height: 'auto',
@@ -155,6 +158,13 @@ function initCalendar() {
             setTimeout(() => {
                 markHolidays();
             }, 100);
+            
+            // 주간/일간 뷰일 때만 현재 시간 중심으로 스크롤
+            if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+                setTimeout(() => {
+                    scrollToCurrentTime();
+                }, 150);
+            }
         }
     });
     
@@ -163,6 +173,47 @@ function initCalendar() {
     
     // 초기 공휴일 표시
     setTimeout(() => markHolidays(), 200);
+}
+
+/**
+ * 현재 시간을 중심으로 스크롤
+ */
+function scrollToCurrentTime() {
+    const scrollerEl = document.querySelector('.fc-scroller.fc-scroller-liquid-absolute');
+    if (!scrollerEl) return;
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // 현재 시간을 시간 단위로 계산 (예: 14:30 = 14.5시간)
+    const currentTime = currentHour + currentMinute / 60;
+    
+    // 전체 시간 범위 (06:00 ~ 24:00 = 18시간)
+    const minTime = 6;
+    const maxTime = 24;
+    const totalHours = maxTime - minTime;
+    
+    // 현재 시간이 표시 범위 내에 있는지 확인
+    if (currentTime < minTime || currentTime > maxTime) {
+        return; // 범위 밖이면 스크롤하지 않음
+    }
+    
+    // 스크롤 가능한 전체 높이
+    const scrollHeight = scrollerEl.scrollHeight;
+    const visibleHeight = scrollerEl.clientHeight;
+    
+    // 현재 시간의 위치 계산 (06:00부터의 비율)
+    const timeRatio = (currentTime - minTime) / totalHours;
+    const targetScrollTop = scrollHeight * timeRatio;
+    
+    // 현재 시간이 화면 중앙에 오도록 조정
+    const centeredScrollTop = targetScrollTop - (visibleHeight / 2);
+    
+    // 스크롤 (최소 0, 최대 scrollHeight - visibleHeight)
+    scrollerEl.scrollTop = Math.max(0, Math.min(centeredScrollTop, scrollHeight - visibleHeight));
+    
+    console.log(`📍 현재 시간 중심 스크롤: ${currentHour}:${currentMinute.toString().padStart(2, '0')}`);
 }
 
 /**

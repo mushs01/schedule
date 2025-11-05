@@ -404,6 +404,11 @@ body {
     display: inline-block !important;
 }
 
+/* 06:00 시간 라벨만 숨기기 */
+.fc .fc-timegrid-slot[data-time="06:00:00"] .fc-timegrid-slot-label-cushion {
+    visibility: hidden !important;
+}
+
 /* 시간 슬롯 기본 설정 */
 .fc .fc-timegrid-slot {
     position: relative !important;
