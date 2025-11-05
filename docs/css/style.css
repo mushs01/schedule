@@ -389,14 +389,17 @@ body {
     white-space: nowrap !important;
     text-overflow: ellipsis !important;
     border: none !important;
-    /* 담당자별 배경 색상 - FullCalendar의 inline style 사용 */
+    /* 담당자별 배경 색상 - JavaScript에서 설정 */
 }
 
 /* 월 일정 담당자별 배경색 (음영 표시) */
-.fc-daygrid-event {
-    background-color: var(--event-bg-color, rgba(26, 115, 232, 0.2)) !important;
+.fc .fc-daygrid-event {
+    border-left: 3px solid transparent !important;
+}
+
+/* 월 일정 텍스트 색상 */
+.fc .fc-daygrid-event .fc-event-title {
     color: var(--text-primary) !important;
-    border-left: 3px solid var(--event-border-color, #1a73e8) !important;
 }
 
 .fc .fc-daygrid-event .fc-event-time,
@@ -945,7 +948,7 @@ body {
 
 /* 반복 상세 옵션 */
 .repeat-detail-options {
-    padding: 10px;
+    padding: 10px 12px;
     background: #f8f9fa;
     border-radius: 8px;
     border: 1px solid var(--border-color);

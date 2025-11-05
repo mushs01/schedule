@@ -123,8 +123,12 @@ function initCalendar() {
                 
                 // 배경색 (연한 색상, 20% 투명도)
                 const bgColor = hexToRgba(baseColor, 0.2);
-                info.el.style.setProperty('--event-bg-color', bgColor);
-                info.el.style.setProperty('--event-border-color', baseColor);
+                
+                // 직접 스타일 적용
+                info.el.style.backgroundColor = bgColor;
+                info.el.style.borderLeftColor = baseColor;
+                info.el.style.borderLeftWidth = '3px';
+                info.el.style.borderLeftStyle = 'solid';
             }
             
             // Add tooltip
