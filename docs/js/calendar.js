@@ -176,10 +176,13 @@ function initCalendar() {
     
     // 초기 렌더링 시 현재 시간 중심으로 스크롤
     setTimeout(() => {
+        console.log('🎯 초기 렌더링 스크롤 시도, 현재 뷰:', calendar.view.type);
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
             scrollToCurrentTime();
+        } else {
+            console.log('⚠️ 현재 뷰가 timeGrid가 아닙니다:', calendar.view.type);
         }
-    }, 400);
+    }, 500);
 }
 
 /**
@@ -779,6 +782,14 @@ async function handleEventResize(resizeInfo) {
 function changeView(viewName) {
     calendar.changeView(viewName);
     updateHeaderDate(); // view 변경 시 헤더 날짜 업데이트
+    
+    // 주간/일간 뷰로 변경 시 현재 시간 중심으로 스크롤
+    if (viewName === 'timeGridWeek' || viewName === 'timeGridDay') {
+        setTimeout(() => {
+            console.log('🔄 뷰 변경 후 스크롤 실행:', viewName);
+            scrollToCurrentTime();
+        }, 300);
+    }
 }
 
 /**
