@@ -362,9 +362,26 @@ body {
     border-right: none !important;
 }
 
+/* 시간 표시 - 슬롯 중앙에 배치 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
-    padding: 4px;
+    padding: 0 4px !important;
+    vertical-align: middle !important;
+    position: relative !important;
+    background: #ffffff !important;
+    z-index: 2 !important;
+}
+
+/* 시간 슬롯 - 중앙선 표시 */
+.fc .fc-timegrid-slot {
+    position: relative !important;
+}
+
+.fc .fc-timegrid-slot-label-frame {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
 }
 
 .fc .fc-event {
@@ -1688,7 +1705,7 @@ body {
     
     .fc .fc-timegrid-slot-label {
         font-size: 10px;
-        padding: 2px;
+        padding: 0 2px !important;
     }
     
     .fc .fc-event {
