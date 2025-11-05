@@ -163,7 +163,7 @@ function initCalendar() {
             if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
                 setTimeout(() => {
                     scrollToCurrentTime();
-                }, 150);
+                }, 300);
             }
         }
     });
@@ -173,20 +173,34 @@ function initCalendar() {
     
     // 초기 공휴일 표시
     setTimeout(() => markHolidays(), 200);
+    
+    // 초기 렌더링 시 현재 시간 중심으로 스크롤
+    setTimeout(() => {
+        if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+            scrollToCurrentTime();
+        }
+    }, 400);
 }
 
 /**
  * 현재 시간을 중심으로 스크롤
  */
 function scrollToCurrentTime() {
-    const scrollerEl = document.querySelector('.fc-scroller.fc-scroller-liquid-absolute');
-    if (!scrollerEl) return;
+    // 여러 가능한 스크롤 컨테이너 셀렉터 시도
+    const scrollerEl = document.querySelector('.fc-scroller.fc-scroller-liquid-absolute') ||
+                       document.querySelector('.fc-timegrid-body .fc-scroller') ||
+                       document.querySelector('.fc-scroller');
+    
+    if (!scrollerEl) {
+        console.warn('❌ 스크롤 컨테이너를 찾을 수 없습니다');
+        return;
+    }
     
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     
-    // 현재 시간을 시간 단위로 계산 (예: 14:30 = 14.5시간)
+    // 현재 시간을 시간 단위로 계산 (예: 16:30 = 16.5시간)
     const currentTime = currentHour + currentMinute / 60;
     
     // 전체 시간 범위 (06:00 ~ 24:00 = 18시간)
@@ -195,8 +209,16 @@ function scrollToCurrentTime() {
     const totalHours = maxTime - minTime;
     
     // 현재 시간이 표시 범위 내에 있는지 확인
-    if (currentTime < minTime || currentTime > maxTime) {
-        return; // 범위 밖이면 스크롤하지 않음
+    if (currentTime < minTime) {
+        console.log(`📍 현재 시간(${currentHour}:${currentMinute.toString().padStart(2, '0')})이 표시 범위 이전입니다. 맨 위로 스크롤합니다.`);
+        scrollerEl.scrollTop = 0;
+        return;
+    }
+    
+    if (currentTime > maxTime) {
+        console.log(`📍 현재 시간(${currentHour}:${currentMinute.toString().padStart(2, '0')})이 표시 범위 이후입니다. 맨 아래로 스크롤합니다.`);
+        scrollerEl.scrollTop = scrollerEl.scrollHeight;
+        return;
     }
     
     // 스크롤 가능한 전체 높이
@@ -211,9 +233,14 @@ function scrollToCurrentTime() {
     const centeredScrollTop = targetScrollTop - (visibleHeight / 2);
     
     // 스크롤 (최소 0, 최대 scrollHeight - visibleHeight)
-    scrollerEl.scrollTop = Math.max(0, Math.min(centeredScrollTop, scrollHeight - visibleHeight));
+    const finalScrollTop = Math.max(0, Math.min(centeredScrollTop, scrollHeight - visibleHeight));
+    scrollerEl.scrollTop = finalScrollTop;
     
-    console.log(`📍 현재 시간 중심 스크롤: ${currentHour}:${currentMinute.toString().padStart(2, '0')}`);
+    console.log(`📍 현재 시간 중심 스크롤 적용:`);
+    console.log(`   - 현재 시간: ${currentHour}:${currentMinute.toString().padStart(2, '0')} (${currentTime.toFixed(2)}시간)`);
+    console.log(`   - 시간 비율: ${(timeRatio * 100).toFixed(1)}%`);
+    console.log(`   - 전체 높이: ${scrollHeight}px, 보이는 높이: ${visibleHeight}px`);
+    console.log(`   - 스크롤 위치: ${finalScrollTop}px`);
 }
 
 /**
