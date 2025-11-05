@@ -189,28 +189,32 @@ function initCalendar() {
  * 현재 시간을 중심으로 스크롤
  */
 function scrollToCurrentTime() {
-    // 여러 가능한 스크롤 컨테이너 셀렉터 시도
-    let scrollerEl = document.querySelector('.fc-timegrid-body .fc-scroller');
+    // 모든 스크롤 컨테이너를 찾아서 가장 큰 것을 선택
+    const allScrollers = document.querySelectorAll('.fc-scroller');
     
-    if (!scrollerEl) {
-        scrollerEl = document.querySelector('.fc-scroller-liquid-absolute');
-    }
-    
-    if (!scrollerEl) {
-        scrollerEl = document.querySelector('.fc-scroller');
-    }
-    
-    if (!scrollerEl) {
+    if (allScrollers.length === 0) {
         console.warn('❌ 스크롤 컨테이너를 찾을 수 없습니다');
         return;
     }
     
-    console.log('📦 찾은 스크롤 컨테이너:', scrollerEl.className);
-    console.log('📦 스크롤 컨테이너 크기:', {
-        scrollHeight: scrollerEl.scrollHeight,
-        clientHeight: scrollerEl.clientHeight,
-        offsetHeight: scrollerEl.offsetHeight
+    // scrollHeight가 가장 큰 요소 선택 (실제 시간표 스크롤러)
+    let scrollerEl = null;
+    let maxScrollHeight = 0;
+    
+    allScrollers.forEach((el, idx) => {
+        console.log(`🔍 스크롤러 [${idx}]: scrollHeight=${el.scrollHeight}, clientHeight=${el.clientHeight}`);
+        if (el.scrollHeight > maxScrollHeight) {
+            maxScrollHeight = el.scrollHeight;
+            scrollerEl = el;
+        }
     });
+    
+    if (!scrollerEl || maxScrollHeight < 100) {
+        console.warn('❌ 적절한 스크롤 컨테이너를 찾을 수 없습니다');
+        return;
+    }
+    
+    console.log('✅ 선택된 스크롤 컨테이너:', scrollerEl.className, `(scrollHeight: ${scrollerEl.scrollHeight}px)`);
     
     const now = new Date();
     const currentHour = now.getHours();
@@ -240,17 +244,6 @@ function scrollToCurrentTime() {
     // 스크롤 가능한 전체 높이
     const scrollHeight = scrollerEl.scrollHeight;
     const visibleHeight = scrollerEl.clientHeight;
-    
-    // 높이가 너무 작으면 다른 요소를 찾아봄
-    if (scrollHeight < 100) {
-        console.warn('⚠️ 스크롤 높이가 너무 작습니다. 다른 컨테이너를 찾습니다...');
-        const allScrollers = document.querySelectorAll('.fc-scroller');
-        console.log('🔍 모든 스크롤러:', allScrollers.length);
-        allScrollers.forEach((el, idx) => {
-            console.log(`   [${idx}] ${el.className} - scrollHeight: ${el.scrollHeight}, clientHeight: ${el.clientHeight}`);
-        });
-        return;
-    }
     
     // 현재 시간의 위치 계산 (06:00부터의 비율)
     const timeRatio = (currentTime - minTime) / totalHours;
