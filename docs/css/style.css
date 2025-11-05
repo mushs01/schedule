@@ -239,6 +239,27 @@ body {
 .fc {
     font-size: 12px;
     background: #ffffff !important;
+    border: none !important;
+}
+
+/* FullCalendar 기본 테두리 완전 제거 */
+.fc table,
+.fc th,
+.fc td {
+    border-color: transparent !important;
+}
+
+/* 시간 레이블 영역의 모든 테두리 제거 */
+.fc .fc-timegrid-axis-chunk,
+.fc .fc-timegrid-axis-chunk > *,
+.fc .fc-timegrid-axis-frame,
+.fc .fc-timegrid-axis-frame > *,
+.fc .fc-timegrid-axis,
+.fc tbody[role="presentation"] td:first-child {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
 }
 
 .fc .fc-toolbar {
@@ -347,19 +368,27 @@ body {
     border: none !important;
 }
 
-/* 날짜 열 세로 구분선 - 일정 영역만 */
+/* 날짜 열 세로 구분선 - 일정 영역만 (시간 레이블 제외) */
 .fc .fc-timegrid-col {
     border-right: 1px solid #dadce0 !important;
+    border-color: #dadce0 !important;
 }
 
 /* 일정 영역 가로선 */
 .fc .fc-timegrid-slot-lane {
     border-top: 1px solid #dadce0 !important;
+    border-color: #dadce0 !important;
 }
 
-/* 헤더 날짜 셀 구분선 */
-.fc .fc-col-header-cell {
+/* 헤더 날짜 셀 구분선 (첫 번째 셀 제외) */
+.fc .fc-col-header-cell:not(.fc-timegrid-axis) {
     border-right: 1px solid #dadce0 !important;
+    border-color: #dadce0 !important;
+}
+
+/* 첫 번째 헤더 셀(시간 레이블 위) 테두리 완전 제거 */
+.fc .fc-col-header-cell.fc-timegrid-axis {
+    border: none !important;
 }
 
 /* 시간 표시 레이블 - 선 위에 위치하도록 */
