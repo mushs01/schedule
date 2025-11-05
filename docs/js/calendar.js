@@ -117,11 +117,16 @@ function initCalendar() {
                 info.el.style.cursor = 'default';
                 info.el.style.pointerEvents = 'none';
                 
-                // 담당자별 배경색 설정 (원래 색상 그대로)
+                // 담당자별 배경색 설정 (과거 일정은 회색톤)
                 const person = info.event.extendedProps.person || 'all';
-                const baseColor = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'];
+                const isPast = info.event.extendedProps.isPast;
                 
-                // 직접 스타일 적용 - 배경색 진하게
+                // 과거 일정이면 회색톤 색상, 아니면 원래 색상
+                const baseColor = isPast 
+                    ? (window.PERSON_COLORS_PAST[person] || window.PERSON_COLORS_PAST['all'])
+                    : (window.PERSON_COLORS[person] || window.PERSON_COLORS['all']);
+                
+                // 직접 스타일 적용
                 info.el.style.backgroundColor = baseColor;
                 info.el.style.borderLeftColor = baseColor;
                 info.el.style.borderLeftWidth = '3px';
