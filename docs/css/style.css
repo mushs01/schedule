@@ -392,6 +392,13 @@ body {
     /* 담당자별 배경 색상 - FullCalendar의 inline style 사용 */
 }
 
+/* 월 일정 담당자별 배경색 (음영 표시) */
+.fc-daygrid-event {
+    background-color: var(--event-bg-color, rgba(26, 115, 232, 0.2)) !important;
+    color: var(--text-primary) !important;
+    border-left: 3px solid var(--event-border-color, #1a73e8) !important;
+}
+
 .fc .fc-daygrid-event .fc-event-time,
 .fc-daygrid-event .fc-event-time {
     display: none !important;

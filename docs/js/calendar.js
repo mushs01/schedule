@@ -35,6 +35,21 @@ window.PERSON_NAMES = window.PERSON_NAMES || {
 };
 
 /**
+ * Hex 색상을 RGBA로 변환하는 헬퍼 함수
+ */
+function hexToRgba(hex, alpha = 1) {
+    // #을 제거
+    hex = hex.replace('#', '');
+    
+    // RGB 값 추출
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
  * Initialize FullCalendar
  */
 function initCalendar() {
@@ -97,10 +112,19 @@ function initCalendar() {
                 info.el.classList.add('past-event');
             }
             
-            // 월 보기에서 개별 일정 클릭 방지
+            // 월 보기에서 개별 일정 클릭 방지 및 담당자별 배경색 설정
             if (info.view.type === 'dayGridMonth') {
                 info.el.style.cursor = 'default';
                 info.el.style.pointerEvents = 'none';
+                
+                // 담당자별 배경색 및 테두리 색상 설정
+                const person = info.event.extendedProps.person || 'all';
+                const baseColor = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'];
+                
+                // 배경색 (연한 색상, 20% 투명도)
+                const bgColor = hexToRgba(baseColor, 0.2);
+                info.el.style.setProperty('--event-bg-color', bgColor);
+                info.el.style.setProperty('--event-border-color', baseColor);
             }
             
             // Add tooltip
