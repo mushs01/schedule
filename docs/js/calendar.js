@@ -213,6 +213,9 @@ function expandRecurringEvent(schedule, startDate, endDate) {
         // 이렇게 해야 원본 일정도 포함됨
         currentDate = new Date(scheduleStart);
         console.log(`    📅 실제 시작일: ${currentDate.toISOString()}`);
+        console.log(`    📅 조회 범위: ${startDate.toISOString()} ~ ${endDate.toISOString()}`);
+        console.log(`    📅 반복 종료일: ${repeatEndDate.toISOString()}`);
+        
         while (currentDate <= repeatEndDate && currentDate <= endDate && count < maxCount) {
             // 한국 시간 기준으로 요일 계산 (UTC+9)
             const koreanTime = new Date(currentDate.getTime() + 9 * 60 * 60 * 1000);
