@@ -151,10 +151,9 @@ function initCalendar() {
         // 날짜 변경 시 헤더 업데이트 및 공휴일 표시
         datesSet: function(dateInfo) {
             updateHeaderDate();
-            // 약간의 지연 후 공휴일 표시 및 현재 시간 표시 수정 (DOM이 렌더링된 후)
+            // 약간의 지연 후 공휴일 표시 (DOM이 렌더링된 후)
             setTimeout(() => {
                 markHolidays();
-                fixNowIndicatorPosition();
             }, 100);
         }
     });
@@ -906,44 +905,6 @@ function markHolidays() {
             }
         });
     });
-}
-
-/**
- * 현재 시간 표시(빨간 동그라미) 위치를 해당 날짜 열 왼쪽으로 이동
- */
-function fixNowIndicatorPosition() {
-    // 타임그리드 뷰가 아니면 리턴
-    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) {
-        return;
-    }
-    
-    // 현재 시간 표시 요소 찾기
-    const nowIndicatorArrow = document.querySelector('.fc-timegrid-now-indicator-arrow');
-    if (!nowIndicatorArrow) {
-        console.log('⚠️ 현재 시간 표시 없음');
-        return;
-    }
-    
-    // 동그라미가 있는 컨테이너 찾기
-    const container = nowIndicatorArrow.closest('.fc-timegrid-now-indicator-container');
-    if (!container) {
-        console.log('⚠️ 현재 시간 컨테이너 없음');
-        return;
-    }
-    
-    // 해당 날짜 열 찾기
-    const parentCol = container.closest('.fc-timegrid-col');
-    if (!parentCol) {
-        console.log('⚠️ 날짜 열 없음');
-        return;
-    }
-    
-    // 동그라미를 빨간선 왼쪽 끝에 위치시키기
-    nowIndicatorArrow.style.position = 'absolute';
-    nowIndicatorArrow.style.left = '-6px'; // 동그라미 반지름만큼 왼쪽으로
-    nowIndicatorArrow.style.top = '-6px'; // 빨간선 높이에 맞춤
-    
-    console.log('✅ 현재 시간 표시 위치 수정 완료');
 }
 
 window.calendarModule = {

@@ -1549,8 +1549,9 @@ function initTodaySummaryToggle() {
     
     if (!header || !list || !icon) return;
     
-    // 기본적으로 펼쳐진 상태 (로컬 스토리지에서 상태 확인)
-    const isCollapsed = localStorage.getItem('todaySummaryCollapsed') === 'true';
+    // 기본적으로 숨김 상태 (로컬 스토리지에서 상태 확인)
+    const savedState = localStorage.getItem('todaySummaryCollapsed');
+    const isCollapsed = savedState === null ? true : savedState === 'true'; // 기본값 숨김
     if (isCollapsed) {
         list.classList.add('collapsed');
         icon.classList.add('collapsed');
