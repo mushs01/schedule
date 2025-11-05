@@ -258,7 +258,8 @@ body {
     font-size: 11px;
     font-weight: 500;
     background: #ffffff !important;
-    border-color: var(--border-color);
+    border-color: #dadce0 !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
 /* 요일 헤더 색상 */
@@ -305,32 +306,37 @@ body {
 /* 타임그리드 구분선 - 단순화 및 연한 색상 */
 .fc .fc-timegrid-col {
     background: #ffffff !important;
-    border-right: 1px solid #e8eaed !important;
+    border-right: 1px solid #dadce0 !important;
     position: relative;
 }
 
 /* 시간 축(왼쪽 시간 표시 영역) */
 .fc .fc-timegrid-axis {
-    border-right: 1px solid #e8eaed !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
-/* 날짜 열 구분 (헤더와 정렬) */
+/* 날짜 열 구분 (헤더와 정렬) - 더 진하게 */
 .fc .fc-timegrid-cols col {
-    border-right: 1px solid #e8eaed !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
-/* 중복 border 제거 */
+/* 타임그리드 슬롯에도 날짜 구분선 추가 */
+.fc .fc-timegrid-slot-lane {
+    border-right: 1px solid #dadce0 !important;
+}
+
+/* 중복 border 제거하지 않음 - 날짜 구분선 유지 */
 .fc .fc-timegrid-col-frame {
-    border-right: none !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
 .fc .fc-timegrid-body .fc-day {
     background: #ffffff !important;
-    border-right: none !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
 .fc .fc-timegrid-body td {
-    border-right: none !important;
+    border-right: 1px solid #dadce0 !important;
 }
 
 .fc .fc-timegrid-slots td {
