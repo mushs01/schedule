@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=75">
+    <link rel="stylesheet" href="css/style.css?v=76">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -175,9 +175,10 @@
             
             <!-- Today's Schedule Summary -->
             <div id="todaySummary" class="today-summary">
-                <div class="today-summary-header">
+                <div class="today-summary-header" id="todaySummaryHeader" style="cursor: pointer;">
                     <h3>오늘의 일정</h3>
                     <span class="today-date" id="todayDate"></span>
+                    <span class="material-icons toggle-icon" id="todayToggleIcon">expand_less</span>
                 </div>
                 <div class="today-summary-list" id="todaySummaryList">
                     <p class="no-schedule">오늘 예정된 일정이 없습니다</p>
@@ -522,6 +523,6 @@
     <script src="js/kakao-notification.js?v=34"></script>
     <script src="js/api.js?v=31"></script>
     <script src="js/calendar.js?v=44"></script>
-    <script src="js/app.js?v=45"></script>
+    <script src="js/app.js?v=46"></script>
 </body>
 </html>

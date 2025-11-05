@@ -491,6 +491,14 @@ body {
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
+    user-select: none;
+    transition: background-color 0.2s;
+    padding: 4px 0;
+    border-radius: 4px;
+}
+
+.today-summary-header:hover {
+    background-color: #f5f5f5;
 }
 
 .today-summary-header h3 {
@@ -498,6 +506,17 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+}
+
+.today-summary-header .toggle-icon {
+    margin-left: auto;
+    font-size: 20px;
+    color: var(--text-secondary);
+    transition: transform 0.3s;
+}
+
+.today-summary-header .toggle-icon.collapsed {
+    transform: rotate(180deg);
 }
 
 .today-date {
@@ -510,6 +529,16 @@ body {
     flex-direction: column;
     gap: 4px;
     padding: 4px 0;
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.3s, opacity 0.3s;
+}
+
+.today-summary-list.collapsed {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
 }
 
 .today-item {

@@ -1539,10 +1539,42 @@ function formatTime(date) {
     });
 }
 
+/**
+ * Initialize Today Summary Toggle
+ */
+function initTodaySummaryToggle() {
+    const header = document.getElementById('todaySummaryHeader');
+    const list = document.getElementById('todaySummaryList');
+    const icon = document.getElementById('todayToggleIcon');
+    
+    if (!header || !list || !icon) return;
+    
+    // 기본적으로 펼쳐진 상태 (로컬 스토리지에서 상태 확인)
+    const isCollapsed = localStorage.getItem('todaySummaryCollapsed') === 'true';
+    if (isCollapsed) {
+        list.classList.add('collapsed');
+        icon.classList.add('collapsed');
+    }
+    
+    header.addEventListener('click', () => {
+        list.classList.toggle('collapsed');
+        icon.classList.toggle('collapsed');
+        
+        // 상태 저장
+        const collapsed = list.classList.contains('collapsed');
+        localStorage.setItem('todaySummaryCollapsed', collapsed);
+    });
+}
+
 // Make globals available
 window.showEventDetail = showEventDetail;
 window.openEventModal = openEventModal;
 window.closeEventModal = closeEventModal;
 window.showLoading = showLoading;
 window.showToast = showToast;
+
+// Initialize today summary toggle after DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initTodaySummaryToggle();
+});
 
