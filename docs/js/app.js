@@ -1355,11 +1355,23 @@ async function loadTodaySummary() {
             todayDateEl.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일`;
         }
         
-        // 모든 일정 가져오기
+        // 모든 일정 가져오기 (반복 일정 포함)
         const schedules = await api.getSchedules({});
         
+        // 반복 일정 확장
+        const allEvents = [];
+        schedules.forEach(schedule => {
+            if (schedule.repeat_type && schedule.repeat_type !== 'none') {
+                // 반복 일정 확장 (오늘 날짜 범위로)
+                const expanded = expandRecurringEvent(schedule, todayStart, todayEnd);
+                allEvents.push(...expanded);
+            } else {
+                allEvents.push(schedule);
+            }
+        });
+        
         // 오늘 일정 필터링
-        const todaySchedules = schedules.filter(schedule => {
+        const todaySchedules = allEvents.filter(schedule => {
             const scheduleDate = new Date(schedule.start);
             return scheduleDate >= todayStart && scheduleDate <= todayEnd;
         });

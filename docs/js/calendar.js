@@ -78,6 +78,12 @@ function initCalendar() {
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
         slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
+        slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: false,
+            meridiem: false
+        },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         height: 'auto',
         nowIndicator: true,

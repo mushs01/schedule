@@ -297,85 +297,27 @@ body {
     background: #fff5f5 !important;
 }
 
+/* ===== 타임그리드 레이아웃 ===== */
+
+/* 타임그리드 슬롯 높이 */
 .fc .fc-timegrid-slot {
-    height: 40px; /* 한 칸으로 줄임 */
-    border-color: var(--border-color);
-    background: #ffffff !important;
-}
-
-/* 타임그리드 날짜 구분선 - 시간표 영역에 세로 구분선 */
-.fc .fc-timegrid-col {
-    background: #ffffff !important;
-    border-right: 1px solid #dadce0 !important;
-    position: relative;
-}
-
-/* 각 날짜 열에 명확한 세로 구분선 */
-.fc-timegrid-body .fc-timegrid-col.fc-day {
-    border-right: 1px solid #dadce0 !important;
-}
-
-/* 시간 축(왼쪽 시간 표시 영역) - 오른쪽 테두리만 */
-.fc .fc-timegrid-axis {
-    border-right: 1px solid #dadce0 !important;
-    border-top: none !important;
-}
-
-/* 시간 슬롯 행 - 시간 텍스트 오른쪽부터 가로선 시작 */
-.fc .fc-timegrid-slot-minor {
-    border-top-color: transparent !important;
-}
-
-/* 정시 슬롯만 가로선 표시 */
-.fc .fc-timegrid-slot-major {
+    height: 40px !important;
     border-top: 1px solid #dadce0 !important;
 }
 
-/* 타임그리드 슬롯 - 날짜 구분선 명확하게 */
-.fc-timegrid-slot {
+/* 시간 축 (왼쪽 레이블) - 오른쪽 경계선 */
+.fc .fc-timegrid-axis {
     border-right: 1px solid #dadce0 !important;
 }
 
-/* 타임그리드 col-frame - 날짜 구분선 */
-.fc .fc-timegrid-col-frame {
+/* 날짜 열 세로 구분선 */
+.fc .fc-timegrid-col {
     border-right: 1px solid #dadce0 !important;
 }
 
-/* 모든 타임그리드 셀에 날짜 구분선 */
-.fc-timegrid-body .fc-timegrid-col {
+/* 헤더 날짜 셀 구분선 */
+.fc .fc-col-header-cell {
     border-right: 1px solid #dadce0 !important;
-}
-
-/* 슬롯 레인 */
-.fc-timegrid-slot-lane {
-    border-right: 1px solid #dadce0 !important;
-}
-
-/* 타임그리드 이벤트 컨테이너 */
-.fc-timegrid-cols > table > tbody > tr > td {
-    border-right: 1px solid #dadce0 !important;
-}
-
-.fc .fc-timegrid-cols table {
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-}
-
-/* 모든 타임그리드 요일 열 */
-.fc-timegrid .fc-day-sun,
-.fc-timegrid .fc-day-mon,
-.fc-timegrid .fc-day-tue,
-.fc-timegrid .fc-day-wed,
-.fc-timegrid .fc-day-thu,
-.fc-timegrid .fc-day-fri,
-.fc-timegrid .fc-day-sat {
-    border-right: none !important;
-}
-
-/* 중복 구분선 제거 */
-.fc-timegrid-event-harness,
-.fc-timegrid-slot-lane {
-    border-right: none !important;
 }
 
 /* 시간 표시 레이블 */
