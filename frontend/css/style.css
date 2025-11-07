@@ -626,21 +626,22 @@ body {
 /* Today's Schedule Summary - Vertical Layout */
 /* Important Events (D-day) - 한 줄 간략 표시 */
 .important-events {
-    background: #fff3e0;
-    border-bottom: 1px solid #ffb74d;
-    padding: 6px 16px;
+    background: transparent;
+    padding: 4px 8px;
 }
 
 .important-events-content {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .important-events-content::-webkit-scrollbar {
@@ -651,11 +652,11 @@ body {
     display: inline-flex !important;
     align-items: center !important;
     flex-direction: row !important;
-    gap: 4px !important;
-    padding: 4px 10px !important;
-    background: #ffffff !important;
-    border-radius: 12px !important;
-    border: 1px solid #ffb74d !important;
+    gap: 3px !important;
+    padding: 3px 8px !important;
+    background: #fff8f0 !important;
+    border-radius: 16px !important;
+    border: 1px solid #ffe0b2 !important;
     cursor: pointer !important;
     transition: all 0.2s !important;
     flex-shrink: 0 !important;
@@ -664,28 +665,30 @@ body {
 }
 
 .important-event-item:hover {
-    background: #fff8e1 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    background: #ffe0b2 !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
 }
 
 .important-event-item .material-icons {
-    font-size: 16px !important;
-    color: #d32f2f !important;
+    font-size: 14px !important;
+    color: #f57c00 !important;
     flex-shrink: 0 !important;
     display: inline-block !important;
+    line-height: 1 !important;
 }
 
 .important-event-dday {
-    font-size: 11px !important;
+    font-size: 10px !important;
     font-weight: 700 !important;
     color: #d32f2f !important;
-    padding: 2px 6px !important;
+    padding: 1px 5px !important;
     background: #ffebee !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     display: inline-block !important;
+    line-height: 1.3 !important;
 }
 
 .important-event-dday.today {
@@ -694,23 +697,25 @@ body {
 }
 
 .important-event-date {
-    font-size: 11px !important;
+    font-size: 10px !important;
     font-weight: 500 !important;
     color: #666 !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     display: inline-block !important;
+    line-height: 1 !important;
 }
 
 .important-event-title {
-    font-size: 12px !important;
+    font-size: 11px !important;
     font-weight: 500 !important;
     color: var(--text-primary) !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 200px !important;
+    max-width: 180px !important;
     display: inline-block !important;
+    line-height: 1 !important;
 }
 
 .today-summary {
