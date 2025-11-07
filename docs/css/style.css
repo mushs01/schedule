@@ -210,6 +210,12 @@ body {
     background: #ffffff;
     padding: 16px;
     overflow-y: auto;
+    transition: margin-left 0.3s ease;
+}
+
+/* 데스크톱에서 사이드바 숨김 상태 */
+.gcal-sidebar.hidden {
+    margin-left: -250px;
 }
 
 /* Sidebar Sections */

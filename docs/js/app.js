@@ -263,14 +263,23 @@ function setupEventListeners() {
     const sidebar = document.querySelector('.gcal-sidebar');
     
     if (menuBtn && sidebar) {
-        menuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-            console.log('🍔 Sidebar toggled');
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('🍔 Menu button clicked');
+            
+            // 모바일: show 토글, 데스크톱: hidden 토글
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('hidden');
+            }
+            console.log('🍔 Sidebar toggled, classes:', sidebar.className);
         });
         
-        // 사이드바 외부 클릭 시 닫기
+        // 사이드바 외부 클릭 시 닫기 (모바일만)
         document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('show') && 
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('show') && 
                 !sidebar.contains(e.target) && 
                 !menuBtn.contains(e.target)) {
                 sidebar.classList.remove('show');
