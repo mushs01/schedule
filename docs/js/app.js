@@ -1013,7 +1013,23 @@ function showEventDetail(event) {
     console.log('📋 currentEditingEvent.id:', currentEditingEvent.id);
     console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent.extendedProps);
     
+    // 모달 활성화
     eventDetailModal.classList.add('active');
+    
+    // 디버깅: 버튼이 제대로 보이는지 확인
+    setTimeout(() => {
+        const editBtn = document.getElementById('editEventBtn');
+        const deleteBtn = document.getElementById('deleteEventBtn');
+        const modalActions = eventDetailModal.querySelector('.modal-actions');
+        
+        console.log('🔍 Button visibility check:');
+        console.log('  - editEventBtn exists:', !!editBtn);
+        console.log('  - deleteEventBtn exists:', !!deleteBtn);
+        console.log('  - modal-actions exists:', !!modalActions);
+        console.log('  - modal-actions display:', modalActions ? window.getComputedStyle(modalActions).display : 'N/A');
+        console.log('  - editBtn display:', editBtn ? window.getComputedStyle(editBtn).display : 'N/A');
+        console.log('  - deleteBtn display:', deleteBtn ? window.getComputedStyle(deleteBtn).display : 'N/A');
+    }, 100);
 }
 
 /**

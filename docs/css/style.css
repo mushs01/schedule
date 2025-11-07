@@ -780,7 +780,9 @@ body {
     width: 100%;
     max-width: 500px;
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .modal-header,
@@ -790,6 +792,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    background: #ffffff;
 }
 
 .modal-header h2,
@@ -1304,6 +1308,14 @@ body {
 }
 
 /* Event Detail - 새로운 한 줄 스타일 */
+/* Event Detail Container - 스크롤 가능하도록 */
+.event-detail {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    min-height: 0;
+}
+
 .event-detail-row {
     display: flex;
     align-items: center;
@@ -1431,7 +1443,7 @@ body {
     background: #c62828;
 }
 
-/* Modal Actions */
+/* Modal Actions - 항상 하단에 고정 */
 .modal-actions {
     display: flex;
     justify-content: space-between;
@@ -1439,7 +1451,8 @@ body {
     gap: 12px;
     padding: 16px;
     border-top: 1px solid var(--border-color);
-    margin-top: 8px;
+    flex-shrink: 0;
+    background: #ffffff;
 }
 
 /* 버튼 개선 */
