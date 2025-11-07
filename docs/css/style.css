@@ -1009,6 +1009,22 @@ body {
     font-weight: 500;
 }
 
+/* Event Detail Header */
+.event-detail-header {
+    padding: 16px 16px 16px 20px;
+}
+
+.event-detail-header-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.event-detail-header-content h2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .modal-header button,
 .gcal-modal-header button {
     min-width: 36px;

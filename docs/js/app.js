@@ -1033,6 +1033,7 @@ function showEventDetail(event) {
     console.log('📋 Event ID:', event.id);
     console.log('📋 Event extendedProps.id:', event.extendedProps?.id);
     
+    const header = document.getElementById('eventDetailHeader');
     const detail = document.getElementById('eventDetail');
     
     const startDate = new Date(event.start);
@@ -1041,6 +1042,7 @@ function showEventDetail(event) {
     // persons 배열 사용 (없으면 person 사용)
     const persons = event.extendedProps.persons || [event.extendedProps.person];
     const personNames = persons.map(p => window.PERSON_NAMES[p]).join(', ');
+    const firstPerson = persons[0] || 'all';
     
     // 카카오톡 알림 상태
     const kakaoNotificationStart = event.extendedProps.kakao_notification_start;
@@ -1066,11 +1068,24 @@ function showEventDetail(event) {
         repeatText = repeatTypeText + endDateText;
     }
     
-    detail.innerHTML = `
-        <div class="event-detail-row">
-            <span class="material-icons detail-icon">title</span>
-            <span class="detail-content">${event.title}</span>
+    // 헤더: 담당자 사진 + 제목
+    const personImageMap = {
+        'all': 'images/all.png',
+        'dad': 'images/dad.png',
+        'mom': 'images/mom.png',
+        'juhwan': 'images/juhwan.png',
+        'taehwan': 'images/taehwan.png'
+    };
+    
+    header.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="${personImageMap[firstPerson]}" alt="${personNames}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">${event.title}</h2>
         </div>
+    `;
+    
+    // 상세 정보: 제목 제외
+    detail.innerHTML = `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">event</span>
             <span class="detail-content">${formatDate(startDate)}</span>
@@ -1079,10 +1094,12 @@ function showEventDetail(event) {
             <span class="material-icons detail-icon">schedule</span>
             <span class="detail-content">${formatTime(startDate)}${endDate ? ' - ' + formatTime(endDate) : ''}</span>
         </div>
+        ${persons.length > 1 ? `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">person</span>
             <span class="detail-content">${personNames}</span>
         </div>
+        ` : ''}
         ${event.extendedProps.description ? `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">subject</span>
