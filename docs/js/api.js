@@ -400,6 +400,58 @@ const api = {
     },
 
     /**
+     * Find related schedules (same title, start time, end time)
+     * Used for finding schedules created together with multiple persons
+     */
+    async findRelatedSchedules(title, startDatetime, endDatetime) {
+        try {
+            const db = window.db;
+            const startTimestamp = firebase.firestore.Timestamp.fromDate(new Date(startDatetime));
+            const endTimestamp = firebase.firestore.Timestamp.fromDate(new Date(endDatetime));
+            
+            console.log('🔍 Finding related schedules:');
+            console.log('  - title:', title);
+            console.log('  - start:', startDatetime);
+            console.log('  - end:', endDatetime);
+            
+            const querySnapshot = await db.collection(SCHEDULES_COLLECTION)
+                .where('title', '==', title)
+                .where('start_datetime', '==', startTimestamp)
+                .where('end_datetime', '==', endTimestamp)
+                .get();
+            
+            const schedules = [];
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                schedules.push({
+                    id: doc.id,
+                    title: data.title,
+                    description: data.description,
+                    start: data.start_datetime.toDate().toISOString(),
+                    end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
+                    person: data.person,
+                    persons: data.persons || [data.person],
+                    color: data.color,
+                    isPast: data.is_past || false,
+                    kakao_notification_start: data.kakao_notification_start || false,
+                    kakao_notification_end: data.kakao_notification_end || false,
+                    repeat_type: data.repeat_type || 'none',
+                    repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
+                    repeat_weekdays: data.repeat_weekdays || [],
+                    repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
+                    exclude_dates: data.exclude_dates || []
+                });
+            });
+            
+            console.log(`  ✅ Found ${schedules.length} related schedules:`, schedules.map(s => `${s.person} (${s.id})`));
+            return schedules;
+        } catch (error) {
+            console.error('Error finding related schedules:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Health check (Firebase 연결 확인)
      */
     async healthCheck() {

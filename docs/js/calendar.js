@@ -555,6 +555,7 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 textColor: '#ffffff',
                 extendedProps: {
                     id: schedule.id,  // ID를 extendedProps에도 포함
+                    original_id: schedule.original_id || schedule.id,  // 반복 일정의 원본 ID
                     description: schedule.description,
                     person: person,
                     persons: schedule.persons,

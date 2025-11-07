@@ -765,37 +765,106 @@ async function handleEventFormSubmit(e) {
         showLoading(true);
         
         if (currentEditingEvent) {
-            // Update existing event - 기존 로직 유지 (단일 일정 수정)
-            const eventId = currentEditingEvent.id || currentEditingEvent.extendedProps?.id;
-            console.log('📝 Updating event with ID:', eventId);
+            // Update existing event - 담당자 변경을 감지하여 일정 추가/삭제 처리
+            console.log('📝 Updating existing event');
             
-            if (!eventId) {
-                console.error('❌ Event ID not found!', currentEditingEvent);
-                showToast('일정 ID를 찾을 수 없습니다.', 'error');
-                return;
+            // 기존 일정 정보 가져오기
+            const originalTitle = currentEditingEvent.title;
+            const originalStart = new Date(currentEditingEvent.start).toISOString();
+            const originalEnd = new Date(currentEditingEvent.end).toISOString();
+            const originalPersons = currentEditingEvent.extendedProps?.persons || [currentEditingEvent.extendedProps?.person || 'all'];
+            
+            console.log('📋 Original info:');
+            console.log('  - title:', originalTitle);
+            console.log('  - persons:', originalPersons);
+            console.log('  - start:', originalStart);
+            console.log('  - end:', originalEnd);
+            
+            console.log('📋 New info:');
+            console.log('  - title:', title);
+            console.log('  - persons:', selectedPersons);
+            console.log('  - start:', startDateTime.toISOString());
+            console.log('  - end:', endDateTime.toISOString());
+            
+            // 관련 일정 찾기 (같은 시간, 같은 제목의 다른 담당자 일정들)
+            const relatedSchedules = await api.findRelatedSchedules(originalTitle, originalStart, originalEnd);
+            console.log('🔗 Related schedules:', relatedSchedules.length);
+            
+            // 기존 담당자 목록 (관련 일정들에서 추출)
+            const existingPersons = relatedSchedules.map(s => s.person);
+            console.log('👥 Existing persons:', existingPersons);
+            console.log('👥 New persons:', selectedPersons);
+            
+            // 담당자 변경 분석
+            const personsToRemove = existingPersons.filter(p => !selectedPersons.includes(p));
+            const personsToAdd = selectedPersons.filter(p => !existingPersons.includes(p));
+            const personsToUpdate = selectedPersons.filter(p => existingPersons.includes(p));
+            
+            console.log('🔄 Changes:');
+            console.log('  - To remove:', personsToRemove);
+            console.log('  - To add:', personsToAdd);
+            console.log('  - To update:', personsToUpdate);
+            
+            // 1. 제거된 담당자의 일정 삭제
+            for (const person of personsToRemove) {
+                const scheduleToDelete = relatedSchedules.find(s => s.person === person);
+                if (scheduleToDelete) {
+                    console.log(`🗑️ Deleting schedule for ${person}: ${scheduleToDelete.id}`);
+                    await api.deleteSchedule(scheduleToDelete.id);
+                }
             }
             
-            // '전체' 선택 시 person은 'all', 아니면 첫 번째 담당자
-            const person = selectedPersons.includes('all') ? 'all' : selectedPersons[0];
+            // 2. 추가된 담당자에 대한 새 일정 생성
+            for (const person of personsToAdd) {
+                const scheduleData = {
+                    title,
+                    start_datetime: startDateTime.toISOString(),
+                    end_datetime: endDateTime.toISOString(),
+                    person: person,
+                    persons: [person],
+                    description: description || null,
+                    kakao_notification_start: enableNotificationStart,
+                    kakao_notification_end: enableNotificationEnd,
+                    repeat_type: repeatType,
+                    repeat_end_date: repeatEndDate,
+                    repeat_weekdays: repeatWeekdays,
+                    repeat_monthly_type: repeatMonthlyType
+                };
+                
+                console.log(`➕ Creating new schedule for ${person}`);
+                await api.createSchedule(scheduleData);
+            }
             
-            const scheduleData = {
-                title,
-                start_datetime: startDateTime.toISOString(),
-                end_datetime: endDateTime.toISOString(),
-                person,
-                persons: selectedPersons,
-                description: description || null,
-                kakao_notification_start: enableNotificationStart,
-                kakao_notification_end: enableNotificationEnd,
-                repeat_type: repeatType,
-                repeat_end_date: repeatEndDate,
-                repeat_weekdays: repeatWeekdays,
-                repeat_monthly_type: repeatMonthlyType
-            };
+            // 3. 유지되는 담당자의 일정 업데이트
+            for (const person of personsToUpdate) {
+                const scheduleToUpdate = relatedSchedules.find(s => s.person === person);
+                if (scheduleToUpdate) {
+                    const scheduleData = {
+                        title,
+                        start_datetime: startDateTime.toISOString(),
+                        end_datetime: endDateTime.toISOString(),
+                        person: person,
+                        persons: [person],
+                        description: description || null,
+                        kakao_notification_start: enableNotificationStart,
+                        kakao_notification_end: enableNotificationEnd,
+                        repeat_type: repeatType,
+                        repeat_end_date: repeatEndDate,
+                        repeat_weekdays: repeatWeekdays,
+                        repeat_monthly_type: repeatMonthlyType
+                    };
+                    
+                    console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
+                    await api.updateSchedule(scheduleToUpdate.id, scheduleData);
+                }
+            }
             
-            console.log('📋 Schedule data:', scheduleData);
-            await api.updateSchedule(eventId, scheduleData);
-            showToast('일정이 수정되었습니다.', 'success');
+            // 변경사항에 따른 토스트 메시지
+            if (personsToRemove.length > 0 || personsToAdd.length > 0) {
+                showToast(`일정이 수정되었습니다. (추가: ${personsToAdd.length}, 삭제: ${personsToRemove.length}, 수정: ${personsToUpdate.length})`, 'success');
+            } else {
+                showToast('일정이 수정되었습니다.', 'success');
+            }
         } else {
             // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
             console.log('➕ Creating new event(s)');
@@ -1038,11 +1107,11 @@ async function executeDelete() {
         
         if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
-            // ID에서 _timestamp 부분 제거하여 원본 ID 추출
-            let originalId = currentEditingEvent.id;
-            if (originalId.includes('_')) {
-                originalId = originalId.split('_')[0];
-            }
+            // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
+            const originalId = currentEditingEvent.extendedProps?.original_id 
+                || (currentEditingEvent.id.includes('_') 
+                    ? currentEditingEvent.id.split('_')[0] 
+                    : currentEditingEvent.id);
             
             console.log('  - Deleting all recurring events');
             console.log('  - Original ID:', originalId);
@@ -1054,10 +1123,11 @@ async function executeDelete() {
             // 단일 일정 삭제
             if (isRecurring) {
                 // 특정 날짜의 반복 일정만 제외
-                let originalId = currentEditingEvent.id;
-                if (originalId.includes('_')) {
-                    originalId = originalId.split('_')[0];
-                }
+                // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
+                const originalId = currentEditingEvent.extendedProps?.original_id 
+                    || (currentEditingEvent.id.includes('_') 
+                        ? currentEditingEvent.id.split('_')[0] 
+                        : currentEditingEvent.id);
                 
                 const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
                 
@@ -1071,7 +1141,9 @@ async function executeDelete() {
                 console.log('  - Deleting single non-recurring event');
                 console.log('  - Event ID:', currentEditingEvent.id);
                 
-                await api.deleteSchedule(currentEditingEvent.id);
+                // 반복 일정이 아닌 경우도 original_id 확인
+                const eventId = currentEditingEvent.extendedProps?.original_id || currentEditingEvent.id;
+                await api.deleteSchedule(eventId);
                 showToast('일정이 삭제되었습니다.', 'success');
             }
         }
@@ -1324,8 +1396,17 @@ async function handleSearch(e) {
                         start: schedule.start,
                         end: schedule.end,
                         extendedProps: {
+                            id: schedule.id,
+                            original_id: schedule.id,  // 검색 결과는 원본 일정만 표시
                             description: schedule.description,
-                            person: schedule.person
+                            person: schedule.person,
+                            persons: schedule.persons,
+                            kakao_notification_start: schedule.kakao_notification_start || false,
+                            kakao_notification_end: schedule.kakao_notification_end || false,
+                            repeat_type: schedule.repeat_type || 'none',
+                            repeat_end_date: schedule.repeat_end_date || null,
+                            repeat_weekdays: schedule.repeat_weekdays || [],
+                            repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth'
                         }
                     };
                     showEventDetail(event);
@@ -1421,8 +1502,17 @@ async function loadTodaySummary() {
                         start: schedule.start,
                         end: schedule.end,
                         extendedProps: {
+                            id: schedule.id,
+                            original_id: schedule.id,  // 오늘의 일정도 원본 일정 기준
                             description: schedule.description,
-                            person: schedule.person
+                            person: schedule.person,
+                            persons: schedule.persons,
+                            kakao_notification_start: schedule.kakao_notification_start || false,
+                            kakao_notification_end: schedule.kakao_notification_end || false,
+                            repeat_type: schedule.repeat_type || 'none',
+                            repeat_end_date: schedule.repeat_end_date || null,
+                            repeat_weekdays: schedule.repeat_weekdays || [],
+                            repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth'
                         }
                     };
                     showEventDetail(event);
