@@ -1434,22 +1434,26 @@ body {
 .monthly-radio-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 0 10px;
+    gap: 8px;
+    padding: 0;
 }
 
 .monthly-radio-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
-    border-radius: 4px;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    min-height: 40px;
 }
 
 .monthly-radio-item:hover {
-    background: #ffffff;
+    background: #f5f5f5;
+    border-color: #d0d0d0;
 }
 
 .monthly-radio-item input[type="radio"] {
@@ -1458,11 +1462,14 @@ body {
     cursor: pointer;
     margin: 0;
     flex-shrink: 0;
+    accent-color: #1a73e8;
 }
 
 .monthly-radio-item span {
     font-size: 14px;
     color: var(--text-primary);
+    line-height: 1.4;
+    flex: 1;
 }
 
 /* 날짜/시간 입력 열 */
