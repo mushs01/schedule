@@ -648,63 +648,69 @@ body {
 }
 
 .important-event-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #ffb74d;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-    white-space: nowrap;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+    padding: 4px 10px !important;
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1px solid #ffb74d !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    height: auto !important;
 }
 
 .important-event-item:hover {
-    background: #fff8e1;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #fff8e1 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .important-event-item .material-icons {
-    font-size: 16px;
-    color: #d32f2f;
-    flex-shrink: 0;
+    font-size: 16px !important;
+    color: #d32f2f !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
 }
 
 .important-event-dday {
-    font-size: 11px;
-    font-weight: 700;
-    color: #d32f2f;
-    padding: 2px 6px;
-    background: #ffebee;
-    border-radius: 8px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #d32f2f !important;
+    padding: 2px 6px !important;
+    background: #ffebee !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
 }
 
 .important-event-dday.today {
-    background: #d32f2f;
-    color: #ffffff;
+    background: #d32f2f !important;
+    color: #ffffff !important;
 }
 
 .important-event-date {
-    font-size: 11px;
-    font-weight: 500;
-    color: #666;
-    white-space: nowrap;
-    flex-shrink: 0;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #666 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-block !important;
 }
 
 .important-event-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 200px !important;
+    display: inline-block !important;
 }
 
 .today-summary {
