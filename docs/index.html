@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=215">
+    <link rel="stylesheet" href="css/style.css?v=220">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -145,7 +145,7 @@
         <div class="modal-content gcal-modal">
             <form id="eventForm">
                 <div class="modal-header modal-header-with-input">
-                    <input type="text" id="eventTitle" required placeholder="일정 제목을 입력하세요" class="modal-title-input">
+                    <input type="text" id="eventTitle" required placeholder="제목을 입력하세요" class="modal-title-input">
                     <button type="button" class="icon-btn" id="closeModalBtn">
                         <span class="material-icons">close</span>
                     </button>
@@ -204,7 +204,7 @@
                     <label class="form-label" title="설명">
                         <span class="material-icons form-icon">subject</span>
                     </label>
-                    <textarea id="eventDescription" rows="3" placeholder="일정에 대한 추가 설명을 입력하세요" class="input-large"></textarea>
+                    <textarea id="eventDescription" rows="3" placeholder="설명을 입력하세요" class="input-large"></textarea>
                 </div>
                 
                 <!-- 카카오톡 알림 -->
@@ -290,12 +290,12 @@
                 
                 <!-- 반복 종료일 -->
                 <div class="form-group" id="repeatEndOptions">
-                    <label class="form-label" title="반복 종료일 (미설정시 1년)">
+                    <label class="form-label" title="반복 종료일">
                         <span class="material-icons form-icon">event_repeat</span>
                     </label>
-                    <input type="date" id="eventRepeatEndDate" class="date-input" placeholder="반복 종료일 (미설정시 1년 후)">
+                    <input type="date" id="eventRepeatEndDate" class="date-input" placeholder="반복 종료일">
                     <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px;">
-                        * 미설정 시 시작일로부터 1년간 반복됩니다
+                        미설정시 시작일부터 1년 반복
                     </small>
                 </div>
                 
@@ -476,9 +476,9 @@
     <script src="js/firebase-config.js?v=22"></script>
 
     <!-- Custom JS -->
-    <script src="js/kakao-notification.js?v=215"></script>
-    <script src="js/api.js?v=215"></script>
-    <script src="js/calendar.js?v=215"></script>
-    <script src="js/app.js?v=215"></script>
+    <script src="js/kakao-notification.js?v=220"></script>
+    <script src="js/api.js?v=220"></script>
+    <script src="js/calendar.js?v=220"></script>
+    <script src="js/app.js?v=220"></script>
 </body>
 </html>

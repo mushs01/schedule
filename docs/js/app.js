@@ -480,7 +480,7 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('✏️ Edit mode - event:', event);
         console.log('📋 Event ID:', event.id || event.extendedProps?.id);
         console.log('📋 Event extendedProps:', event.extendedProps);
-        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
+        document.getElementById('eventTitle').placeholder = '제목을 입력하세요';
         
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
@@ -604,7 +604,7 @@ function openEventModal(dateInfo = null, event = null) {
     } else {
         // Creating mode - 새 일정 추가
         console.log('Create mode - dateInfo:', dateInfo);
-        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
+        document.getElementById('eventTitle').placeholder = '제목을 입력하세요';
         
         // 카카오톡 알림 체크박스 초기화 (디폴트 OFF)
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
