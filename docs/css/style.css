@@ -1014,7 +1014,7 @@ body {
 .form-group {
     margin-bottom: 16px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;  /* flex-start에서 center로 변경 */
     gap: 12px;
     padding: 0 12px;
 }

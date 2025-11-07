@@ -80,6 +80,7 @@ const api = {
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: data.repeat_weekdays || [],
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
+                        is_important: data.is_important === true,
                         exclude_dates: data.exclude_dates || [],
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null

@@ -239,6 +239,16 @@ function setupEventListeners() {
             // Update active state for sidebar buttons
             document.querySelectorAll('.view-switch-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll(`.view-switch-btn[data-view="${view}"]`).forEach(b => b.classList.add('active'));
+            
+            // 사이드바 자동 닫기
+            const sidebar = document.querySelector('.gcal-sidebar');
+            if (sidebar) {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('show');
+                } else {
+                    sidebar.classList.add('hidden');
+                }
+            }
         });
     });
     
@@ -583,6 +593,13 @@ function openEventModal(dateInfo = null, event = null) {
             repeatEndDateInput.value = event.extendedProps.repeat_end_date.split('T')[0];
         }
         
+        // 중요일정 설정
+        const importantCheckbox = document.getElementById('eventImportant');
+        if (importantCheckbox && event.extendedProps) {
+            importantCheckbox.checked = event.extendedProps.is_important === true;
+            console.log('⭐ Important event checkbox set to:', importantCheckbox.checked);
+        }
+        
         console.log('Form filled with event data');
     } else {
         // Creating mode - 새 일정 추가
@@ -686,7 +703,11 @@ function openEventModal(dateInfo = null, event = null) {
     }
     
     console.log('Opening modal...');
-    eventModal.classList.add('active');
+    
+    // 약간의 딜레이를 주어 캘린더 클릭 이벤트가 모달 내부로 전파되지 않도록 함
+    setTimeout(() => {
+        eventModal.classList.add('active');
+    }, 10);
 }
 
 /**
