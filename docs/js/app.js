@@ -258,6 +258,26 @@ function setupEventListeners() {
         });
     }
     
+    // Hamburger menu button (사이드바 토글)
+    const menuBtn = document.querySelector('.menu-btn');
+    const sidebar = document.querySelector('.gcal-sidebar');
+    
+    if (menuBtn && sidebar) {
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+            console.log('🍔 Sidebar toggled');
+        });
+        
+        // 사이드바 외부 클릭 시 닫기
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('show') && 
+                !sidebar.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+    }
+    
     // Person filter buttons (헤더)
     const personFilterBtns = document.querySelectorAll('.person-filter-btn');
     personFilterBtns.forEach(btn => {
@@ -441,7 +461,7 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('✏️ Edit mode - event:', event);
         console.log('📋 Event ID:', event.id || event.extendedProps?.id);
         console.log('📋 Event extendedProps:', event.extendedProps);
-        document.getElementById('modalTitle').textContent = '일정 수정';
+        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
@@ -558,7 +578,7 @@ function openEventModal(dateInfo = null, event = null) {
     } else {
         // Creating mode - 새 일정 추가
         console.log('Create mode - dateInfo:', dateInfo);
-        document.getElementById('modalTitle').textContent = '일정 추가';
+        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
         // 카카오톡 알림 체크박스 초기화 (디폴트 OFF)
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');

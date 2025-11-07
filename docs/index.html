@@ -213,21 +213,14 @@
     <!-- Event Modal -->
     <div class="modal" id="eventModal">
         <div class="modal-content gcal-modal">
-            <div class="modal-header">
-                <h2 id="modalTitle">일정 추가</h2>
+            <div class="modal-header modal-header-with-input">
+                <input type="text" id="eventTitle" required placeholder="일정 제목을 입력하세요" class="modal-title-input">
                 <button class="icon-btn" id="closeModalBtn">
                     <span class="material-icons">close</span>
                 </button>
             </div>
             
             <form id="eventForm">
-                <!-- 제목 -->
-                <div class="form-group">
-                    <label class="form-label" title="제목">
-                        <span class="material-icons form-icon">title</span>
-                    </label>
-                    <input type="text" id="eventTitle" required placeholder="일정 제목을 입력하세요" class="input-large">
-                </div>
                 
                 <!-- 시작/종료 날짜/시간 -->
                 <div class="form-group">
@@ -378,11 +371,11 @@
                 </div>
                 
                 <!-- 중요일정 -->
-                <div class="form-group">
+                <div class="form-group" style="align-items: center;">
                     <label class="form-label" title="중요일정">
                         <span class="material-icons form-icon" style="color: #d32f2f;">star</span>
                     </label>
-                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
                         <input type="checkbox" id="eventImportant">
                         <span>중요일정 (D-day 표시)</span>
                     </label>
