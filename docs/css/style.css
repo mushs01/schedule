@@ -1464,13 +1464,17 @@ body {
     padding: 0;
     flex-shrink: 0;
     accent-color: #1a73e8;
+    position: relative;
+    top: 0;
 }
 
 .monthly-radio-item span {
     font-size: 14px;
     color: var(--text-primary);
-    line-height: 18px;
+    line-height: 20px;
     flex: 1;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* 날짜/시간 입력 열 */
