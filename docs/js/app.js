@@ -1110,13 +1110,13 @@ function showEventDetail(event) {
     `;
     
     // is_important 정보를 extendedProps에 명시적으로 포함
-    currentEditingEvent = {
-        ...event,
-        extendedProps: {
-            ...event.extendedProps,
-            is_important: event.extendedProps.is_important === true
-        }
-    };
+    // FullCalendar Event 객체를 일반 객체로 변환
+    currentEditingEvent = event;
+    // extendedProps에 is_important 확실히 설정
+    if (!currentEditingEvent.extendedProps) {
+        currentEditingEvent.extendedProps = {};
+    }
+    currentEditingEvent.extendedProps.is_important = event.extendedProps?.is_important === true;
     console.log('📝 currentEditingEvent set to:', currentEditingEvent);
     console.log('📋 currentEditingEvent.id:', currentEditingEvent.id);
     console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent.extendedProps);
