@@ -1038,25 +1038,48 @@ function addSwipeGestureToDateHeader() {
     let touchEndX = 0;
     let touchStartY = 0;
     let touchEndY = 0;
+    let isSwiping = false;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
     
     const handleTouchStart = (e) => {
         // 이벤트 요소가 일정인 경우 스와이프 무시
         if (e.target.closest('.fc-event')) {
+            isSwiping = false;
             return;
         }
+        
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
+        isSwiping = true;
+    };
+    
+    const handleTouchMove = (e) => {
+        if (!isSwiping) return;
+        
+        const currentX = e.changedTouches[0].screenX;
+        const currentY = e.changedTouches[0].screenY;
+        const deltaX = currentX - touchStartX;
+        const deltaY = currentY - touchStartY;
+        
+        // 수평 스와이프가 명확하면 수직 스크롤 방지
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+            e.preventDefault();
+        }
     };
     
     const handleTouchEnd = (e) => {
+        if (!isSwiping) return;
+        
         // 이벤트 요소가 일정인 경우 스와이프 무시
         if (e.target.closest('.fc-event')) {
+            isSwiping = false;
             return;
         }
+        
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
+        isSwiping = false;
     };
     
     const handleSwipe = () => {
@@ -1079,10 +1102,11 @@ function addSwipeGestureToDateHeader() {
     };
     
     calendarEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+    calendarEl.addEventListener('touchmove', handleTouchMove, { passive: false }); // passive: false로 preventDefault 가능
     calendarEl.addEventListener('touchend', handleTouchEnd, { passive: true });
     calendarEl.dataset.swipeEnabled = 'true'; // 중복 방지 플래그
     
-    console.log('✅ 캘린더 스와이프 제스처 활성화 (모든 뷰)');
+    console.log('✅ 캘린더 스와이프 제스처 활성화 (모든 뷰 - 월/주/일)');
 }
 
 window.calendarModule = {

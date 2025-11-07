@@ -633,6 +633,7 @@ body {
 
 .important-events-content {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
     overflow-x: auto;
@@ -657,6 +658,7 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .important-event-item:hover {
