@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=82">
+    <link rel="stylesheet" href="css/style.css?v=105">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -122,20 +122,14 @@
                 </div>
             </div>
             
-            <!-- Important Events (D-day) -->
+            <!-- Important Events (D-day) - 항상 표시 -->
             <div id="importantEvents" class="important-events" style="display: none;">
-                <div class="important-events-header">
-                    <h3>
-                        <span class="material-icons" style="color: #d32f2f; vertical-align: middle;">star</span>
-                        중요일정
-                    </h3>
-                </div>
-                <div class="important-events-list" id="importantEventsList">
+                <div class="important-events-content" id="importantEventsList">
                     <!-- JavaScript로 생성 -->
                 </div>
             </div>
             
-            <!-- Today's Schedule Summary -->
+            <!-- Today's Schedule Summary - 토글 가능 -->
             <div id="todaySummary" class="today-summary">
                 <div class="today-summary-header" id="todaySummaryHeader" style="cursor: pointer;">
                     <h3>오늘의 일정</h3>
@@ -487,7 +481,7 @@
     <!-- Custom JS -->
     <script src="js/kakao-notification.js?v=36"></script>
     <script src="js/api.js?v=31"></script>
-    <script src="js/calendar.js?v=50"></script>
+    <script src="js/calendar.js?v=91"></script>
     <script src="js/app.js?v=46"></script>
 </body>
 </html>

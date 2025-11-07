@@ -1533,7 +1533,7 @@ async function loadImportantEvents() {
             return;
         }
         
-        // 중요일정 표시
+        // 중요일정 표시 - 한 줄로 간략하게
         importantEventsContainer.style.display = 'block';
         
         const itemsHTML = importantEvents.map(schedule => {
@@ -1558,11 +1558,10 @@ async function loadImportantEvents() {
             
             return `
                 <div class="important-event-item" data-event-id="${schedule.id}">
-                    <div class="important-event-dday ${ddayClass}">${ddayText}</div>
-                    <div class="important-event-details">
-                        <div class="important-event-title">${schedule.title}</div>
-                        <div class="important-event-date">${dateText}</div>
-                    </div>
+                    <span class="material-icons">star</span>
+                    <span class="important-event-dday ${ddayClass}">${ddayText}</span>
+                    <span class="important-event-date">${dateText}</span>
+                    <span class="important-event-title">${schedule.title}</span>
                 </div>
             `;
         }).join('');

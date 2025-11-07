@@ -1025,12 +1025,12 @@ function markHolidays() {
 }
 
 /**
- * Add swipe gesture to date header for week navigation
+ * Add swipe gesture to calendar for navigation (week/month)
  */
 function addSwipeGestureToDateHeader() {
-    const dateHeader = document.querySelector('.fc-col-header');
+    const calendarEl = document.getElementById('calendar');
     
-    if (!dateHeader || dateHeader.dataset.swipeEnabled === 'true') {
+    if (!calendarEl || calendarEl.dataset.swipeEnabled === 'true') {
         return; // 이미 스와이프가 설정되어 있으면 중복 방지
     }
     
@@ -1038,17 +1038,58 @@ function addSwipeGestureToDateHeader() {
     let touchEndX = 0;
     let touchStartY = 0;
     let touchEndY = 0;
+    let isSwiping = false;
+    let isHorizontalSwipe = false;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
     
     const handleTouchStart = (e) => {
+        // 이벤트 요소가 일정인 경우 스와이프 무시
+        if (e.target.closest('.fc-event')) {
+            isSwiping = false;
+            isHorizontalSwipe = false;
+            return;
+        }
+        
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
+        isSwiping = true;
+        isHorizontalSwipe = false;
+    };
+    
+    const handleTouchMove = (e) => {
+        if (!isSwiping) return;
+        
+        const currentX = e.changedTouches[0].screenX;
+        const currentY = e.changedTouches[0].screenY;
+        const deltaX = Math.abs(currentX - touchStartX);
+        const deltaY = Math.abs(currentY - touchStartY);
+        
+        // 수평 스와이프 방향 확정 (처음 한번만)
+        if (!isHorizontalSwipe && (deltaX > 5 || deltaY > 5)) {
+            isHorizontalSwipe = deltaX > deltaY;
+        }
+        
+        // 수평 스와이프일 경우 수직 스크롤 방지
+        if (isHorizontalSwipe && deltaX > 10) {
+            e.preventDefault();
+        }
     };
     
     const handleTouchEnd = (e) => {
+        if (!isSwiping) return;
+        
+        // 이벤트 요소가 일정인 경우 스와이프 무시
+        if (e.target.closest('.fc-event')) {
+            isSwiping = false;
+            isHorizontalSwipe = false;
+            return;
+        }
+        
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
+        isSwiping = false;
+        isHorizontalSwipe = false;
     };
     
     const handleSwipe = () => {
@@ -1057,23 +1098,25 @@ function addSwipeGestureToDateHeader() {
         
         // 수평 스와이프가 수직 스와이프보다 크면 (좌우 스와이프 감지)
         if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            const currentView = calendar.view.type;
             if (deltaX > 0) {
-                // 오른쪽으로 스와이프 → 이전 주
-                console.log('👈 이전 주로 이동');
+                // 오른쪽으로 스와이프 → 이전
+                console.log(`👈 이전 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
                 navigatePrev();
             } else {
-                // 왼쪽으로 스와이프 → 다음 주
-                console.log('👉 다음 주로 이동');
+                // 왼쪽으로 스와이프 → 다음
+                console.log(`👉 다음 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
                 navigateNext();
             }
         }
     };
     
-    dateHeader.addEventListener('touchstart', handleTouchStart, { passive: true });
-    dateHeader.addEventListener('touchend', handleTouchEnd, { passive: true });
-    dateHeader.dataset.swipeEnabled = 'true'; // 중복 방지 플래그
+    calendarEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+    calendarEl.addEventListener('touchmove', handleTouchMove, { passive: false }); // passive: false로 preventDefault 가능
+    calendarEl.addEventListener('touchend', handleTouchEnd, { passive: true });
+    calendarEl.dataset.swipeEnabled = 'true'; // 중복 방지 플래그
     
-    console.log('✅ 날짜 헤더 스와이프 제스처 활성화');
+    console.log('✅ 캘린더 스와이프 제스처 활성화 (모든 뷰 - 월/주/일)');
 }
 
 window.calendarModule = {
