@@ -200,6 +200,7 @@ const api = {
                 repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
                 repeat_monthly_type: scheduleData.repeat_monthly_type || 'dayOfMonth',
+                is_important: scheduleData.is_important === true,
                 exclude_dates: [],
                 created_at: firebase.firestore.Timestamp.fromDate(now),
                 updated_at: firebase.firestore.Timestamp.fromDate(now)
@@ -272,12 +273,16 @@ const api = {
             if (scheduleData.repeat_monthly_type !== undefined) {
                 updateData.repeat_monthly_type = scheduleData.repeat_monthly_type;
             }
+            if (scheduleData.is_important !== undefined) {
+                updateData.is_important = scheduleData.is_important === true;
+            }
             
             console.log('📤 Updating schedule with data:');
             console.log('  - repeat_type:', updateData.repeat_type);
             console.log('  - repeat_end_date:', updateData.repeat_end_date);
             console.log('  - repeat_weekdays:', updateData.repeat_weekdays);
             console.log('  - repeat_monthly_type:', updateData.repeat_monthly_type);
+            console.log('  - is_important:', updateData.is_important);
 
             await docRef.update(updateData);
 

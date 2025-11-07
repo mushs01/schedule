@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load AI summary
     loadAISummary();
     
-    // Load Today's Schedule Summary
+    // Load Important Events and Today's Schedule Summary
+    loadImportantEvents();
     loadTodaySummary();
     
     // Initialize Kakao SDK
@@ -229,11 +230,15 @@ function setupEventListeners() {
     if (editEventBtn) editEventBtn.addEventListener('click', handleEditEvent);
     if (deleteEventBtn) deleteEventBtn.addEventListener('click', handleDeleteEvent);
     
-    // View switcher
-    document.querySelectorAll('.view-btn').forEach(btn => {
+    // View switcher (both in toolbar and sidebar)
+    document.querySelectorAll('.view-btn, .view-switch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const view = e.currentTarget.dataset.view;
             changeCalendarView(view);
+            
+            // Update active state for sidebar buttons
+            document.querySelectorAll('.view-switch-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(`.view-switch-btn[data-view="${view}"]`).forEach(b => b.classList.add('active'));
         });
     });
     
@@ -761,6 +766,11 @@ async function handleEventFormSubmit(e) {
         console.log('  - repeatMonthlyType:', repeatMonthlyType);
     }
     
+    // 중요일정 설정
+    const importantCheckbox = document.getElementById('eventImportant');
+    const isImportant = importantCheckbox ? importantCheckbox.checked : false;
+    console.log('⭐ 중요일정:', isImportant);
+    
     try {
         showLoading(true);
         
@@ -828,7 +838,8 @@ async function handleEventFormSubmit(e) {
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
-                    repeat_monthly_type: repeatMonthlyType
+                    repeat_monthly_type: repeatMonthlyType,
+                    is_important: isImportant
                 };
                 
                 console.log(`➕ Creating new schedule for ${person}`);
@@ -851,7 +862,8 @@ async function handleEventFormSubmit(e) {
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
-                        repeat_monthly_type: repeatMonthlyType
+                        repeat_monthly_type: repeatMonthlyType,
+                        is_important: isImportant
                     };
                     
                     console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
@@ -884,7 +896,8 @@ async function handleEventFormSubmit(e) {
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
-                    repeat_monthly_type: repeatMonthlyType
+                    repeat_monthly_type: repeatMonthlyType,
+                    is_important: isImportant
                 };
                 
                 await api.createSchedule(scheduleData);
@@ -904,7 +917,8 @@ async function handleEventFormSubmit(e) {
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
-                        repeat_monthly_type: repeatMonthlyType
+                        repeat_monthly_type: repeatMonthlyType,
+                        is_important: isImportant
                     };
                     
                     console.log(`📋 Creating schedule for ${person}:`, scheduleData);
@@ -916,9 +930,10 @@ async function handleEventFormSubmit(e) {
             }
         }
         
-        // Refresh calendar, AI summary, and today's summary
+        // Refresh calendar, AI summary, important events, and today's summary
         calendarModule.refresh();
         loadAISummary();
+        loadImportantEvents();
         loadTodaySummary();
         
         closeEventModal();
@@ -1166,6 +1181,7 @@ async function executeDelete() {
         
         calendarModule.refresh();
         loadAISummary();
+        loadImportantEvents();
         loadTodaySummary();
         
         // 모달 닫기 (detail modal이 아직 열려있을 수 있음)
@@ -1433,6 +1449,109 @@ async function handleSearch(e) {
     } catch (error) {
         console.error('Search error:', error);
         searchResults.innerHTML = '<p class="no-results">검색 중 오류가 발생했습니다</p>';
+    }
+}
+
+/**
+ * Load Important Events (D-day)
+ */
+async function loadImportantEvents() {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // 모든 일정 가져오기
+        const schedules = await api.getSchedules({});
+        
+        // 중요일정만 필터링 (미래 일정만)
+        const importantEvents = schedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.start);
+            scheduleDate.setHours(0, 0, 0, 0);
+            return schedule.is_important && scheduleDate >= today;
+        });
+        
+        // 날짜순 정렬
+        importantEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+        
+        const importantEventsContainer = document.getElementById('importantEvents');
+        const importantEventsList = document.getElementById('importantEventsList');
+        
+        if (!importantEventsContainer || !importantEventsList) return;
+        
+        if (importantEvents.length === 0) {
+            importantEventsContainer.style.display = 'none';
+            return;
+        }
+        
+        // 중요일정 표시
+        importantEventsContainer.style.display = 'block';
+        
+        const itemsHTML = importantEvents.map(schedule => {
+            const scheduleDate = new Date(schedule.start);
+            scheduleDate.setHours(0, 0, 0, 0);
+            
+            // D-day 계산
+            const diffTime = scheduleDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let ddayText = '';
+            let ddayClass = '';
+            if (diffDays === 0) {
+                ddayText = 'D-DAY';
+                ddayClass = 'today';
+            } else if (diffDays > 0) {
+                ddayText = `D-${diffDays}`;
+            }
+            
+            const startDate = new Date(schedule.start);
+            const dateText = `${startDate.getMonth() + 1}월 ${startDate.getDate()}일`;
+            
+            return `
+                <div class="important-event-item" data-event-id="${schedule.id}">
+                    <div class="important-event-dday ${ddayClass}">${ddayText}</div>
+                    <div class="important-event-details">
+                        <div class="important-event-title">${schedule.title}</div>
+                        <div class="important-event-date">${dateText}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        importantEventsList.innerHTML = itemsHTML;
+        
+        // 클릭 이벤트 추가
+        document.querySelectorAll('.important-event-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const eventId = item.dataset.eventId;
+                const schedule = importantEvents.find(s => s.id === eventId);
+                if (schedule) {
+                    const event = {
+                        id: schedule.id,
+                        title: schedule.title,
+                        start: schedule.start,
+                        end: schedule.end,
+                        extendedProps: {
+                            id: schedule.id,
+                            original_id: schedule.id,
+                            description: schedule.description,
+                            person: schedule.person,
+                            persons: schedule.persons,
+                            kakao_notification_start: schedule.kakao_notification_start || false,
+                            kakao_notification_end: schedule.kakao_notification_end || false,
+                            repeat_type: schedule.repeat_type || 'none',
+                            repeat_end_date: schedule.repeat_end_date || null,
+                            repeat_weekdays: schedule.repeat_weekdays || [],
+                            repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth',
+                            is_important: schedule.is_important || false
+                        }
+                    };
+                    showEventDetail(event);
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error loading important events:', error);
     }
 }
 

@@ -51,6 +51,9 @@
         </div>
         
         <div class="gcal-header-center">
+            <button class="icon-btn" id="todayBtn" title="오늘">
+                <span class="material-icons">today</span>
+            </button>
             <h2 class="current-month" id="currentMonth">2025년 10월</h2>
         </div>
         
@@ -97,6 +100,28 @@
             </div>
             
             <div class="sidebar-section">
+                <h3 class="sidebar-title">보기</h3>
+                <div class="view-switcher">
+                    <button class="view-switch-btn" data-view="timeGridDay">
+                        <span class="material-icons">view_day</span>
+                        <span>일 일정</span>
+                    </button>
+                    <button class="view-switch-btn active" data-view="timeGridWeek">
+                        <span class="material-icons">view_week</span>
+                        <span>주 일정</span>
+                    </button>
+                    <button class="view-switch-btn" data-view="dayGridMonth">
+                        <span class="material-icons">view_module</span>
+                        <span>월 일정</span>
+                    </button>
+                    <button class="view-switch-btn" data-view="listWeek">
+                        <span class="material-icons">view_list</span>
+                        <span>일정 목록</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
                 <h3 class="sidebar-title">내 캘린더</h3>
                 <div class="calendar-list">
                     <label class="calendar-item">
@@ -131,23 +156,6 @@
         <!-- Calendar Area -->
         <main class="gcal-content">
             <div class="view-selector">
-                <div class="view-nav">
-                    <button class="icon-btn" id="todayBtn" style="min-width: 50px;">
-                        <span>오늘</span>
-                    </button>
-                    <button class="icon-btn nav-btn" id="prevViewBtn">
-                        <span class="material-icons">chevron_left</span>
-                    </button>
-                    <div class="view-buttons">
-                        <button class="view-btn" data-view="timeGridDay">일</button>
-                        <button class="view-btn active" data-view="timeGridWeek">주</button>
-                        <button class="view-btn" data-view="dayGridMonth">월</button>
-                        <button class="view-btn" data-view="listWeek">일정</button>
-                    </div>
-                    <button class="icon-btn nav-btn" id="nextViewBtn">
-                        <span class="material-icons">chevron_right</span>
-                    </button>
-                </div>
                 
                 <div class="person-filter-buttons">
                     <button class="person-filter-btn active" data-person="all">
@@ -170,6 +178,19 @@
                         <span class="person-color" style="background: #f9a825;"></span>
                         <span>태환</span>
                     </button>
+                </div>
+            </div>
+            
+            <!-- Important Events (D-day) -->
+            <div id="importantEvents" class="important-events" style="display: none;">
+                <div class="important-events-header">
+                    <h3>
+                        <span class="material-icons" style="color: #d32f2f; vertical-align: middle;">star</span>
+                        중요일정
+                    </h3>
+                </div>
+                <div class="important-events-list" id="importantEventsList">
+                    <!-- JavaScript로 생성 -->
                 </div>
             </div>
             
@@ -354,6 +375,17 @@
                     <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px;">
                         * 미설정 시 시작일로부터 1년간 반복됩니다
                     </small>
+                </div>
+                
+                <!-- 중요일정 -->
+                <div class="form-group">
+                    <label class="form-label" title="중요일정">
+                        <span class="material-icons form-icon" style="color: #d32f2f;">star</span>
+                    </label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="eventImportant">
+                        <span>중요일정 (D-day 표시)</span>
+                    </label>
                 </div>
                 
                 <!-- 버튼 -->
