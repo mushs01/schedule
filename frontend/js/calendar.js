@@ -1039,18 +1039,21 @@ function addSwipeGestureToDateHeader() {
     let touchStartY = 0;
     let touchEndY = 0;
     let isSwiping = false;
+    let isHorizontalSwipe = false;
     const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
     
     const handleTouchStart = (e) => {
         // 이벤트 요소가 일정인 경우 스와이프 무시
         if (e.target.closest('.fc-event')) {
             isSwiping = false;
+            isHorizontalSwipe = false;
             return;
         }
         
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
         isSwiping = true;
+        isHorizontalSwipe = false;
     };
     
     const handleTouchMove = (e) => {
@@ -1058,11 +1061,16 @@ function addSwipeGestureToDateHeader() {
         
         const currentX = e.changedTouches[0].screenX;
         const currentY = e.changedTouches[0].screenY;
-        const deltaX = currentX - touchStartX;
-        const deltaY = currentY - touchStartY;
+        const deltaX = Math.abs(currentX - touchStartX);
+        const deltaY = Math.abs(currentY - touchStartY);
         
-        // 수평 스와이프가 명확하면 수직 스크롤 방지
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        // 수평 스와이프 방향 확정 (처음 한번만)
+        if (!isHorizontalSwipe && (deltaX > 5 || deltaY > 5)) {
+            isHorizontalSwipe = deltaX > deltaY;
+        }
+        
+        // 수평 스와이프일 경우 수직 스크롤 방지
+        if (isHorizontalSwipe && deltaX > 10) {
             e.preventDefault();
         }
     };
@@ -1073,6 +1081,7 @@ function addSwipeGestureToDateHeader() {
         // 이벤트 요소가 일정인 경우 스와이프 무시
         if (e.target.closest('.fc-event')) {
             isSwiping = false;
+            isHorizontalSwipe = false;
             return;
         }
         
@@ -1080,6 +1089,7 @@ function addSwipeGestureToDateHeader() {
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
         isSwiping = false;
+        isHorizontalSwipe = false;
     };
     
     const handleSwipe = () => {
