@@ -632,20 +632,11 @@ body {
 
 .important-events-content {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     padding: 0;
     margin: 0;
-}
-
-.important-events-content::-webkit-scrollbar {
-    display: none;
 }
 
 .important-event-item {
@@ -1982,7 +1973,12 @@ body {
     .gcal-modal-content {
         max-width: 100%;
         border-radius: 8px 8px 0 0;
-        max-height: 85vh;
+        max-height: 90vh;
+    }
+    
+    .event-detail {
+        max-height: calc(90vh - 180px);
+        overflow-y: auto;
     }
     
     .form-group {
