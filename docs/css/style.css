@@ -909,6 +909,17 @@ body {
     flex-shrink: 0;
 }
 
+/* Person Avatar in Filter Button */
+.person-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 /* Modal - 모바일 최적화 */
 .modal {
     display: none;
@@ -1164,15 +1175,15 @@ body {
 
 .person-checkbox-item {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
-    height: 40px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 20px;
+    min-width: 60px;
+    padding: 8px;
+    border: 2px solid transparent;
+    border-radius: 12px;
     background-color: #ffffff !important;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
     line-height: 1;
     color: var(--text-primary);
@@ -1181,6 +1192,7 @@ body {
     user-select: none;
     position: relative;
     text-align: center;
+    gap: 4px;
 }
 
 .person-checkbox-item input[type="checkbox"] {
@@ -1196,9 +1208,14 @@ body {
 }
 
 .person-checkbox-item:has(input:checked) {
-    background-color: #bbdefb !important;
+    background-color: #e3f2fd !important;
+    border-color: #1976d2;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+}
+
+.person-checkbox-item:has(input:checked) span {
     color: #1976d2;
-    box-shadow: inset 0 2px 4px rgba(25, 118, 210, 0.15);
+    font-weight: 600;
 }
 
 .person-checkbox-item span {
@@ -1207,8 +1224,25 @@ body {
     justify-content: center;
     white-space: nowrap;
     pointer-events: none;
-    line-height: 1;
-    height: 100%;
+    line-height: 1.2;
+}
+
+/* Person Avatar in Checkbox */
+.person-checkbox-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+}
+
+.person-checkbox-item:has(input:checked) .person-checkbox-avatar {
+    border-color: #1976d2;
+    border-width: 3px;
+    transform: scale(1.05);
 }
 
 /* 반복 설정 */
@@ -2027,8 +2061,8 @@ body {
     }
     
     .person-checkbox-item {
-        padding: 6px 8px;
-        font-size: 12px;
+        padding: 6px;
+        font-size: 11px;
         flex: 1;
         min-width: 0;
         justify-content: center;
@@ -2037,6 +2071,11 @@ body {
     .person-checkbox-item span {
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    
+    .person-checkbox-avatar {
+        width: 40px;
+        height: 40px;
     }
     
     .datetime-row-with-day {
