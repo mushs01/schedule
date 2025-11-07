@@ -1328,9 +1328,9 @@ body {
 /* 반복 상세 옵션 */
 .repeat-detail-options {
     padding: 10px 0;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
+    background: transparent;
+    border-radius: 0;
+    border: none;
 }
 
 /* 반복 종료일 옵션 */
@@ -1464,14 +1464,14 @@ body {
     padding: 0;
     flex-shrink: 0;
     accent-color: #1a73e8;
-    margin-top: 2px;
 }
 
 .monthly-radio-item span {
     font-size: 14px;
     color: var(--text-primary);
-    line-height: 1.4;
+    line-height: 18px;
     flex: 1;
+    padding-top: 1px;
 }
 
 /* 날짜/시간 입력 열 */
