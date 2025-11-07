@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light only">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="일정관리">
+    <title>Calendar - 우리가족 일정관리</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="icons/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="icons/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-72x72.png">
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    
+    <!-- Google Material Icons & Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css?v=82">
+</head>
+<body>
+    <!-- Google Calendar Style Header -->
+    <header class="gcal-header">
+        <div class="gcal-header-left">
+            <button class="icon-btn menu-btn">
+                <span class="material-icons">menu</span>
+            </button>
+            <div class="gcal-logo">
+                <span class="material-icons gcal-logo-icon">calendar_today</span>
+                <span class="gcal-logo-text">Calendar</span>
+            </div>
+        </div>
+        
+        <div class="gcal-header-center">
+            <button class="icon-btn" id="todayBtn" title="오늘">
+                <span class="material-icons">today</span>
+            </button>
+            <h2 class="current-month" id="currentMonth">2025년 10월</h2>
+        </div>
+        
+        <div class="gcal-header-right">
+            <button class="icon-btn" id="searchBtn">
+                <span class="material-icons">search</span>
+            </button>
+            <button class="icon-btn" id="settingsBtn">
+                <span class="material-icons">settings</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="gcal-main">
+        <!-- Sidebar -->
+        <aside class="gcal-sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">보기</h3>
+                <div class="view-switcher">
+                    <button class="view-switch-btn" data-view="timeGridDay">
+                        <span class="material-icons">view_day</span>
+                        <span>일 일정</span>
+                    </button>
+                    <button class="view-switch-btn active" data-view="timeGridWeek">
+                        <span class="material-icons">view_week</span>
+                        <span>주 일정</span>
+                    </button>
+                    <button class="view-switch-btn" data-view="dayGridMonth">
+                        <span class="material-icons">view_module</span>
+                        <span>월 일정</span>
+                    </button>
+                    <button class="view-switch-btn" data-view="listWeek">
+                        <span class="material-icons">view_list</span>
+                        <span>일정 목록</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Calendar Area -->
+        <main class="gcal-content">
+            <div class="view-selector">
+                
+                <div class="person-filter-buttons">
+                    <button class="person-filter-btn active" data-person="all">
+                        <span class="person-color" style="background: #1a73e8;"></span>
+                        <span>전체</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="dad">
+                        <span class="person-color" style="background: #0f9d58;"></span>
+                        <span>아빠</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="mom">
+                        <span class="person-color" style="background: #f4511e;"></span>
+                        <span>엄마</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="juhwan">
+                        <span class="person-color" style="background: #9c27b0;"></span>
+                        <span>주환</span>
+                    </button>
+                    <button class="person-filter-btn active" data-person="taehwan">
+                        <span class="person-color" style="background: #f9a825;"></span>
+                        <span>태환</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Important Events (D-day) - 항상 표시 -->
+            <div id="importantEvents" class="important-events" style="display: none;">
+                <div class="important-events-content" id="importantEventsList">
+                    <!-- JavaScript로 생성 -->
+                </div>
+            </div>
+            
+            <!-- Today's Schedule Summary - 토글 가능 -->
+            <div id="todaySummary" class="today-summary">
+                <div class="today-summary-header" id="todaySummaryHeader" style="cursor: pointer;">
+                    <h3>오늘의 일정</h3>
+                    <span class="today-date" id="todayDate"></span>
+                    <span class="material-icons toggle-icon" id="todayToggleIcon">expand_less</span>
+                </div>
+                <div class="today-summary-list" id="todaySummaryList">
+                    <p class="no-schedule">오늘 예정된 일정이 없습니다</p>
+                </div>
+            </div>
+            
+            <div id="calendar"></div>
+        </main>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content gcal-modal">
+            <form id="eventForm">
+                <div class="modal-header modal-header-with-input">
+                    <input type="text" id="eventTitle" required placeholder="일정 제목을 입력하세요" class="modal-title-input">
+                    <button type="button" class="icon-btn" id="closeModalBtn">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                
+                <!-- 시작/종료 날짜/시간 -->
+                <div class="form-group">
+                    <label class="form-label" title="일정 시간">
+                        <span class="material-icons form-icon">schedule</span>
+                    </label>
+                    <div class="datetime-column">
+                        <div class="datetime-row-with-day">
+                            <input type="date" id="eventStartDate" required class="date-input">
+                            <span class="day-of-week" id="startDayOfWeek"></span>
+                            <input type="time" id="eventStartTime" required class="time-input">
+                        </div>
+                        <div class="datetime-row-with-day">
+                            <input type="date" id="eventEndDate" required class="date-input">
+                            <span class="day-of-week" id="endDayOfWeek"></span>
+                            <input type="time" id="eventEndTime" required class="time-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 담당자 -->
+                <div class="form-group">
+                    <label class="form-label" title="담당자">
+                        <span class="material-icons form-icon">person</span>
+                    </label>
+                    <div class="person-checkboxes">
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="all" id="personAll">
+                            <span>전체</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="dad" id="personDad">
+                            <span>아빠</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="mom" id="personMom">
+                            <span>엄마</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="juhwan" id="personJuhwan">
+                            <span>주환</span>
+                        </label>
+                        <label class="person-checkbox-item">
+                            <input type="checkbox" name="eventPerson" value="taehwan" id="personTaehwan">
+                            <span>태환</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 설명 -->
+                <div class="form-group">
+                    <label class="form-label" title="설명">
+                        <span class="material-icons form-icon">subject</span>
+                    </label>
+                    <textarea id="eventDescription" rows="3" placeholder="일정에 대한 추가 설명을 입력하세요" class="input-large"></textarea>
+                </div>
+                
+                <!-- 카카오톡 알림 -->
+                <div class="form-group">
+                    <label class="form-label" title="카카오톡 알림">
+                        <img src="icons/kakao-icon.svg" alt="카카오톡" class="kakao-icon">
+                    </label>
+                    <div class="checkbox-inline">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="eventKakaoNotificationStart">
+                            <span>시작 10분 전</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="eventKakaoNotificationEnd">
+                            <span>종료 10분 전</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 반복 설정 -->
+                <div class="form-group">
+                    <label class="form-label" title="반복">
+                        <span class="material-icons form-icon">repeat</span>
+                    </label>
+                    <div class="repeat-settings">
+                        <select id="eventRepeat" class="repeat-select">
+                            <option value="none" selected>반복 안함</option>
+                            <option value="daily">매일</option>
+                            <option value="weekly">매주</option>
+                            <option value="monthly">매월</option>
+                        </select>
+                        
+                        <!-- 매주 요일 선택 -->
+                        <div id="weeklyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
+                            <div class="weekday-checkboxes">
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="0">
+                                    일
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="1">
+                                    월
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="2">
+                                    화
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="3">
+                                    수
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="4">
+                                    목
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="5">
+                                    금
+                                </label>
+                                <label class="weekday-checkbox-item">
+                                    <input type="checkbox" name="repeatWeekday" value="6">
+                                    토
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- 매월 옵션 선택 -->
+                        <div id="monthlyOptions" class="repeat-detail-options" style="display: none; margin-top: 12px;">
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; padding: 0 10px;">반복 방식:</div>
+                            <div class="monthly-radio-group">
+                                <label class="monthly-radio-item">
+                                    <input type="radio" name="monthlyType" value="dayOfMonth" checked>
+                                    <span id="monthlyDayLabel">매월 같은 날 (예: 매월 15일)</span>
+                                </label>
+                                <label class="monthly-radio-item">
+                                    <input type="radio" name="monthlyType" value="dayOfWeek">
+                                    <span id="monthlyWeekLabel">매월 같은 주/요일 (예: 셋째주 금요일)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 반복 종료일 -->
+                <div class="form-group" id="repeatEndOptions">
+                    <label class="form-label" title="반복 종료일 (미설정시 1년)">
+                        <span class="material-icons form-icon">event_repeat</span>
+                    </label>
+                    <input type="date" id="eventRepeatEndDate" class="date-input" placeholder="반복 종료일 (미설정시 1년 후)">
+                    <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 12px;">
+                        * 미설정 시 시작일로부터 1년간 반복됩니다
+                    </small>
+                </div>
+                
+                <!-- 중요일정 -->
+                <div class="form-group" style="align-items: center;">
+                    <label class="form-label" title="중요일정">
+                        <span class="material-icons form-icon" style="color: #d32f2f;">star</span>
+                    </label>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="eventImportant">
+                        <span>중요일정 (D-day 표시)</span>
+                    </label>
+                </div>
+                
+                <!-- 버튼 -->
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-text" id="cancelBtn">취소</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">check</span>
+                        <span>저장</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>설정</h2>
+                <button class="icon-btn" id="closeSettingsBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Kakao Login Section -->
+                <div class="settings-section">
+                    <h3>카카오톡 알림</h3>
+                    <div id="kakaoLoginSection">
+                        <p class="settings-description">카카오톡으로 일정 알림을 받으려면 로그인하세요</p>
+                        <button class="btn-primary" id="kakaoLoginBtn">
+                            <span class="material-icons">chat</span>
+                            카카오 로그인
+                        </button>
+                    </div>
+                    <div id="kakaoLoggedInSection" style="display: none;">
+                        <p class="settings-description">
+                            <span class="material-icons" style="vertical-align: middle; color: #0f9d58;">check_circle</span>
+                            카카오톡 연동됨
+                        </p>
+                        <button class="btn-secondary" id="kakaoLogoutBtn">로그아웃</button>
+                        <button class="btn-primary" id="testKakaoBtn">테스트 메시지 보내기</button>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="settings-section">
+                    <h3>사용 안내</h3>
+                    <ol class="settings-instructions">
+                        <li>카카오 로그인을 하면 일정별로 알림을 설정할 수 있습니다</li>
+                        <li>일정 추가/수정 시 "카카오톡 알림" 체크박스를 선택하세요</li>
+                        <li>일정 시작 10분 전에 나에게 카카오톡 메시지가 전송됩니다</li>
+                        <li>브라우저가 열려있을 때만 알림이 전송됩니다</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>일정 검색</h2>
+                <button class="icon-btn" id="closeSearchBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="search-input-container">
+                    <span class="material-icons">search</span>
+                    <input type="text" id="searchInput" placeholder="일정 제목 검색..." autofocus>
+                </div>
+                
+                <div id="searchResults" class="search-results">
+                    <p class="search-hint">키워드를 입력하여 일정을 검색하세요</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal" id="eventDetailModal">
+        <div class="modal-content gcal-modal">
+            <div class="modal-header">
+                <h2>일정 상세</h2>
+                <button class="icon-btn" id="closeDetailModalBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="event-detail" id="eventDetail">
+                <!-- Event details will be inserted here -->
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn btn-text" id="deleteEventBtn">
+                    <span class="material-icons">delete</span>
+                    삭제
+                </button>
+                <button type="button" class="btn btn-primary" id="editEventBtn">
+                    <span class="material-icons">edit</span>
+                    수정
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Delete Recurring Event Modal -->
+    <div class="modal" id="deleteRecurringModal">
+        <div class="modal-content gcal-modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>반복 일정 삭제</h2>
+                <button class="icon-btn" id="closeDeleteRecurringBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body" style="padding: 24px;">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    이 일정은 반복 일정입니다.<br>
+                    어떻게 삭제하시겠습니까?
+                </p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn btn-primary" id="deleteSingleEventBtn" style="width: 100%; justify-content: center;">
+                        <span class="material-icons">event</span>
+                        <span>이 일정만 삭제</span>
+                    </button>
+                    <button class="btn btn-primary" id="deleteAllEventsBtn" style="width: 100%; justify-content: center; background: #d32f2f;">
+                        <span class="material-icons">event_repeat</span>
+                        <span>모든 반복 일정 삭제</span>
+                    </button>
+                    <button class="btn btn-text" id="cancelDeleteBtn" style="width: 100%; justify-content: center;">
+                        <span>취소</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <!-- Kakao SDK -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    
+    <!-- Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js?v=22"></script>
+
+    <!-- Custom JS -->
+    <script src="js/kakao-notification.js?v=36"></script>
+    <script src="js/api.js?v=31"></script>
+    <script src="js/calendar.js?v=50"></script>
+    <script src="js/app.js?v=46"></script>
+</body>
+</html>
