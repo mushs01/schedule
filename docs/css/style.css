@@ -1464,7 +1464,6 @@ body {
     padding: 0;
     flex-shrink: 0;
     accent-color: #1a73e8;
-    vertical-align: middle;
 }
 
 .monthly-radio-item span {
@@ -1472,8 +1471,6 @@ body {
     color: var(--text-primary);
     line-height: 18px;
     flex: 1;
-    display: flex;
-    align-items: center;
 }
 
 /* 날짜/시간 입력 열 */
