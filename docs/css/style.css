@@ -380,10 +380,10 @@ body {
     min-height: 44px !important;
 }
 
-/* 오늘 날짜 - 파란 동그라미 */
+/* 오늘 날짜 - 연한 파란 동그라미 */
 .fc-timeGridWeek-view .fc-day-today .fc-col-header-cell-cushion > div,
 .fc-timeGridDay-view .fc-day-today .fc-col-header-cell-cushion > div {
-    background: #1a73e8 !important;
+    background: #4285f4 !important;
     color: #ffffff !important;
     border-radius: 50% !important;
     width: 36px !important;
@@ -645,15 +645,35 @@ body {
     opacity: 0.6;
 }
 
-/* 오늘 날짜 강조 표시 - 굵은 글자 */
-.fc .fc-day-today .fc-daygrid-day-number {
-    font-weight: 700 !important;
-    color: var(--text-primary) !important;
+/* 월 일정 날짜 숫자 영역 */
+.fc-dayGridMonth-view .fc-daygrid-day-top {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 2px !important;
 }
 
-.fc .fc-day-today .fc-col-header-cell-cushion {
+/* 월 일정 오늘 날짜 - 연한 파란 동그라미 */
+.fc-dayGridMonth-view .fc-day-today .fc-daygrid-day-number {
+    background: #4285f4 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 주/일 일정 오늘 날짜 헤더 */
+.fc-timeGridWeek-view .fc-day-today .fc-col-header-cell-cushion,
+.fc-timeGridDay-view .fc-day-today .fc-col-header-cell-cushion {
     font-weight: 700 !important;
-    color: var(--text-primary) !important;
 }
 
 /* Today's Schedule Summary - Vertical Layout */
