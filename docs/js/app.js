@@ -98,6 +98,7 @@ function openEventModalWithPerson(person) {
     
     // 담당자 체크박스 설정
     const personCheckboxes = {
+        'all': document.getElementById('personAll'),
         'juhwan': document.getElementById('personJuhwan'),
         'taehwan': document.getElementById('personTaehwan'),
         'mom': document.getElementById('personMom'),
@@ -110,12 +111,7 @@ function openEventModalWithPerson(person) {
     });
     
     // 선택된 담당자만 체크
-    if (person === 'all') {
-        // 전체 선택
-        Object.values(personCheckboxes).forEach(checkbox => {
-            if (checkbox) checkbox.checked = true;
-        });
-    } else if (personCheckboxes[person]) {
+    if (personCheckboxes[person]) {
         personCheckboxes[person].checked = true;
     }
     
