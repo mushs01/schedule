@@ -90,6 +90,13 @@ function initCalendar() {
             }
             return { html: arg.text };
         },
+        // 월 일정 날짜 표시 - 숫자만 표시 ("8일" → "8")
+        dayCellContent: function(arg) {
+            if (arg.view.type === 'dayGridMonth') {
+                return { html: arg.dayNumberText.replace('일', '') };
+            }
+            return { html: arg.dayNumberText };
+        },
         slotMinTime: '06:00:00',
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
