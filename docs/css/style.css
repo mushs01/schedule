@@ -1740,16 +1740,16 @@ body {
 
 /* Floating Action Button */
 .fab {
-    position: absolute;
+    position: fixed;
     bottom: 24px;
     right: 24px;
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #a8c5f0 0%, #b8d4f5 100%);
+    background: linear-gradient(135deg, #6b93d0 0%, #7da5dd 100%);
     color: #ffffff;
     border: none;
-    box-shadow: 0 4px 12px rgba(168, 197, 240, 0.4);
+    box-shadow: 0 4px 12px rgba(107, 147, 208, 0.5);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1760,8 +1760,8 @@ body {
 }
 
 .fab:hover {
-    background: linear-gradient(135deg, #98b5e0 0%, #a8c4e5 100%);
-    box-shadow: 0 6px 16px rgba(168, 197, 240, 0.5);
+    background: linear-gradient(135deg, #5b83c0 0%, #6d95cd 100%);
+    box-shadow: 0 6px 16px rgba(107, 147, 208, 0.6);
     transform: scale(1.05);
 }
 
