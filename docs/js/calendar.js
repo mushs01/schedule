@@ -117,8 +117,8 @@ function initCalendar() {
         expandRows: false, // 행 확장 방지하여 스크롤 활성화
         nowIndicator: true,
         editable: false, // 드래그로 일정 이동 비활성화
-        selectable: true, // 빈 시간대 선택은 유지 (일정 추가용)
-        selectMirror: true,
+        selectable: false, // 드래그로 일정 추가 비활성화 (플로팅 버튼으로만 추가)
+        selectMirror: false,
         dayMaxEvents: true,
         weekends: true,
         longPressDelay: 0, // 모바일에서 즉시 선택 가능

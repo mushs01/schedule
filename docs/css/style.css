@@ -1737,6 +1737,41 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* Floating Action Button */
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #4285f4;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 900;
+    transition: all 0.3s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.fab:hover {
+    background: #3367d6;
+    box-shadow: 0 6px 16px rgba(66, 133, 244, 0.5);
+    transform: scale(1.05);
+}
+
+.fab:active {
+    transform: scale(0.95);
+}
+
+.fab .material-icons {
+    font-size: 28px;
+}
+
 /* Toast Notification */
 .toast {
     position: fixed;
