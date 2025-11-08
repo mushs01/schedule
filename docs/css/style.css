@@ -1757,7 +1757,6 @@ body {
     z-index: 900;
     transition: all 0.3s;
     -webkit-tap-highlight-color: transparent;
-    position: relative;
     overflow: visible;
 }
 

@@ -35,16 +35,6 @@ function setupFloatingButton(btn) {
             const nextPerson = personOrder[nextIndex];
             
             btn.setAttribute('data-person', nextPerson);
-            
-            // 담당자 이름 표시
-            const personNames = {
-                'juhwan': '주환',
-                'taehwan': '태환',
-                'mom': '엄마',
-                'dad': '아빠',
-                'all': '전체'
-            };
-            showToast(`${personNames[nextPerson]} 선택됨 (길게 누르면 일정 추가)`);
         }
         isLongPress = false;
     });
@@ -129,14 +119,6 @@ function openEventModalWithPerson(person) {
         personCheckboxes[person].checked = true;
     }
     
-    const personNames = {
-        'juhwan': '주환',
-        'taehwan': '태환',
-        'mom': '엄마',
-        'dad': '아빠',
-        'all': '전체'
-    };
-    showToast(`${personNames[person]} 일정 추가`);
 }
 
 /**
