@@ -1102,6 +1102,7 @@ function showEventDetail(event) {
     console.log('📋 Event extendedProps.id:', event.extendedProps?.id);
     
     const detail = document.getElementById('eventDetail');
+    const header = document.getElementById('eventDetailHeader');
     
     const startDate = new Date(event.start);
     const endDate = event.end ? new Date(event.end) : null;
@@ -1109,6 +1110,20 @@ function showEventDetail(event) {
     // persons 배열 사용 (없으면 person 사용)
     const persons = event.extendedProps.persons || [event.extendedProps.person];
     const personNames = persons.map(p => window.PERSON_NAMES[p]).join(', ');
+    
+    // 헤더에 담당자 이미지와 제목 표시
+    const personAvatarsHTML = persons.map(p => 
+        `<img src="images/${p}.png" alt="${window.PERSON_NAMES[p]}" class="event-detail-avatar">`
+    ).join('');
+    
+    header.innerHTML = `
+        <div class="event-detail-title-row">
+            <div class="event-detail-avatars">
+                ${personAvatarsHTML}
+            </div>
+            <h2 class="event-detail-title">${event.title}</h2>
+        </div>
+    `;
     
     // 카카오톡 알림 상태
     const kakaoNotificationStart = event.extendedProps.kakao_notification_start;
@@ -1135,10 +1150,6 @@ function showEventDetail(event) {
     }
     
     detail.innerHTML = `
-        <div class="event-detail-row">
-            <span class="material-icons detail-icon">title</span>
-            <span class="detail-content">${event.title}</span>
-        </div>
         <div class="event-detail-row">
             <span class="material-icons detail-icon">event</span>
             <span class="detail-content">${formatDate(startDate)}</span>

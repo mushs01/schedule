@@ -1079,6 +1079,39 @@ body {
     white-space: nowrap;
 }
 
+/* Event Detail Title Row */
+.event-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.event-detail-avatars {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.event-detail-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.event-detail-title {
+    flex: 1;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .modal-header button,
 .gcal-modal-header button {
     min-width: 36px;
