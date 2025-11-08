@@ -196,11 +196,6 @@ function initCalendar() {
             setTimeout(() => {
                 addSwipeGestureToDateHeader();
             }, 100);
-            
-            // 뷰 변경 시 플로팅 버튼 위치 재조정
-            setTimeout(() => {
-                positionFloatingButton();
-            }, 200);
         }
     });
     
@@ -224,60 +219,6 @@ function initCalendar() {
     setTimeout(() => {
         addSwipeGestureToDateHeader();
     }, 600);
-    
-    // 플로팅 버튼 동적 배치
-    setTimeout(() => {
-        positionFloatingButton();
-    }, 700);
-}
-
-/**
- * 플로팅 버튼을 일정이 없는 영역에 동적으로 배치
- */
-function positionFloatingButton() {
-    const fab = document.getElementById('addEventBtn');
-    if (!fab || !calendar) return;
-    
-    const calendarEl = document.getElementById('calendar');
-    if (!calendarEl) return;
-    
-    // 일정 요소들 가져오기
-    const events = calendarEl.querySelectorAll('.fc-event');
-    const viewType = calendar.view.type;
-    
-    // 기본 위치
-    let bottom = 24;
-    let right = 24;
-    
-    // 주/일 일정에서 일정과 겹치지 않는 위치 찾기
-    if (viewType === 'timeGridWeek' || viewType === 'timeGridDay') {
-        const fabRect = { bottom: 24, right: 24, width: 56, height: 56 };
-        
-        // 일정들과 겹치는지 확인
-        let hasOverlap = false;
-        events.forEach(event => {
-            const rect = event.getBoundingClientRect();
-            const calendarRect = calendarEl.getBoundingClientRect();
-            
-            // 캘린더 기준 상대 위치 계산
-            const eventBottom = calendarRect.bottom - rect.bottom;
-            const eventRight = calendarRect.right - rect.right;
-            
-            // 겹침 확인
-            if (Math.abs(eventBottom - fabRect.bottom) < 80 && 
-                Math.abs(eventRight - fabRect.right) < 80) {
-                hasOverlap = true;
-            }
-        });
-        
-        // 겹치면 왼쪽으로 이동
-        if (hasOverlap) {
-            right = 100;
-        }
-    }
-    
-    fab.style.bottom = `${bottom}px`;
-    fab.style.right = `${right}px`;
 }
 
 /**
@@ -910,10 +851,6 @@ function changeView(viewName) {
  */
 function refreshCalendar() {
     calendar.refetchEvents();
-    // 일정 새로고침 후 플로팅 버튼 위치 재조정
-    setTimeout(() => {
-        positionFloatingButton();
-    }, 300);
 }
 
 /**
