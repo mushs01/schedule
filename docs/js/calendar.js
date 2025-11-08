@@ -192,12 +192,10 @@ function initCalendar() {
                 }, 300);
             }
             
-            // 주간 뷰일 때 날짜 헤더에 스와이프 제스처 추가
-            if (calendar.view.type === 'timeGridWeek') {
-                setTimeout(() => {
-                    addSwipeGestureToDateHeader();
-                }, 100);
-            }
+            // 모든 뷰에 스와이프 제스처 추가 (주간/일간/월간)
+            setTimeout(() => {
+                addSwipeGestureToDateHeader();
+            }, 100);
         }
     });
     
@@ -216,6 +214,11 @@ function initCalendar() {
             console.log('⚠️ 현재 뷰가 timeGrid가 아닙니다:', calendar.view.type);
         }
     }, 500);
+    
+    // 초기 스와이프 제스처 활성화
+    setTimeout(() => {
+        addSwipeGestureToDateHeader();
+    }, 600);
 }
 
 /**
