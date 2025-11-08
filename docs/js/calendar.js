@@ -74,6 +74,22 @@ function initCalendar() {
             month: '월간',
             day: '일간'
         },
+        // 주 일정 헤더 커스터마이징 - 요일(위) + 날짜(아래)
+        dayHeaderContent: function(arg) {
+            if (arg.view.type === 'timeGridWeek' || arg.view.type === 'timeGridDay') {
+                const days = ['일', '월', '화', '수', '목', '금', '토'];
+                const dayOfWeek = days[arg.date.getDay()];
+                const dayOfMonth = arg.date.getDate();
+                
+                return {
+                    html: `<div style="display: flex; flex-direction: column; align-items: center; line-height: 1.2;">
+                        <div style="font-size: 10px; font-weight: 400; margin-bottom: 2px;">${dayOfWeek}</div>
+                        <div style="font-size: 13px; font-weight: 500;">${dayOfMonth}</div>
+                    </div>`
+                };
+            }
+            return { html: arg.text };
+        },
         slotMinTime: '06:00:00',
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
