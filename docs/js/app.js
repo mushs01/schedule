@@ -18,6 +18,128 @@ let loadingOverlay;
 let toast;
 
 /**
+ * Floating Action Button 설정
+ */
+function setupFloatingButton(btn) {
+    // 담당자 순환 순서: 주환 -> 태환 -> 엄마 -> 아빠 -> 전체
+    const personOrder = ['juhwan', 'taehwan', 'mom', 'dad', 'all'];
+    let longPressTimer = null;
+    let isLongPress = false;
+    
+    // 클릭 이벤트 (짧게 누르기 - 담당자 변경)
+    btn.addEventListener('click', (e) => {
+        if (!isLongPress) {
+            const currentPerson = btn.getAttribute('data-person');
+            const currentIndex = personOrder.indexOf(currentPerson);
+            const nextIndex = (currentIndex + 1) % personOrder.length;
+            const nextPerson = personOrder[nextIndex];
+            
+            btn.setAttribute('data-person', nextPerson);
+            
+            // 담당자 이름 표시
+            const personNames = {
+                'juhwan': '주환',
+                'taehwan': '태환',
+                'mom': '엄마',
+                'dad': '아빠',
+                'all': '전체'
+            };
+            showToast(`${personNames[nextPerson]} 선택됨 (길게 누르면 일정 추가)`);
+        }
+        isLongPress = false;
+    });
+    
+    // 터치 시작 (모바일)
+    btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isLongPress = false;
+        btn.classList.add('long-pressing');
+        
+        longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            btn.classList.remove('long-pressing');
+            openEventModalWithPerson(btn.getAttribute('data-person'));
+        }, 500); // 500ms 길게 누르기
+    });
+    
+    // 터치 끝 (모바일)
+    btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        clearTimeout(longPressTimer);
+        btn.classList.remove('long-pressing');
+        
+        if (!isLongPress) {
+            // 짧게 누른 경우 - 클릭 이벤트가 처리
+            btn.click();
+        }
+    });
+    
+    // 마우스 누르기 시작 (데스크톱)
+    btn.addEventListener('mousedown', (e) => {
+        isLongPress = false;
+        btn.classList.add('long-pressing');
+        
+        longPressTimer = setTimeout(() => {
+            isLongPress = true;
+            btn.classList.remove('long-pressing');
+            openEventModalWithPerson(btn.getAttribute('data-person'));
+        }, 500); // 500ms 길게 누르기
+    });
+    
+    // 마우스 떼기 (데스크톱)
+    btn.addEventListener('mouseup', (e) => {
+        clearTimeout(longPressTimer);
+        btn.classList.remove('long-pressing');
+    });
+    
+    // 마우스 벗어남 (데스크톱)
+    btn.addEventListener('mouseleave', (e) => {
+        clearTimeout(longPressTimer);
+        btn.classList.remove('long-pressing');
+        isLongPress = false;
+    });
+}
+
+/**
+ * 선택된 담당자로 일정 추가 모달 열기
+ */
+function openEventModalWithPerson(person) {
+    openEventModal();
+    
+    // 담당자 체크박스 설정
+    const personCheckboxes = {
+        'juhwan': document.getElementById('personJuhwan'),
+        'taehwan': document.getElementById('personTaehwan'),
+        'mom': document.getElementById('personMom'),
+        'dad': document.getElementById('personDad')
+    };
+    
+    // 모든 체크박스 해제
+    Object.values(personCheckboxes).forEach(checkbox => {
+        if (checkbox) checkbox.checked = false;
+    });
+    
+    // 선택된 담당자만 체크
+    if (person === 'all') {
+        // 전체 선택
+        Object.values(personCheckboxes).forEach(checkbox => {
+            if (checkbox) checkbox.checked = true;
+        });
+    } else if (personCheckboxes[person]) {
+        personCheckboxes[person].checked = true;
+    }
+    
+    const personNames = {
+        'juhwan': '주환',
+        'taehwan': '태환',
+        'mom': '엄마',
+        'dad': '아빠',
+        'all': '전체'
+    };
+    showToast(`${personNames[person]} 일정 추가`);
+}
+
+/**
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -187,12 +309,10 @@ function setupDateChangeListeners() {
  * Setup all event listeners
  */
 function setupEventListeners() {
-    // Add event button
+    // Add event button - 클릭/길게 누르기 처리
     const addEventBtn = document.getElementById('addEventBtn');
     if (addEventBtn) {
-        addEventBtn.addEventListener('click', () => {
-            openEventModal();
-        });
+        setupFloatingButton(addEventBtn);
     }
     
     // Modal close buttons
@@ -480,7 +600,7 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('✏️ Edit mode - event:', event);
         console.log('📋 Event ID:', event.id || event.extendedProps?.id);
         console.log('📋 Event extendedProps:', event.extendedProps);
-        document.getElementById('eventTitle').placeholder = '제목을 입력하세요';
+        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
@@ -604,7 +724,7 @@ function openEventModal(dateInfo = null, event = null) {
     } else {
         // Creating mode - 새 일정 추가
         console.log('Create mode - dateInfo:', dateInfo);
-        document.getElementById('eventTitle').placeholder = '제목을 입력하세요';
+        document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
         // 카카오톡 알림 체크박스 초기화 (디폴트 OFF)
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
@@ -825,7 +945,7 @@ async function handleEventFormSubmit(e) {
         showLoading(true);
         
         if (currentEditingEvent) {
-            // Update existing event
+            // Update existing event - 담당자 변경을 감지하여 일정 추가/삭제 처리
             console.log('📝 Updating existing event');
             
             // 기존 일정 정보 가져오기
@@ -833,11 +953,9 @@ async function handleEventFormSubmit(e) {
             const originalStart = new Date(currentEditingEvent.start).toISOString();
             const originalEnd = new Date(currentEditingEvent.end).toISOString();
             const originalPersons = currentEditingEvent.extendedProps?.persons || [currentEditingEvent.extendedProps?.person || 'all'];
-            const currentPerson = currentEditingEvent.extendedProps?.person || 'all';
             
             console.log('📋 Original info:');
             console.log('  - title:', originalTitle);
-            console.log('  - current person:', currentPerson);
             console.log('  - persons:', originalPersons);
             console.log('  - start:', originalStart);
             console.log('  - end:', originalEnd);
@@ -847,44 +965,61 @@ async function handleEventFormSubmit(e) {
             console.log('  - persons:', selectedPersons);
             console.log('  - start:', startDateTime.toISOString());
             console.log('  - end:', endDateTime.toISOString());
-            console.log('  - is_important:', isImportant);
             
-            // 담당자가 변경되었는지 확인
-            const personsChanged = JSON.stringify(originalPersons.sort()) !== JSON.stringify(selectedPersons.sort());
+            // 관련 일정 찾기 (같은 시간, 같은 제목의 다른 담당자 일정들)
+            const relatedSchedules = await api.findRelatedSchedules(originalTitle, originalStart, originalEnd);
+            console.log('🔗 Related schedules:', relatedSchedules.length);
             
-            if (personsChanged) {
-                console.log('👥 담당자 변경 감지 - 관련 일정 처리');
-                
-                // 관련 일정 찾기 (같은 시간, 같은 제목의 다른 담당자 일정들)
-                const relatedSchedules = await api.findRelatedSchedules(originalTitle, originalStart, originalEnd);
-                console.log('🔗 Related schedules:', relatedSchedules.length);
-                
-                // 기존 담당자 목록 (관련 일정들에서 추출)
-                const existingPersons = relatedSchedules.map(s => s.person);
-                console.log('👥 Existing persons:', existingPersons);
-                console.log('👥 New persons:', selectedPersons);
-                
-                // 담당자 변경 분석
-                const personsToRemove = existingPersons.filter(p => !selectedPersons.includes(p));
-                const personsToAdd = selectedPersons.filter(p => !existingPersons.includes(p));
-                const personsToUpdate = selectedPersons.filter(p => existingPersons.includes(p));
-                
-                console.log('🔄 Changes:');
-                console.log('  - To remove:', personsToRemove);
-                console.log('  - To add:', personsToAdd);
-                console.log('  - To update:', personsToUpdate);
-                
-                // 1. 제거된 담당자의 일정 삭제
-                for (const person of personsToRemove) {
-                    const scheduleToDelete = relatedSchedules.find(s => s.person === person);
-                    if (scheduleToDelete) {
-                        console.log(`🗑️ Deleting schedule for ${person}: ${scheduleToDelete.id}`);
-                        await api.deleteSchedule(scheduleToDelete.id);
-                    }
+            // 기존 담당자 목록 (관련 일정들에서 추출)
+            const existingPersons = relatedSchedules.map(s => s.person);
+            console.log('👥 Existing persons:', existingPersons);
+            console.log('👥 New persons:', selectedPersons);
+            
+            // 담당자 변경 분석
+            const personsToRemove = existingPersons.filter(p => !selectedPersons.includes(p));
+            const personsToAdd = selectedPersons.filter(p => !existingPersons.includes(p));
+            const personsToUpdate = selectedPersons.filter(p => existingPersons.includes(p));
+            
+            console.log('🔄 Changes:');
+            console.log('  - To remove:', personsToRemove);
+            console.log('  - To add:', personsToAdd);
+            console.log('  - To update:', personsToUpdate);
+            
+            // 1. 제거된 담당자의 일정 삭제
+            for (const person of personsToRemove) {
+                const scheduleToDelete = relatedSchedules.find(s => s.person === person);
+                if (scheduleToDelete) {
+                    console.log(`🗑️ Deleting schedule for ${person}: ${scheduleToDelete.id}`);
+                    await api.deleteSchedule(scheduleToDelete.id);
                 }
+            }
+            
+            // 2. 추가된 담당자에 대한 새 일정 생성
+            for (const person of personsToAdd) {
+                const scheduleData = {
+                    title,
+                    start_datetime: startDateTime.toISOString(),
+                    end_datetime: endDateTime.toISOString(),
+                    person: person,
+                    persons: [person],
+                    description: description || null,
+                    kakao_notification_start: enableNotificationStart,
+                    kakao_notification_end: enableNotificationEnd,
+                    repeat_type: repeatType,
+                    repeat_end_date: repeatEndDate,
+                    repeat_weekdays: repeatWeekdays,
+                    repeat_monthly_type: repeatMonthlyType,
+                    is_important: isImportant
+                };
                 
-                // 2. 추가된 담당자에 대한 새 일정 생성
-                for (const person of personsToAdd) {
+                console.log(`➕ Creating new schedule for ${person}`);
+                await api.createSchedule(scheduleData);
+            }
+            
+            // 3. 유지되는 담당자의 일정 업데이트
+            for (const person of personsToUpdate) {
+                const scheduleToUpdate = relatedSchedules.find(s => s.person === person);
+                if (scheduleToUpdate) {
                     const scheduleData = {
                         title,
                         start_datetime: startDateTime.toISOString(),
@@ -901,60 +1036,15 @@ async function handleEventFormSubmit(e) {
                         is_important: isImportant
                     };
                     
-                    console.log(`➕ Creating new schedule for ${person}`);
-                    await api.createSchedule(scheduleData);
+                    console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
+                    await api.updateSchedule(scheduleToUpdate.id, scheduleData);
                 }
-                
-                // 3. 유지되는 담당자의 일정 업데이트
-                for (const person of personsToUpdate) {
-                    const scheduleToUpdate = relatedSchedules.find(s => s.person === person);
-                    if (scheduleToUpdate) {
-                        const scheduleData = {
-                            title,
-                            start_datetime: startDateTime.toISOString(),
-                            end_datetime: endDateTime.toISOString(),
-                            person: person,
-                            persons: [person],
-                            description: description || null,
-                            kakao_notification_start: enableNotificationStart,
-                            kakao_notification_end: enableNotificationEnd,
-                            repeat_type: repeatType,
-                            repeat_end_date: repeatEndDate,
-                            repeat_weekdays: repeatWeekdays,
-                            repeat_monthly_type: repeatMonthlyType,
-                            is_important: isImportant
-                        };
-                        
-                        console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
-                        await api.updateSchedule(scheduleToUpdate.id, scheduleData);
-                    }
-                }
-                
+            }
+            
+            // 변경사항에 따른 토스트 메시지
+            if (personsToRemove.length > 0 || personsToAdd.length > 0) {
                 showToast(`일정이 수정되었습니다. (추가: ${personsToAdd.length}, 삭제: ${personsToRemove.length}, 수정: ${personsToUpdate.length})`, 'success');
             } else {
-                console.log('👤 담당자 변경 없음 - 현재 일정만 업데이트');
-                
-                // 담당자 변경이 없으면 현재 일정만 업데이트
-                const eventId = currentEditingEvent.extendedProps?.original_id || currentEditingEvent.id;
-                console.log('📋 Updating single schedule:', eventId);
-                
-                const scheduleData = {
-                    title,
-                    start_datetime: startDateTime.toISOString(),
-                    end_datetime: endDateTime.toISOString(),
-                    person: currentPerson,
-                    persons: [currentPerson],
-                    description: description || null,
-                    kakao_notification_start: enableNotificationStart,
-                    kakao_notification_end: enableNotificationEnd,
-                    repeat_type: repeatType,
-                    repeat_end_date: repeatEndDate,
-                    repeat_weekdays: repeatWeekdays,
-                    repeat_monthly_type: repeatMonthlyType,
-                    is_important: isImportant
-                };
-                
-                await api.updateSchedule(eventId, scheduleData);
                 showToast('일정이 수정되었습니다.', 'success');
             }
         } else {
@@ -1033,7 +1123,6 @@ function showEventDetail(event) {
     console.log('📋 Event ID:', event.id);
     console.log('📋 Event extendedProps.id:', event.extendedProps?.id);
     
-    const header = document.getElementById('eventDetailHeader');
     const detail = document.getElementById('eventDetail');
     
     const startDate = new Date(event.start);
@@ -1042,7 +1131,6 @@ function showEventDetail(event) {
     // persons 배열 사용 (없으면 person 사용)
     const persons = event.extendedProps.persons || [event.extendedProps.person];
     const personNames = persons.map(p => window.PERSON_NAMES[p]).join(', ');
-    const firstPerson = persons[0] || 'all';
     
     // 카카오톡 알림 상태
     const kakaoNotificationStart = event.extendedProps.kakao_notification_start;
@@ -1068,24 +1156,11 @@ function showEventDetail(event) {
         repeatText = repeatTypeText + endDateText;
     }
     
-    // 헤더: 담당자 사진 + 제목
-    const personImageMap = {
-        'all': 'images/all.png',
-        'dad': 'images/dad.png',
-        'mom': 'images/mom.png',
-        'juhwan': 'images/juhwan.png',
-        'taehwan': 'images/taehwan.png'
-    };
-    
-    header.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="${personImageMap[firstPerson]}" alt="${personNames}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-            <h2 style="margin: 0; font-size: 18px; font-weight: 600;">${event.title}</h2>
-        </div>
-    `;
-    
-    // 상세 정보: 제목 제외
     detail.innerHTML = `
+        <div class="event-detail-row">
+            <span class="material-icons detail-icon">title</span>
+            <span class="detail-content">${event.title}</span>
+        </div>
         <div class="event-detail-row">
             <span class="material-icons detail-icon">event</span>
             <span class="detail-content">${formatDate(startDate)}</span>
@@ -1094,22 +1169,14 @@ function showEventDetail(event) {
             <span class="material-icons detail-icon">schedule</span>
             <span class="detail-content">${formatTime(startDate)}${endDate ? ' - ' + formatTime(endDate) : ''}</span>
         </div>
-        ${persons.length > 1 ? `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">person</span>
             <span class="detail-content">${personNames}</span>
         </div>
-        ` : ''}
         ${event.extendedProps.description ? `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">subject</span>
             <span class="detail-content">${event.extendedProps.description}</span>
-        </div>
-        ` : ''}
-        ${event.extendedProps.is_important ? `
-        <div class="event-detail-row">
-            <span class="material-icons detail-icon" style="color: #ffd700;">star</span>
-            <span class="detail-content">중요일정</span>
         </div>
         ` : ''}
         ${hasKakaoNotification ? `
@@ -1126,14 +1193,7 @@ function showEventDetail(event) {
         ` : ''}
     `;
     
-    // is_important 정보를 extendedProps에 명시적으로 포함
-    // FullCalendar Event 객체를 일반 객체로 변환
     currentEditingEvent = event;
-    // extendedProps에 is_important 확실히 설정
-    if (!currentEditingEvent.extendedProps) {
-        currentEditingEvent.extendedProps = {};
-    }
-    currentEditingEvent.extendedProps.is_important = event.extendedProps?.is_important === true;
     console.log('📝 currentEditingEvent set to:', currentEditingEvent);
     console.log('📋 currentEditingEvent.id:', currentEditingEvent.id);
     console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent.extendedProps);

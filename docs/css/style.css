@@ -1757,10 +1757,11 @@ body {
     z-index: 900;
     transition: all 0.3s;
     -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: visible;
 }
 
 .fab:hover {
-    background: linear-gradient(135deg, #5b83c0 0%, #6d95cd 100%);
     box-shadow: 0 6px 16px rgba(107, 147, 208, 0.6);
     transform: scale(1.05);
 }
@@ -1769,8 +1770,60 @@ body {
     transform: scale(0.95);
 }
 
-.fab .material-icons {
-    font-size: 28px;
+/* 담당자 이미지 */
+.fab-person-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 0.3s;
+}
+
+/* + 아이콘 오버레이 */
+.fab-add-icon {
+    position: absolute;
+    font-size: 24px;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 담당자별 배경 이미지 */
+.fab[data-person="juhwan"] .fab-person-image {
+    background-image: url('../juhwan.png');
+}
+
+.fab[data-person="taehwan"] .fab-person-image {
+    background-image: url('../taehwan.png');
+}
+
+.fab[data-person="mom"] .fab-person-image {
+    background-image: url('../mom.png');
+}
+
+.fab[data-person="dad"] .fab-person-image {
+    background-image: url('../dad.png');
+}
+
+.fab[data-person="all"] .fab-person-image {
+    background-image: url('../family-icon.png');
+}
+
+/* 길게 누르는 중 효과 */
+.fab.long-pressing {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(107, 147, 208, 0.4);
 }
 
 /* Toast Notification */
