@@ -361,12 +361,13 @@ body {
 }
 
 .fc .fc-col-header-cell {
-    padding: 8px 2px;
+    padding: 4px 2px;
     font-size: 11px;
     font-weight: 500;
     background: #ffffff !important;
     border-color: #dadce0 !important;
     border-right: 1px solid #dadce0 !important;
+    height: 44px !important;
 }
 
 /* 주 일정 헤더 날짜 표시 스타일 */
@@ -375,7 +376,8 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 8px 4px !important;
+    padding: 4px !important;
+    min-height: 44px !important;
 }
 
 /* 오늘 날짜 - 파란 동그라미 */
@@ -384,12 +386,14 @@ body {
     background: #1a73e8 !important;
     color: #ffffff !important;
     border-radius: 50% !important;
-    width: 40px !important;
-    height: 40px !important;
+    width: 36px !important;
+    height: 36px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 /* 오늘 날짜 동그라미 안의 텍스트 색상 */

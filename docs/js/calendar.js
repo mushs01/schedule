@@ -82,9 +82,9 @@ function initCalendar() {
                 const dayOfMonth = arg.date.getDate();
                 
                 return {
-                    html: `<div style="display: flex; flex-direction: column; align-items: center; line-height: 1.2;">
-                        <div style="font-size: 10px; font-weight: 400; margin-bottom: 2px;">${dayOfWeek}</div>
-                        <div style="font-size: 13px; font-weight: 500;">${dayOfMonth}</div>
+                    html: `<div style="display: flex; flex-direction: column; align-items: center; line-height: 1; gap: 1px;">
+                        <div style="font-size: 10px; font-weight: 400;">${dayOfWeek}</div>
+                        <div style="font-size: 14px; font-weight: 500;">${dayOfMonth}</div>
                     </div>`
                 };
             }
