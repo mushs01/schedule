@@ -14,6 +14,7 @@ const VAPID_KEY = 'BFHk1qz9PJ6XbOWWenn-I6NsK_B-nwpQhNFiKjlQXEUv2yfgZgARXs4rSnWJB
 
 let messaging = null;
 let currentFCMToken = null;
+let swRegistration = null; // Service Worker Registration 저장
 
 /**
  * FCM 초기화
@@ -34,16 +35,18 @@ async function initFCM() {
             return false;
         }
 
-        // Firebase Messaging 인스턴스 생성
-        messaging = firebase.messaging();
-
-        // Service Worker 등록
+        // Service Worker 먼저 등록 (Firebase Messaging 초기화 전에)
         // GitHub Pages 서브디렉토리를 고려한 경로
         const basePath = location.pathname.split('/').slice(0, 2).join('/');
         const swPath = `${basePath}/firebase-messaging-sw.js`;
         console.log('📝 Service Worker 경로:', swPath);
-        const registration = await navigator.serviceWorker.register(swPath);
-        console.log('✅ Service Worker 등록 완료:', registration);
+        swRegistration = await navigator.serviceWorker.register(swPath, {
+            scope: basePath + '/'
+        });
+        console.log('✅ Service Worker 등록 완료:', swRegistration);
+
+        // Firebase Messaging 인스턴스 생성 (Service Worker 등록 후)
+        messaging = firebase.messaging();
 
         // 저장된 토큰 복구
         const savedToken = localStorage.getItem(STORAGE_KEYS.FCM_TOKEN);
@@ -150,8 +153,11 @@ async function registerFCMToken() {
             return null;
         }
 
-        // 토큰 발급
-        const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+        // 토큰 발급 (Service Worker Registration 포함)
+        const token = await messaging.getToken({ 
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: swRegistration
+        });
         
         if (token) {
             console.log('✅ FCM 토큰 발급:', token);
