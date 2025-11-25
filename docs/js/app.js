@@ -1134,7 +1134,7 @@ async function handleEventFormSubmit(e) {
                 }
                 
                 const personCount = selectedPersons.length;
-                showToast(`${personCount}개의 일정이 추가되었습니다.', 'success');
+                showToast(`${personCount}개의 일정이 추가되었습니다.`, 'success');
             }
         }
         
