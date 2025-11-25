@@ -690,6 +690,8 @@ function openEventModal(dateInfo = null, event = null) {
                 
                 kakaoNotificationEndField.checked = userNotification.end || false;
                 console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
+                console.log('  - userNotification:', userNotification);
+                console.log('  - kakaoNotifications:', kakaoNotifications);
             }
         }
         
@@ -1065,6 +1067,11 @@ async function handleEventFormSubmit(e) {
                     const existingNotifications = scheduleToUpdate.kakao_notifications || {};
                     const mergedNotifications = { ...existingNotifications, ...kakaoNotifications };
                     
+                    console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
+                    console.log('  - Existing notifications:', existingNotifications);
+                    console.log('  - New notifications (current user):', kakaoNotifications);
+                    console.log('  - Merged notifications:', mergedNotifications);
+                    
                     const scheduleData = {
                         title,
                         start_datetime: startDateTime.toISOString(),
@@ -1080,8 +1087,6 @@ async function handleEventFormSubmit(e) {
                         is_important: isImportant
                     };
                     
-                    console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
-                    console.log('  - Merged notifications:', mergedNotifications);
                     await api.updateSchedule(scheduleToUpdate.id, scheduleData);
                 }
             }

@@ -265,6 +265,7 @@ const api = {
             // 사용자별 알림 설정 업데이트
             if (scheduleData.kakao_notifications !== undefined) {
                 updateData.kakao_notifications = scheduleData.kakao_notifications;
+                console.log('📤 [API] Updating kakao_notifications:', scheduleData.kakao_notifications);
             }
             if (scheduleData.repeat_type !== undefined) {
                 updateData.repeat_type = scheduleData.repeat_type;
