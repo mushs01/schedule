@@ -319,3 +319,5 @@ MIT License
 - Firebase Firestore는 실시간 동기화를 지원합니다
 - 모바일 브라우저에서 "홈 화면에 추가"로 앱처럼 사용 가능
 - PWA(Progressive Web App)로 확장 가능
+#   D e p l o y m e n t   t r i g g e r  
+ 
