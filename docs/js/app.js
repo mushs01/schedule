@@ -1094,10 +1094,12 @@ async function handleEventFormSubmit(e) {
                     console.log('  - New notifications (current user):', kakaoNotifications);
                     console.log('  - Merged notifications:', mergedNotifications);
                     
+                    // 업데이트할 데이터 구성 (기본 정보만 업데이트)
                     const scheduleData = {
                         title,
-                        start_datetime: startDateTime.toISOString(),
-                        end_datetime: endDateTime.toISOString(),
+                        // 반복 일정의 경우 원본 날짜 유지, 일반 일정의 경우만 날짜 업데이트
+                        start_datetime: (repeatType !== 'none') ? scheduleToUpdate.start : startDateTime.toISOString(),
+                        end_datetime: (repeatType !== 'none') ? scheduleToUpdate.end : endDateTime.toISOString(),
                         person: person,
                         persons: [person],
                         description: description || null,
