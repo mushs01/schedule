@@ -1,5 +1,66 @@
 # 변경 내역 📝
 
+## v2.1 (2025-11-25) - 카카오 로그인 자동 유지 기능 🔄
+
+### 🎯 주요 변경사항
+
+카카오톡 알림 기능의 로그인 상태가 **자동으로 유지**되도록 개선되었습니다.
+
+### ✅ 개선된 기능
+
+#### 카카오 로그인 자동 유지
+- ✅ **한 번 로그인하면 자동으로 로그인 상태 유지**
+- ✅ **Access Token과 Refresh Token을 localStorage에 영구 저장**
+- ✅ **앱 재시작 시 자동 로그인 복원**
+- ✅ **토큰 자동 갱신**: 만료 전 자동으로 토큰 갱신
+- ✅ **10분마다 토큰 상태 자동 체크**: 만료되기 전에 자동 갱신
+- ✅ **토큰 만료 30분 전 자동 갱신 시도**
+
+### 🔄 수정된 파일
+
+#### 프론트엔드
+- `frontend/js/kakao-notification.js` - 토큰 저장 및 자동 갱신 로직 추가
+  - `storeKakaoTokens()` 함수 추가: 토큰 localStorage 저장
+  - `restoreKakaoSession()` 함수 개선: localStorage에서 토큰 복원
+  - `clearStoredTokens()` 함수 추가: 로그아웃 시 토큰 정리
+  - `refreshAccessToken()` 개선: 갱신된 토큰 자동 저장
+  - `loadSettings()` 개선: 토큰 만료 시간 체크 및 자동 갱신
+
+#### 문서
+- `KAKAO_SETUP_GUIDE.md` - 자동 로그인 유지 기능 설명 추가
+- `CHANGES.md` - 이 변경 내역 추가
+
+### 💡 작동 방식
+
+1. **최초 로그인 시**: Access Token, Refresh Token을 localStorage에 저장
+2. **앱 재시작 시**: localStorage에서 토큰을 읽어 자동 로그인
+3. **토큰 만료 체크**: 10분마다 정기적으로 토큰 상태 체크
+4. **자동 갱신**: 만료 30분 전 또는 유효성 검사 실패 시 자동 갱신
+5. **갱신 실패 시**: 사용자에게 재로그인 안내 메시지 표시
+
+### 🎁 사용자 혜택
+
+- 🚀 **편리함**: 매번 로그인할 필요 없음
+- ⏰ **지속성**: 일반적으로 2주 이상 로그인 상태 유지
+- 🔄 **자동화**: 토큰 갱신을 자동으로 처리
+- 💯 **안정성**: 토큰 만료 전 미리 갱신하여 서비스 중단 방지
+
+### 📊 기술 세부사항
+
+#### 새로운 localStorage 키
+```javascript
+KAKAO_ACCESS_TOKEN: 'kakao_access_token',      // Access Token 저장
+KAKAO_REFRESH_TOKEN: 'kakao_refresh_token',    // Refresh Token 저장
+KAKAO_TOKEN_EXPIRES_AT: 'kakao_token_expires_at' // 만료 시간 저장
+```
+
+#### 토큰 유효 기간
+- **Access Token**: 약 2시간
+- **Refresh Token**: 약 2개월 (카카오 정책에 따라 변경 가능)
+- **자동 갱신 주기**: 10분마다 체크, 만료 30분 전 자동 갱신
+
+---
+
 ## v2.0 (2025-10-18) - 프론트엔드 전환 ⭐
 
 ### 🎯 주요 변경사항
