@@ -453,9 +453,10 @@ function setupEventListeners() {
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
-    const kakaoLogoutBtn = document.getElementById('kakaoLogoutBtn');
-    const testKakaoBtn = document.getElementById('testKakaoBtn');
+    const selectMomBtn = document.getElementById('selectMomBtn');
+    const selectDadBtn = document.getElementById('selectDadBtn');
+    const enableNotificationBtn = document.getElementById('enableNotificationBtn');
+    const disableNotificationBtn = document.getElementById('disableNotificationBtn');
     
     if (settingsBtn) {
         settingsBtn.addEventListener('click', openSettingsModal);
@@ -466,21 +467,28 @@ function setupEventListeners() {
         console.log('✅ Close settings button listener added');
     }
     
-    if (kakaoLoginBtn) kakaoLoginBtn.addEventListener('click', () => {
-        if (window.kakaoNotification) {
-            window.kakaoNotification.login();
+    // User selection buttons
+    if (selectMomBtn) selectMomBtn.addEventListener('click', () => {
+        if (window.fcmNotification) {
+            window.fcmNotification.selectUser('mom');
         }
     });
     
-    if (kakaoLogoutBtn) kakaoLogoutBtn.addEventListener('click', () => {
-        if (window.kakaoNotification) {
-            window.kakaoNotification.logout();
+    if (selectDadBtn) selectDadBtn.addEventListener('click', () => {
+        if (window.fcmNotification) {
+            window.fcmNotification.selectUser('dad');
         }
     });
     
-    if (testKakaoBtn) testKakaoBtn.addEventListener('click', () => {
-        if (window.kakaoNotification) {
-            window.kakaoNotification.sendTest();
+    if (enableNotificationBtn) enableNotificationBtn.addEventListener('click', () => {
+        if (window.fcmNotification) {
+            window.fcmNotification.requestPermission();
+        }
+    });
+    
+    if (disableNotificationBtn) disableNotificationBtn.addEventListener('click', () => {
+        if (window.fcmNotification) {
+            window.fcmNotification.disable();
         }
     });
     
@@ -552,16 +560,16 @@ function setupEventListeners() {
 }
 
 /**
- * Update Kakao notification UI based on login status
+ * Update notification UI based on FCM status
  */
-function updateKakaoNotificationUI() {
-    const checkboxes = document.getElementById('kakaoNotificationCheckboxes');
-    const message = document.getElementById('kakaoNotificationMessage');
+function updateNotificationUI(isEnabled) {
+    const checkboxes = document.getElementById('notificationCheckboxes');
+    const message = document.getElementById('notificationMessage');
     
-    // Check if user is logged in to Kakao
-    const isKakaoLoggedIn = window.kakaoNotification?.getCurrentUserId();
+    // Check if notification is enabled (parameter passed from FCM module)
+    const enabled = isEnabled !== undefined ? isEnabled : window.fcmNotification?.isEnabled();
     
-    if (isKakaoLoggedIn) {
+    if (enabled) {
         // Show checkboxes
         if (checkboxes) checkboxes.style.display = 'flex';
         if (message) message.style.display = 'none';
@@ -591,8 +599,8 @@ function openEventModal(dateInfo = null, event = null) {
     currentEditingEvent = event;
     console.log('📝 currentEditingEvent set to:', currentEditingEvent);
     
-    // Update Kakao notification UI based on login status
-    updateKakaoNotificationUI();
+    // Update notification UI based on FCM status
+    updateNotificationUI();
     
     // Reset form
     eventForm.reset();
@@ -664,70 +672,67 @@ function openEventModal(dateInfo = null, event = null) {
             descriptionField.value = event.extendedProps.description || '';
         }
         
-        // 카카오톡 알림 설정 (사용자별)
-        // 로그인 상태일 때만 체크박스가 존재함
-        const currentUserId = window.kakaoNotification?.getCurrentUserId();
+        // 푸시 알림 설정 로드
+        const notificationStartField = document.getElementById('eventNotificationStart');
+        const notificationEndField = document.getElementById('eventNotificationEnd');
         
-        if (currentUserId) {
-            const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
-            const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
-            
-            console.log('🔔 Loading kakao notification settings:');
+        if (notificationStartField && notificationEndField) {
+            console.log('🔔 [수정 모드] 알림 설정 로드 시작');
+            console.log('  - Event ID:', event.id);
+            console.log('  - Event title:', event.title);
             console.log('  - extendedProps:', event.extendedProps);
-            console.log('  - Current user ID:', currentUserId);
             
-            // 반복 일정의 경우 original_id가 있으면 원본 일정의 알림 설정을 로드해야 함
-            const originalId = event.extendedProps.original_id;
+            // 반복 일정인 경우 원본 일정에서 로드
+            const originalId = event.extendedProps?.original_id;
             
-            // original_id가 있으면 항상 원본 일정에서 로드
             if (originalId) {
-                console.log('  - 🔄 반복 일정 인스턴스 감지, 원본 일정에서 알림 설정 로드:', originalId);
+                console.log('  - 🔄 반복 일정 감지! 원본 ID:', originalId);
+                console.log('  - 원본 일정에서 알림 설정을 로드합니다...');
                 
-                // API에서 원본 일정 가져오기 (async)
+                // 원본 일정에서 알림 설정 가져오기 (비동기)
                 window.api.getSchedule(originalId).then(originalSchedule => {
-                    if (originalSchedule && originalSchedule.kakao_notifications) {
-                        const kakaoNotifications = originalSchedule.kakao_notifications;
-                        const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                    if (originalSchedule) {
+                        console.log('  - ✅ 원본 일정 로드 완료:', originalSchedule);
+                        console.log('  - notification_start:', originalSchedule.notification_start);
+                        console.log('  - notification_end:', originalSchedule.notification_end);
                         
-                        if (kakaoNotificationStartField) {
-                            kakaoNotificationStartField.checked = userNotification.start || false;
-                            console.log('  - ✅ Start checkbox set to:', kakaoNotificationStartField.checked);
-                        }
-                        if (kakaoNotificationEndField) {
-                            kakaoNotificationEndField.checked = userNotification.end || false;
-                            console.log('  - ✅ End checkbox set to:', kakaoNotificationEndField.checked);
-                        }
-                        console.log('  - userNotification:', userNotification);
-                        console.log('  - kakaoNotifications (from original):', kakaoNotifications);
+                        notificationStartField.checked = originalSchedule.notification_start !== false;
+                        notificationEndField.checked = originalSchedule.notification_end === true;
+                        
+                        console.log('  - ✅ 체크박스 설정 완료');
+                        console.log('    - Start:', notificationStartField.checked);
+                        console.log('    - End:', notificationEndField.checked);
                     } else {
-                        console.log('  - ⚠️ 원본 일정을 찾을 수 없거나 알림 설정이 없음');
-                        // 원본을 찾을 수 없으면 기본값으로 설정
-                        if (kakaoNotificationStartField) kakaoNotificationStartField.checked = false;
-                        if (kakaoNotificationEndField) kakaoNotificationEndField.checked = false;
+                        console.warn('  - ⚠️ 원본 일정을 찾을 수 없음, 현재 값 사용');
+                        notificationStartField.checked = event.extendedProps.notification_start !== false;
+                        notificationEndField.checked = event.extendedProps.notification_end === true;
                     }
                 }).catch(error => {
                     console.error('  - ❌ 원본 일정 로드 실패:', error);
-                    // 오류 시 기본값으로 설정
-                    if (kakaoNotificationStartField) kakaoNotificationStartField.checked = false;
-                    if (kakaoNotificationEndField) kakaoNotificationEndField.checked = false;
+                    // 오류 시 현재 인스턴스의 값 사용
+                    notificationStartField.checked = event.extendedProps.notification_start !== false;
+                    notificationEndField.checked = event.extendedProps.notification_end === true;
                 });
             } else {
                 // 일반 일정 (반복 아님)
                 console.log('  - 📝 일반 일정, 직접 로드');
-                const kakaoNotifications = event.extendedProps.kakao_notifications || {};
-                const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
                 
-                if (kakaoNotificationStartField) {
-                    kakaoNotificationStartField.checked = userNotification.start || false;
-                    console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
-                }
-                if (kakaoNotificationEndField) {
-                    kakaoNotificationEndField.checked = userNotification.end || false;
-                    console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
-                }
-                console.log('  - userNotification:', userNotification);
-                console.log('  - kakaoNotifications:', kakaoNotifications);
+                const notifStart = event.extendedProps.notification_start;
+                const notifEnd = event.extendedProps.notification_end;
+                
+                console.log('  - Raw notification_start:', notifStart, '(type:', typeof notifStart, ')');
+                console.log('  - Raw notification_end:', notifEnd, '(type:', typeof notifEnd, ')');
+                
+                // 명시적 처리: undefined는 true(시작), false는 false
+                notificationStartField.checked = notifStart !== false;
+                notificationEndField.checked = notifEnd === true;
+                
+                console.log('  - ✅ 체크박스 설정 완료');
+                console.log('    - Start:', notificationStartField.checked);
+                console.log('    - End:', notificationEndField.checked);
             }
+        } else {
+            console.log('  - ⚠️ 알림 체크박스를 찾을 수 없음 (FCM 비활성화?)');
         }
         
         // 반복 설정
@@ -778,23 +783,17 @@ function openEventModal(dateInfo = null, event = null) {
         
         // 카카오톡 알림 체크박스 초기화 (사용자별 디폴트)
         // 로그인 상태일 때만 체크박스가 존재함
-        const currentUserId = window.kakaoNotification?.getCurrentUserId();
-        if (currentUserId) {
-            const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
-            const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
-            
-            // 현재 사용자 이름 확인 (엄마 / 아빠)
-            const currentUserName = window.kakaoNotification?.getCurrentUserName() || '';
-            console.log('👤 Current user name for defaults:', currentUserName);
-            
-            if (kakaoNotificationStartField) {
-                // 엄마는 시작 알림 기본 ON, 아빠는 기본 OFF
-                kakaoNotificationStartField.checked = currentUserName.includes('엄마');
-            }
-            if (kakaoNotificationEndField) {
-                // 종료 알림은 모두 기본 OFF
-                kakaoNotificationEndField.checked = false;
-            }
+        // 새 일정 생성 시 알림 기본값 설정
+        const notificationStartField = document.getElementById('eventNotificationStart');
+        const notificationEndField = document.getElementById('eventNotificationEnd');
+        
+        if (notificationStartField) {
+            // 시작 알림: 기본 ON
+            notificationStartField.checked = true;
+        }
+        if (notificationEndField) {
+            // 종료 알림: 기본 OFF
+            notificationEndField.checked = false;
         }
         
         if (dateInfo) {
@@ -940,39 +939,16 @@ async function handleEventFormSubmit(e) {
         return;
     }
     
-    // 카카오톡 알림 설정 (사용자별)
-    const kakaoNotificationStart = document.getElementById('eventKakaoNotificationStart');
-    const kakaoNotificationEnd = document.getElementById('eventKakaoNotificationEnd');
+    // 푸시 알림 설정
+    const notificationStartCheckbox = document.getElementById('eventNotificationStart');
+    const notificationEndCheckbox = document.getElementById('eventNotificationEnd');
     
-    const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
-    const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
+    const notificationStart = notificationStartCheckbox ? notificationStartCheckbox.checked : false;
+    const notificationEnd = notificationEndCheckbox ? notificationEndCheckbox.checked : false;
     
-    // 현재 로그인한 사용자 ID와 이름 가져오기
-    const currentUserId = window.kakaoNotification?.getCurrentUserId();
-    const currentUserName = window.kakaoNotification?.getCurrentUserName() || '사용자';
-    
-    console.log('📤 Saving kakao notification settings:');
-    console.log('  - Current user:', currentUserName, '(ID:', currentUserId, ')');
-    console.log('  - Start checked:', enableNotificationStart);
-    console.log('  - End checked:', enableNotificationEnd);
-    
-    // 기존 일정의 알림 설정 가져오기 (수정 모드인 경우)
-    let existingKakaoNotifications = {};
-    if (currentEditingEvent && currentEditingEvent.extendedProps) {
-        existingKakaoNotifications = currentEditingEvent.extendedProps.kakao_notifications || {};
-    }
-    
-    // 사용자별 알림 설정 업데이트
-    const kakaoNotifications = { ...existingKakaoNotifications };
-    if (currentUserId) {
-        kakaoNotifications[currentUserId] = {
-            start: enableNotificationStart,
-            end: enableNotificationEnd
-        };
-        console.log('  - Updated notifications for user:', currentUserId, kakaoNotifications[currentUserId]);
-    } else {
-        console.log('  ⚠️ No user ID, notifications not saved');
-    }
+    console.log('📤 Saving notification settings:');
+    console.log('  - Start notification:', notificationStart);
+    console.log('  - End notification:', notificationEnd);
     
     // 반복 설정
     const repeatSelect = document.getElementById('eventRepeat');
@@ -1104,7 +1080,8 @@ async function handleEventFormSubmit(e) {
                     person: person,
                     persons: [person],
                     description: description || null,
-                    kakao_notifications: kakaoNotifications,
+                    notification_start: notificationStart,
+                    notification_end: notificationEnd,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1120,14 +1097,13 @@ async function handleEventFormSubmit(e) {
             for (const person of personsToUpdate) {
                 const scheduleToUpdate = relatedSchedules.find(s => s.person === person);
                 if (scheduleToUpdate) {
-                    // 기존 일정의 kakao_notifications 가져와서 현재 사용자 것만 업데이트
-                    const existingNotifications = scheduleToUpdate.kakao_notifications || {};
-                    const mergedNotifications = { ...existingNotifications, ...kakaoNotifications };
-                    
                     console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
-                    console.log('  - Existing notifications:', existingNotifications);
-                    console.log('  - New notifications (current user):', kakaoNotifications);
-                    console.log('  - Merged notifications:', mergedNotifications);
+                    console.log('  - 기존 알림 설정:');
+                    console.log('    - notification_start:', scheduleToUpdate.notification_start);
+                    console.log('    - notification_end:', scheduleToUpdate.notification_end);
+                    console.log('  - 새 알림 설정:');
+                    console.log('    - notification_start:', notificationStart);
+                    console.log('    - notification_end:', notificationEnd);
                     
                     // 업데이트할 데이터 구성 (기본 정보만 업데이트)
                     const scheduleData = {
@@ -1138,7 +1114,8 @@ async function handleEventFormSubmit(e) {
                         person: person,
                         persons: [person],
                         description: description || null,
-                        kakao_notifications: mergedNotifications,
+                        notification_start: notificationStart,
+                        notification_end: notificationEnd,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1146,7 +1123,9 @@ async function handleEventFormSubmit(e) {
                         is_important: isImportant
                     };
                     
+                    console.log('  - ✅ 업데이트 데이터 전송:', scheduleData);
                     await api.updateSchedule(scheduleToUpdate.id, scheduleData);
+                    console.log('  - ✅ 업데이트 완료!');
                 }
             }
             
@@ -1170,7 +1149,8 @@ async function handleEventFormSubmit(e) {
                     person: 'all',
                     persons: ['all'],
                     description: description || null,
-                    kakao_notifications: kakaoNotifications,
+                    notification_start: notificationStart,
+                    notification_end: notificationEnd,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1190,7 +1170,8 @@ async function handleEventFormSubmit(e) {
                         person: person,
                         persons: [person],  // 단일 담당자로 설정
                         description: description || null,
-                        kakao_notifications: kakaoNotifications,
+                        notification_start: notificationStart,
+                        notification_end: notificationEnd,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1721,8 +1702,8 @@ async function handleSearch(e) {
                             description: schedule.description,
                             person: schedule.person,
                             persons: schedule.persons,
-                            kakao_notification_start: schedule.kakao_notification_start || false,
-                            kakao_notification_end: schedule.kakao_notification_end || false,
+                            notification_start: schedule.notification_start !== false,
+                            notification_end: schedule.notification_end === true,
                             repeat_type: schedule.repeat_type || 'none',
                             repeat_end_date: schedule.repeat_end_date || null,
                             repeat_weekdays: schedule.repeat_weekdays || [],
@@ -2082,10 +2063,13 @@ function initTodaySummaryToggle() {
 // Make globals available
 window.showEventDetail = showEventDetail;
 window.openEventModal = openEventModal;
-window.updateKakaoNotificationUI = updateKakaoNotificationUI;
+window.updateNotificationUI = updateNotificationUI;
 window.closeEventModal = closeEventModal;
 window.showLoading = showLoading;
 window.showToast = showToast;
+window.app = {
+    updateNotificationUI: updateNotificationUI
+};
 
 // Initialize today summary toggle after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

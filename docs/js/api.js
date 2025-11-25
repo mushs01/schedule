@@ -74,11 +74,9 @@ const api = {
                         persons: data.persons,
                         color: data.color,
                         isPast: data.is_past || false,
-                        // 기존 단일 알림 설정 (하위 호환성)
-                        kakao_notification_start: data.kakao_notification_start === true,
-                        kakao_notification_end: data.kakao_notification_end === true,
-                        // 새로운 사용자별 알림 설정
-                        kakao_notifications: data.kakao_notifications || {},
+                        // 푸시 알림 설정
+                        notification_start: data.notification_start !== false, // 기본값 true
+                        notification_end: data.notification_end === true, // 기본값 false
                         repeat_type: data.repeat_type || 'none',
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: data.repeat_weekdays || [],
@@ -164,10 +162,16 @@ const api = {
                     start: data.start_datetime.toDate().toISOString(),
                     end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
                     person: data.person,
+                    persons: data.persons || [data.person],
                     color: data.color,
                     isPast: data.is_past || false,
-                    kakao_notification_start: data.kakao_notification_start || false,
-                    kakao_notification_end: data.kakao_notification_end || false
+                    notification_start: data.notification_start !== false,
+                    notification_end: data.notification_end === true,
+                    repeat_type: data.repeat_type || 'none',
+                    repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
+                    repeat_weekdays: data.repeat_weekdays || [],
+                    repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
+                    is_important: data.is_important === true
                 };
             } else {
                 throw new Error('Schedule not found');
@@ -198,11 +202,9 @@ const api = {
                 persons: scheduleData.persons || [scheduleData.person],
                 color: color,
                 is_past: isPast,
-                // 기존 단일 알림 설정 (하위 호환성 - 더 이상 사용 안 함)
-                kakao_notification_start: false,
-                kakao_notification_end: false,
-                // 새로운 사용자별 알림 설정
-                kakao_notifications: scheduleData.kakao_notifications || {},
+                // 푸시 알림 설정
+                notification_start: scheduleData.notification_start !== false, // 기본값 true
+                notification_end: scheduleData.notification_end === true, // 기본값 false
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
@@ -262,10 +264,12 @@ const api = {
             if (scheduleData.persons) {
                 updateData.persons = scheduleData.persons;
             }
-            // 사용자별 알림 설정 업데이트
-            if (scheduleData.kakao_notifications !== undefined) {
-                updateData.kakao_notifications = scheduleData.kakao_notifications;
-                console.log('📤 [API] Updating kakao_notifications:', scheduleData.kakao_notifications);
+            // 푸시 알림 설정 업데이트
+            if (scheduleData.notification_start !== undefined) {
+                updateData.notification_start = scheduleData.notification_start;
+            }
+            if (scheduleData.notification_end !== undefined) {
+                updateData.notification_end = scheduleData.notification_end;
             }
             if (scheduleData.repeat_type !== undefined) {
                 updateData.repeat_type = scheduleData.repeat_type;
