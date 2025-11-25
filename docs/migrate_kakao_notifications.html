@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카카오 알림 데이터 마이그레이션</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #1557b0;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+        .log-success {
+            color: #0f9d58;
+        }
+        .log-error {
+            color: #d93025;
+        }
+        .log-info {
+            color: #1a73e8;
+        }
+        .log-warning {
+            color: #f9ab00;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background-color: #e6f4ea;
+            color: #137333;
+            display: block;
+        }
+        .status.error {
+            background-color: #fce8e6;
+            color: #c5221f;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 카카오 알림 데이터 마이그레이션</h1>
+        <div class="description">
+            <p><strong>이 도구는 기존 일정의 카카오 알림 설정을 새로운 사용자별 알림 시스템으로 변환합니다.</strong></p>
+            <p>엄마와 아빠가 각각 로그인하여 실행해야 합니다:</p>
+            <ul>
+                <li><strong>엄마:</strong> 모든 일정의 시작 알림이 기본적으로 활성화됩니다</li>
+                <li><strong>아빠:</strong> 모든 알림이 기본적으로 비활성화됩니다 (선택적으로 활성화 가능)</li>
+            </ul>
+            <p><strong>주의:</strong> 이 작업은 실행 취소할 수 없습니다. 백업을 권장합니다.</p>
+        </div>
+        
+        <button id="migrateBtn" onclick="migrateData()">마이그레이션 시작</button>
+        <button id="testBtn" onclick="testConnection()">연결 테스트</button>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="log" id="logContainer">
+            <div class="log-entry log-info">로그가 여기에 표시됩니다...</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Kakao SDK -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.0/kakao.min.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        let db;
+        let currentUserId = null;
+        let currentUserName = null;
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                log('✅ Firebase 초기화 완료', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Firebase 초기화 실패: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Initialize Kakao
+        function initKakao() {
+            try {
+                const KAKAO_APP_KEY = '870fe727e74ee5a06ea42e2b0a018006';
+                if (!Kakao.isInitialized()) {
+                    Kakao.init(KAKAO_APP_KEY);
+                }
+                log('✅ Kakao SDK 초기화 완료', 'success');
+                
+                // Check if user is logged in
+                const accessToken = Kakao.Auth.getAccessToken();
+                if (accessToken) {
+                    log('✅ 카카오 로그인 상태 확인됨', 'success');
+                    getUserInfo();
+                } else {
+                    log('⚠️ 카카오 로그인이 필요합니다. 먼저 앱에서 로그인해주세요.', 'warning');
+                    // Auto login
+                    kakaoLogin();
+                }
+            } catch (error) {
+                log(`❌ Kakao SDK 초기화 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // Kakao Login
+        function kakaoLogin() {
+            Kakao.Auth.login({
+                success: function(authObj) {
+                    log('✅ 카카오 로그인 성공', 'success');
+                    getUserInfo();
+                },
+                fail: function(err) {
+                    log(`❌ 카카오 로그인 실패: ${err.error_description}`, 'error');
+                }
+            });
+        }
+
+        // Get User Info
+        function getUserInfo() {
+            Kakao.API.request({
+                url: '/v2/user/me',
+                success: function(response) {
+                    currentUserId = response.id.toString();
+                    log(`✅ 사용자 ID 확인: ${currentUserId}`, 'success');
+                    
+                    // Ask for user name
+                    currentUserName = prompt('사용자 이름을 입력하세요 (예: 엄마, 아빠):', '');
+                    if (currentUserName && currentUserName.trim()) {
+                        currentUserName = currentUserName.trim();
+                        log(`✅ 사용자 이름: ${currentUserName}`, 'success');
+                    } else {
+                        log('⚠️ 사용자 이름이 입력되지 않았습니다', 'warning');
+                    }
+                },
+                fail: function(error) {
+                    log(`❌ 사용자 정보 가져오기 실패: ${error.msg}`, 'error');
+                }
+            });
+        }
+
+        // Log function
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString('ko-KR')}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+
+        // Show status
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // Test connection
+        async function testConnection() {
+            log('🔍 연결 테스트 시작...', 'info');
+            
+            if (!db) {
+                log('❌ Firebase가 초기화되지 않았습니다', 'error');
+                return;
+            }
+
+            if (!currentUserId) {
+                log('❌ 카카오 로그인이 필요합니다', 'error');
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('schedules').limit(5).get();
+                log(`✅ Firestore 연결 성공 (일정 ${snapshot.size}개 확인)`, 'success');
+                showStatus(`연결 성공! 사용자: ${currentUserName} (ID: ${currentUserId})`, 'success');
+            } catch (error) {
+                log(`❌ Firestore 연결 실패: ${error.message}`, 'error');
+                showStatus('연결 실패', 'error');
+            }
+        }
+
+        // Migrate data
+        async function migrateData() {
+            if (!db) {
+                log('❌ Firebase가 초기화되지 않았습니다', 'error');
+                return;
+            }
+
+            if (!currentUserId) {
+                log('❌ 카카오 로그인이 필요합니다', 'error');
+                return;
+            }
+
+            if (!confirm(`정말로 마이그레이션을 시작하시겠습니까?\n\n사용자: ${currentUserName} (ID: ${currentUserId})\n\n이 작업은 실행 취소할 수 없습니다.`)) {
+                return;
+            }
+
+            const migrateBtn = document.getElementById('migrateBtn');
+            migrateBtn.disabled = true;
+            migrateBtn.textContent = '마이그레이션 중...';
+
+            log('🚀 마이그레이션 시작...', 'info');
+            log(`👤 현재 사용자: ${currentUserName} (ID: ${currentUserId})`, 'info');
+
+            try {
+                // Get all schedules
+                const snapshot = await db.collection('schedules').get();
+                log(`📋 총 ${snapshot.size}개의 일정을 찾았습니다`, 'info');
+
+                let updatedCount = 0;
+                let skippedCount = 0;
+                let errorCount = 0;
+
+                // Determine default settings based on user name
+                const isMom = currentUserName.includes('엄마');
+                const defaultStartNotification = isMom;
+                const defaultEndNotification = false;
+
+                log(`⚙️ 기본 설정: 시작 알림 ${defaultStartNotification ? 'ON' : 'OFF'}, 종료 알림 ${defaultEndNotification ? 'ON' : 'OFF'}`, 'info');
+
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    
+                    // Check if this user already has notification settings
+                    const kakaoNotifications = data.kakao_notifications || {};
+                    
+                    if (kakaoNotifications[currentUserId]) {
+                        log(`⏭️  건너뜀: "${data.title}" (이미 설정됨)`, 'warning');
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Add user's notification settings
+                    kakaoNotifications[currentUserId] = {
+                        start: defaultStartNotification,
+                        end: defaultEndNotification
+                    };
+
+                    try {
+                        await db.collection('schedules').doc(doc.id).update({
+                            kakao_notifications: kakaoNotifications
+                        });
+                        log(`✅ 업데이트: "${data.title}"`, 'success');
+                        updatedCount++;
+                    } catch (error) {
+                        log(`❌ 업데이트 실패: "${data.title}" - ${error.message}`, 'error');
+                        errorCount++;
+                    }
+                }
+
+                log('', 'info');
+                log('=== 마이그레이션 완료 ===', 'info');
+                log(`✅ 업데이트: ${updatedCount}개`, 'success');
+                log(`⏭️  건너뜀: ${skippedCount}개`, 'warning');
+                log(`❌ 실패: ${errorCount}개`, 'error');
+
+                showStatus(`마이그레이션 완료! (업데이트: ${updatedCount}, 건너뜀: ${skippedCount}, 실패: ${errorCount})`, 'success');
+
+            } catch (error) {
+                log(`❌ 마이그레이션 실패: ${error.message}`, 'error');
+                showStatus('마이그레이션 실패', 'error');
+            } finally {
+                migrateBtn.disabled = false;
+                migrateBtn.textContent = '마이그레이션 시작';
+            }
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            if (initFirebase()) {
+                initKakao();
+            }
+        };
+    </script>
+</body>
+</html>
+

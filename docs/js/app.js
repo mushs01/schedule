@@ -640,21 +640,30 @@ function openEventModal(dateInfo = null, event = null) {
             descriptionField.value = event.extendedProps.description || '';
         }
         
-        // 카카오톡 알림 설정
+        // 카카오톡 알림 설정 (사용자별)
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
         const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
         
         console.log('🔔 Loading kakao notification settings:');
         console.log('  - extendedProps:', event.extendedProps);
-        console.log('  - kakao_notification_start:', event.extendedProps?.kakao_notification_start);
-        console.log('  - kakao_notification_end:', event.extendedProps?.kakao_notification_end);
+        
+        // 현재 로그인한 사용자 ID 가져오기
+        const currentUserId = window.kakaoNotification?.getCurrentUserId();
+        console.log('  - Current user ID:', currentUserId);
         
         if (kakaoNotificationStartField && event.extendedProps) {
-            kakaoNotificationStartField.checked = event.extendedProps.kakao_notification_start || false;
+            // 사용자별 알림 설정 확인
+            const kakaoNotifications = event.extendedProps.kakao_notifications || {};
+            const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+            
+            kakaoNotificationStartField.checked = userNotification.start || false;
             console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
         }
         if (kakaoNotificationEndField && event.extendedProps) {
-            kakaoNotificationEndField.checked = event.extendedProps.kakao_notification_end || false;
+            const kakaoNotifications = event.extendedProps.kakao_notifications || {};
+            const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+            
+            kakaoNotificationEndField.checked = userNotification.end || false;
             console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
         }
         
@@ -704,13 +713,20 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('Create mode - dateInfo:', dateInfo);
         document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
-        // 카카오톡 알림 체크박스 초기화 (디폴트 OFF)
+        // 카카오톡 알림 체크박스 초기화 (사용자별 디폴트)
         const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
         const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
+        
+        // 현재 사용자 이름 확인 (엄마 / 아빠)
+        const currentUserName = window.kakaoNotification?.getCurrentUserName() || '';
+        console.log('👤 Current user name for defaults:', currentUserName);
+        
         if (kakaoNotificationStartField) {
-            kakaoNotificationStartField.checked = false;
+            // 엄마는 시작 알림 기본 ON, 아빠는 기본 OFF
+            kakaoNotificationStartField.checked = currentUserName.includes('엄마');
         }
         if (kakaoNotificationEndField) {
+            // 종료 알림은 모두 기본 OFF
             kakaoNotificationEndField.checked = false;
         }
         
@@ -857,21 +873,39 @@ async function handleEventFormSubmit(e) {
         return;
     }
     
-    // 카카오톡 알림 설정
+    // 카카오톡 알림 설정 (사용자별)
     const kakaoNotificationStart = document.getElementById('eventKakaoNotificationStart');
     const kakaoNotificationEnd = document.getElementById('eventKakaoNotificationEnd');
-    
-    console.log('📤 Saving kakao notification settings:');
-    console.log('  - Start element:', kakaoNotificationStart);
-    console.log('  - Start checked:', kakaoNotificationStart?.checked);
-    console.log('  - End element:', kakaoNotificationEnd);
-    console.log('  - End checked:', kakaoNotificationEnd?.checked);
     
     const enableNotificationStart = kakaoNotificationStart ? kakaoNotificationStart.checked : false;
     const enableNotificationEnd = kakaoNotificationEnd ? kakaoNotificationEnd.checked : false;
     
-    console.log('  - Final start value:', enableNotificationStart);
-    console.log('  - Final end value:', enableNotificationEnd);
+    // 현재 로그인한 사용자 ID와 이름 가져오기
+    const currentUserId = window.kakaoNotification?.getCurrentUserId();
+    const currentUserName = window.kakaoNotification?.getCurrentUserName() || '사용자';
+    
+    console.log('📤 Saving kakao notification settings:');
+    console.log('  - Current user:', currentUserName, '(ID:', currentUserId, ')');
+    console.log('  - Start checked:', enableNotificationStart);
+    console.log('  - End checked:', enableNotificationEnd);
+    
+    // 기존 일정의 알림 설정 가져오기 (수정 모드인 경우)
+    let existingKakaoNotifications = {};
+    if (currentEditingEvent && currentEditingEvent.extendedProps) {
+        existingKakaoNotifications = currentEditingEvent.extendedProps.kakao_notifications || {};
+    }
+    
+    // 사용자별 알림 설정 업데이트
+    const kakaoNotifications = { ...existingKakaoNotifications };
+    if (currentUserId) {
+        kakaoNotifications[currentUserId] = {
+            start: enableNotificationStart,
+            end: enableNotificationEnd
+        };
+        console.log('  - Updated notifications for user:', currentUserId, kakaoNotifications[currentUserId]);
+    } else {
+        console.log('  ⚠️ No user ID, notifications not saved');
+    }
     
     // 반복 설정
     const repeatSelect = document.getElementById('eventRepeat');
@@ -981,8 +1015,7 @@ async function handleEventFormSubmit(e) {
                     person: person,
                     persons: [person],
                     description: description || null,
-                    kakao_notification_start: enableNotificationStart,
-                    kakao_notification_end: enableNotificationEnd,
+                    kakao_notifications: kakaoNotifications,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1005,8 +1038,7 @@ async function handleEventFormSubmit(e) {
                         person: person,
                         persons: [person],
                         description: description || null,
-                        kakao_notification_start: enableNotificationStart,
-                        kakao_notification_end: enableNotificationEnd,
+                        kakao_notifications: kakaoNotifications,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1039,8 +1071,7 @@ async function handleEventFormSubmit(e) {
                     person: 'all',
                     persons: ['all'],
                     description: description || null,
-                    kakao_notification_start: enableNotificationStart,
-                    kakao_notification_end: enableNotificationEnd,
+                    kakao_notifications: kakaoNotifications,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1060,8 +1091,7 @@ async function handleEventFormSubmit(e) {
                         person: person,
                         persons: [person],  // 단일 담당자로 설정
                         description: description || null,
-                        kakao_notification_start: enableNotificationStart,
-                        kakao_notification_end: enableNotificationEnd,
+                        kakao_notifications: kakaoNotifications,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1074,7 +1104,7 @@ async function handleEventFormSubmit(e) {
                 }
                 
                 const personCount = selectedPersons.length;
-                showToast(`${personCount}개의 일정이 추가되었습니다.`, 'success');
+                showToast(`${personCount}개의 일정이 추가되었습니다.', 'success');
             }
         }
         

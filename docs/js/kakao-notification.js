@@ -12,6 +12,8 @@ const STORAGE_KEYS = {
     KAKAO_ACCESS_TOKEN: 'kakao_access_token',
     KAKAO_REFRESH_TOKEN: 'kakao_refresh_token',
     KAKAO_TOKEN_EXPIRES_AT: 'kakao_token_expires_at',
+    KAKAO_USER_ID: 'kakao_user_id',
+    KAKAO_USER_NAME: 'kakao_user_name',
     ENABLE_NOTIFICATIONS: 'enable_notifications',
     NOTIFICATION_TIME: 'notification_time',
     NOTIFY_ONLY_TODAY: 'notify_only_today'
@@ -97,7 +99,59 @@ function clearStoredTokens() {
     localStorage.removeItem(STORAGE_KEYS.KAKAO_REFRESH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.KAKAO_TOKEN_EXPIRES_AT);
     localStorage.removeItem(STORAGE_KEYS.KAKAO_LOGGED_IN);
+    localStorage.removeItem(STORAGE_KEYS.KAKAO_USER_ID);
+    localStorage.removeItem(STORAGE_KEYS.KAKAO_USER_NAME);
     console.log('🗑️ 저장된 토큰 삭제됨');
+}
+
+/**
+ * Get current Kakao user ID
+ */
+function getCurrentKakaoUserId() {
+    return localStorage.getItem(STORAGE_KEYS.KAKAO_USER_ID);
+}
+
+/**
+ * Get current Kakao user name
+ */
+function getCurrentKakaoUserName() {
+    return localStorage.getItem(STORAGE_KEYS.KAKAO_USER_NAME) || '사용자';
+}
+
+/**
+ * Get Kakao user info and store
+ */
+function getUserInfoAndStore() {
+    return new Promise((resolve, reject) => {
+        Kakao.API.request({
+            url: '/v2/user/me',
+            success: function(response) {
+                console.log('✅ Kakao user info:', response);
+                const userId = response.id.toString();
+                
+                // 사용자 ID 저장
+                localStorage.setItem(STORAGE_KEYS.KAKAO_USER_ID, userId);
+                console.log('✅ Kakao user ID 저장:', userId);
+                
+                // 사용자 이름 물어보기 (엄마 또는 아빠)
+                const userName = prompt('사용자 이름을 입력하세요 (예: 엄마, 아빠):', '');
+                if (userName && userName.trim()) {
+                    localStorage.setItem(STORAGE_KEYS.KAKAO_USER_NAME, userName.trim());
+                    console.log('✅ 사용자 이름 저장:', userName.trim());
+                    showToast(`${userName.trim()} 님으로 로그인되었습니다!`, 'success');
+                } else {
+                    localStorage.setItem(STORAGE_KEYS.KAKAO_USER_NAME, '사용자');
+                    showToast('로그인되었습니다!', 'success');
+                }
+                
+                resolve(userId);
+            },
+            fail: function(error) {
+                console.error('❌ Failed to get user info:', error);
+                reject(error);
+            }
+        });
+    });
 }
 
 /**
@@ -107,7 +161,7 @@ function kakaoLogin() {
     console.log('🔐 Attempting Kakao login...');
     Kakao.Auth.login({
         scope: 'talk_message',  // 나에게 보내기 권한 요청
-        success: function(authObj) {
+        success: async function(authObj) {
             console.log('✅ Kakao login successful');
             console.log('Auth object:', authObj);
             
@@ -115,8 +169,14 @@ function kakaoLogin() {
             storeKakaoTokens(authObj);
             localStorage.setItem(STORAGE_KEYS.KAKAO_LOGGED_IN, 'true');
             
+            // 사용자 정보 가져오기
+            try {
+                await getUserInfoAndStore();
+            } catch (error) {
+                console.error('⚠️ Failed to get user info, but login succeeded');
+            }
+            
             updateLoginUI(true);
-            showToast('카카오톡 로그인 성공! 로그인 상태가 유지됩니다.', 'success');
             startNotificationScheduler();
         },
         fail: function(err) {
@@ -382,19 +442,36 @@ async function checkAndSendNotifications() {
         
         console.log(`📋 Total schedules: ${schedules.length}`);
         
-        // Filter schedules that need notification
+        // 현재 로그인한 사용자 ID 가져오기
+        const currentUserId = getCurrentKakaoUserId();
+        if (!currentUserId) {
+            console.log('⚠️ No user ID found - cannot check notifications');
+            return;
+        }
+        console.log(`👤 Checking notifications for user ID: ${currentUserId}`);
+        
+        // Filter schedules that need notification (사용자별)
         const schedulesToNotify = [];
         
         schedules.forEach(schedule => {
             const scheduleStart = new Date(schedule.start);
             const scheduleEnd = schedule.end ? new Date(schedule.end) : null;
             
+            // 사용자별 알림 설정 확인
+            const kakaoNotifications = schedule.kakao_notifications || {};
+            const userNotification = kakaoNotifications[currentUserId];
+            
+            if (!userNotification) {
+                // 이 사용자에 대한 알림 설정이 없음
+                return;
+            }
+            
             // 시작 10분 전 알림 체크
-            if (schedule.kakao_notification_start) {
+            if (userNotification.start === true) {
                 const timeDiffStart = scheduleStart - now;
                 const minutesUntilStart = Math.floor(timeDiffStart / 60000);
                 
-                console.log(`  📅 ${schedule.title} - 시작까지 ${minutesUntilStart}분 (알림 설정: 시작 10분 전)`);
+                console.log(`  📅 ${schedule.title} - 시작까지 ${minutesUntilStart}분 (사용자 알림: ON)`);
                 
                 const isInStartWindow = 
                     timeDiffStart > (notificationLeadTime - 2 * 60 * 1000) && 
@@ -410,11 +487,11 @@ async function checkAndSendNotifications() {
             }
             
             // 종료 10분 전 알림 체크
-            if (schedule.kakao_notification_end && scheduleEnd) {
+            if (userNotification.end === true && scheduleEnd) {
                 const timeDiffEnd = scheduleEnd - now;
                 const minutesUntilEnd = Math.floor(timeDiffEnd / 60000);
                 
-                console.log(`  📅 ${schedule.title} - 종료까지 ${minutesUntilEnd}분 (알림 설정: 종료 10분 전)`);
+                console.log(`  📅 ${schedule.title} - 종료까지 ${minutesUntilEnd}분 (사용자 알림: ON)`);
                 
                 const isInEndWindow = 
                     timeDiffEnd > (notificationLeadTime - 2 * 60 * 1000) && 
@@ -434,11 +511,11 @@ async function checkAndSendNotifications() {
         
         // Send notifications
         for (const schedule of schedulesToNotify) {
-            // Check if already notified (use localStorage to track)
-            const notifiedKey = `notified_${schedule.id}_${schedule.notificationType}_${notificationTime}`;
+            // Check if already notified (use localStorage to track - 사용자별로 구분)
+            const notifiedKey = `notified_${currentUserId}_${schedule.id}_${schedule.notificationType}_${notificationTime}`;
             
             if (!localStorage.getItem(notifiedKey)) {
-                console.log(`📤 Sending ${schedule.notificationType} notification for: ${schedule.title}`);
+                console.log(`📤 Sending ${schedule.notificationType} notification for: ${schedule.title} (user: ${currentUserId})`);
                 await sendScheduleNotification(schedule, schedule.notificationType);
                 localStorage.setItem(notifiedKey, 'true');
                 localStorage.setItem(notifiedKey + '_timestamp', Date.now().toString());
@@ -536,7 +613,26 @@ function updateLoginUI(isLoggedIn) {
     
     if (isLoggedIn) {
         if (loginSection) loginSection.style.display = 'none';
-        if (loggedInSection) loggedInSection.style.display = 'block';
+        if (loggedInSection) {
+            loggedInSection.style.display = 'block';
+            // 사용자 이름 표시 업데이트
+            const userName = getCurrentKakaoUserName();
+            const userNameDisplay = loggedInSection.querySelector('.user-name-display');
+            if (userNameDisplay) {
+                userNameDisplay.textContent = `${userName} 님으로 로그인됨`;
+            } else {
+                // 사용자 이름 표시 요소가 없으면 추가
+                const description = loggedInSection.querySelector('.settings-description');
+                if (description) {
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'user-name-display';
+                    nameSpan.style.marginLeft = '8px';
+                    nameSpan.style.fontWeight = 'bold';
+                    nameSpan.textContent = `(${userName} 님)`;
+                    description.appendChild(nameSpan);
+                }
+            }
+        }
         if (notificationSettings) notificationSettings.style.display = 'block';
     } else {
         if (loginSection) loginSection.style.display = 'block';
@@ -577,7 +673,7 @@ async function loadSettings() {
             localStorage.setItem(STORAGE_KEYS.KAKAO_LOGGED_IN, 'true');
             updateLoginUI(true);
             startNotificationScheduler();
-            showToast('카카오톡 로그인 상태가 유지되었습니다', 'success');
+            // 팝업 메시지 제거 (콘솔 로그만 유지)
         } else {
             // 토큰이 만료되었으면 로그아웃 처리
             console.log('⚠️ 토큰 만료됨, 로그아웃 처리');
@@ -616,7 +712,9 @@ window.kakaoNotification = {
     login: kakaoLogin,
     logout: kakaoLogout,
     sendTest: sendTestKakaoMessage,
-    saveSettings: saveSettings
+    saveSettings: saveSettings,
+    getCurrentUserId: getCurrentKakaoUserId,
+    getCurrentUserName: getCurrentKakaoUserName
 };
 
 // Helper function for time formatting

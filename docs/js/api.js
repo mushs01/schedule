@@ -74,8 +74,11 @@ const api = {
                         persons: data.persons,
                         color: data.color,
                         isPast: data.is_past || false,
+                        // 기존 단일 알림 설정 (하위 호환성)
                         kakao_notification_start: data.kakao_notification_start === true,
                         kakao_notification_end: data.kakao_notification_end === true,
+                        // 새로운 사용자별 알림 설정
+                        kakao_notifications: data.kakao_notifications || {},
                         repeat_type: data.repeat_type || 'none',
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: data.repeat_weekdays || [],
@@ -195,8 +198,11 @@ const api = {
                 persons: scheduleData.persons || [scheduleData.person],
                 color: color,
                 is_past: isPast,
-                kakao_notification_start: scheduleData.kakao_notification_start === true,
-                kakao_notification_end: scheduleData.kakao_notification_end === true,
+                // 기존 단일 알림 설정 (하위 호환성 - 더 이상 사용 안 함)
+                kakao_notification_start: false,
+                kakao_notification_end: false,
+                // 새로운 사용자별 알림 설정
+                kakao_notifications: scheduleData.kakao_notifications || {},
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
@@ -256,11 +262,9 @@ const api = {
             if (scheduleData.persons) {
                 updateData.persons = scheduleData.persons;
             }
-            if (scheduleData.kakao_notification_start !== undefined) {
-                updateData.kakao_notification_start = scheduleData.kakao_notification_start === true;
-            }
-            if (scheduleData.kakao_notification_end !== undefined) {
-                updateData.kakao_notification_end = scheduleData.kakao_notification_end === true;
+            // 사용자별 알림 설정 업데이트
+            if (scheduleData.kakao_notifications !== undefined) {
+                updateData.kakao_notifications = scheduleData.kakao_notifications;
             }
             if (scheduleData.repeat_type !== undefined) {
                 updateData.repeat_type = scheduleData.repeat_type;
