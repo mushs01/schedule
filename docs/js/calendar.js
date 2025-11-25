@@ -1089,38 +1089,6 @@ function markHolidays() {
 }
 
 /**
- * Add swipe animation to calendar
- */
-function addSwipeAnimation(element, direction) {
-    const calendarContent = element.querySelector('.fc-view-harness');
-    if (!calendarContent) return;
-    
-    // 애니메이션 클래스 추가
-    calendarContent.classList.add('swipe-transition');
-    
-    if (direction === 'prev') {
-        // 오른쪽으로 스와이프 (이전으로 이동) → 왼쪽에서 오른쪽으로 슬라이드
-        calendarContent.style.transform = 'translateX(-20px)';
-        calendarContent.style.opacity = '0.5';
-    } else {
-        // 왼쪽으로 스와이프 (다음으로 이동) → 오른쪽에서 왼쪽으로 슬라이드
-        calendarContent.style.transform = 'translateX(20px)';
-        calendarContent.style.opacity = '0.5';
-    }
-    
-    // 애니메이션 리셋
-    setTimeout(() => {
-        calendarContent.style.transform = 'translateX(0)';
-        calendarContent.style.opacity = '1';
-        
-        // 애니메이션 완료 후 클래스 제거
-        setTimeout(() => {
-            calendarContent.classList.remove('swipe-transition');
-        }, 300);
-    }, 150);
-}
-
-/**
  * Add swipe gesture to calendar for navigation (week/month)
  */
 function addSwipeGestureToDateHeader() {
@@ -1131,12 +1099,13 @@ function addSwipeGestureToDateHeader() {
     }
     
     let touchStartX = 0;
-    let touchEndX = 0;
     let touchStartY = 0;
-    let touchEndY = 0;
+    let currentX = 0;
     let isSwiping = false;
     let isHorizontalSwipe = false;
-    const minSwipeDistance = 50; // 최소 스와이프 거리 (px)
+    let calendarContent = null;
+    const minSwipeDistance = 80; // 최소 스와이프 거리 (px) - 더 확실하게 스와이프해야 넘어감
+    const swipeThreshold = 0.3; // 화면 너비의 30% 이상 드래그하면 전환
     
     const handleTouchStart = (e) => {
         // 이벤트 요소가 일정인 경우 스와이프 무시
@@ -1146,73 +1115,130 @@ function addSwipeGestureToDateHeader() {
             return;
         }
         
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
+        touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
+        currentX = touchStartX;
         isSwiping = true;
         isHorizontalSwipe = false;
+        
+        // 캘린더 컨텐츠 요소 찾기
+        calendarContent = calendarEl.querySelector('.fc-view-harness');
+        if (calendarContent) {
+            // 트랜지션 제거 (드래그 중에는 즉시 반응)
+            calendarContent.style.transition = 'none';
+        }
     };
     
     const handleTouchMove = (e) => {
-        if (!isSwiping) return;
+        if (!isSwiping || !calendarContent) return;
         
-        const currentX = e.changedTouches[0].screenX;
-        const currentY = e.changedTouches[0].screenY;
-        const deltaX = Math.abs(currentX - touchStartX);
-        const deltaY = Math.abs(currentY - touchStartY);
+        currentX = e.changedTouches[0].clientX;
+        const currentY = e.changedTouches[0].clientY;
+        const deltaX = currentX - touchStartX;
+        const deltaY = currentY - touchStartY;
+        const absDeltaX = Math.abs(deltaX);
+        const absDeltaY = Math.abs(deltaY);
         
         // 수평 스와이프 방향 확정 (처음 한번만)
-        if (!isHorizontalSwipe && (deltaX > 5 || deltaY > 5)) {
-            isHorizontalSwipe = deltaX > deltaY;
+        if (!isHorizontalSwipe && (absDeltaX > 5 || absDeltaY > 5)) {
+            isHorizontalSwipe = absDeltaX > absDeltaY;
         }
         
-        // 수평 스와이프일 경우 수직 스크롤 방지
-        if (isHorizontalSwipe && deltaX > 10) {
-            e.preventDefault();
+        // 수평 스와이프일 경우
+        if (isHorizontalSwipe) {
+            // 수직 스크롤 방지
+            if (absDeltaX > 10) {
+                e.preventDefault();
+            }
+            
+            // 드래그 거리에 따라 실시간으로 이동 (감쇠 효과 적용)
+            const dampingFactor = 0.6; // 감쇠 계수 (저항감)
+            const translateX = deltaX * dampingFactor;
+            
+            // 투명도 계산 (더 멀리 드래그할수록 더 투명해짐)
+            const opacity = Math.max(0.5, 1 - (absDeltaX / window.innerWidth) * 0.5);
+            
+            // 실시간 변환 적용
+            calendarContent.style.transform = `translateX(${translateX}px)`;
+            calendarContent.style.opacity = opacity;
         }
     };
     
     const handleTouchEnd = (e) => {
-        if (!isSwiping) return;
+        if (!isSwiping || !calendarContent) return;
         
         // 이벤트 요소가 일정인 경우 스와이프 무시
         if (e.target.closest('.fc-event')) {
-            isSwiping = false;
-            isHorizontalSwipe = false;
+            resetSwipe();
             return;
         }
         
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipe();
+        const deltaX = currentX - touchStartX;
+        const absDeltaX = Math.abs(deltaX);
+        const screenWidth = window.innerWidth;
+        
+        // 트랜지션 다시 활성화 (애니메이션으로 복귀/전환)
+        calendarContent.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+        
+        // 충분히 스와이프했는지 확인 (거리 또는 화면 비율)
+        const shouldNavigate = absDeltaX > minSwipeDistance || 
+                              (absDeltaX / screenWidth) > swipeThreshold;
+        
+        if (isHorizontalSwipe && shouldNavigate) {
+            // 충분히 드래그했으면 페이지 전환
+            const direction = deltaX > 0 ? 'prev' : 'next';
+            
+            // 전환 애니메이션
+            if (direction === 'prev') {
+                calendarContent.style.transform = 'translateX(100%)';
+            } else {
+                calendarContent.style.transform = 'translateX(-100%)';
+            }
+            calendarContent.style.opacity = '0';
+            
+            // 페이지 전환
+            setTimeout(() => {
+                if (direction === 'prev') {
+                    console.log(`👈 이전으로 이동`);
+                    navigatePrev();
+                } else {
+                    console.log(`👉 다음으로 이동`);
+                    navigateNext();
+                }
+                
+                // 새 페이지가 반대편에서 들어오는 효과
+                setTimeout(() => {
+                    if (calendarContent) {
+                        calendarContent.style.transition = 'none';
+                        calendarContent.style.transform = direction === 'prev' ? 
+                            'translateX(-100%)' : 'translateX(100%)';
+                        calendarContent.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            calendarContent.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                            calendarContent.style.transform = 'translateX(0)';
+                            calendarContent.style.opacity = '1';
+                        }, 50);
+                    }
+                }, 50);
+            }, 300);
+        } else {
+            // 충분히 드래그하지 않았으면 원위치
+            resetSwipe();
+        }
+        
         isSwiping = false;
         isHorizontalSwipe = false;
     };
     
-    const handleSwipe = () => {
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
-        
-        // 수평 스와이프가 수직 스와이프보다 크면 (좌우 스와이프 감지)
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-            const currentView = calendar.view.type;
-            const direction = deltaX > 0 ? 'prev' : 'next';
-            
-            // 애니메이션 적용
-            addSwipeAnimation(calendarEl, direction);
-            
-            // 애니메이션 시작 후 약간의 지연을 두고 네비게이션
-            setTimeout(() => {
-                if (deltaX > 0) {
-                    // 오른쪽으로 스와이프 → 이전
-                    console.log(`👈 이전 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
-                    navigatePrev();
-                } else {
-                    // 왼쪽으로 스와이프 → 다음
-                    console.log(`👉 다음 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
-                    navigateNext();
-                }
-            }, 100);
+    const resetSwipe = () => {
+        if (calendarContent) {
+            calendarContent.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+            calendarContent.style.transform = 'translateX(0)';
+            calendarContent.style.opacity = '1';
         }
+        isSwiping = false;
+        isHorizontalSwipe = false;
     };
     
     calendarEl.addEventListener('touchstart', handleTouchStart, { passive: true });
