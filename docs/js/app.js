@@ -676,22 +676,53 @@ function openEventModal(dateInfo = null, event = null) {
             console.log('  - extendedProps:', event.extendedProps);
             console.log('  - Current user ID:', currentUserId);
             
-            if (kakaoNotificationStartField && event.extendedProps) {
-                // 사용자별 알림 설정 확인
-                const kakaoNotifications = event.extendedProps.kakao_notifications || {};
-                const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+            // 반복 일정의 경우 original_id가 있으면 원본 일정의 알림 설정을 로드해야 함
+            let kakaoNotifications = event.extendedProps.kakao_notifications || {};
+            const originalId = event.extendedProps.original_id;
+            
+            if (originalId && Object.keys(kakaoNotifications).length === 0) {
+                // 반복 일정 인스턴스인데 kakao_notifications가 비어있으면
+                // 원본 일정에서 가져와야 함
+                console.log('  - 🔄 반복 일정 인스턴스 감지, 원본 일정에서 알림 설정 로드 시도:', originalId);
                 
-                kakaoNotificationStartField.checked = userNotification.start || false;
-                console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
-            }
-            if (kakaoNotificationEndField && event.extendedProps) {
-                const kakaoNotifications = event.extendedProps.kakao_notifications || {};
-                const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
-                
-                kakaoNotificationEndField.checked = userNotification.end || false;
-                console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
-                console.log('  - userNotification:', userNotification);
-                console.log('  - kakaoNotifications:', kakaoNotifications);
+                // API에서 원본 일정 가져오기
+                window.api.getSchedule(originalId).then(originalSchedule => {
+                    if (originalSchedule && originalSchedule.kakao_notifications) {
+                        kakaoNotifications = originalSchedule.kakao_notifications;
+                        const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                        
+                        if (kakaoNotificationStartField) {
+                            kakaoNotificationStartField.checked = userNotification.start || false;
+                            console.log('  - ✅ Start checkbox set to:', kakaoNotificationStartField.checked);
+                        }
+                        if (kakaoNotificationEndField) {
+                            kakaoNotificationEndField.checked = userNotification.end || false;
+                            console.log('  - ✅ End checkbox set to:', kakaoNotificationEndField.checked);
+                        }
+                        console.log('  - userNotification:', userNotification);
+                        console.log('  - kakaoNotifications (from original):', kakaoNotifications);
+                    } else {
+                        console.log('  - ⚠️ 원본 일정을 찾을 수 없거나 알림 설정이 없음');
+                    }
+                }).catch(error => {
+                    console.error('  - ❌ 원본 일정 로드 실패:', error);
+                });
+            } else {
+                // 일반 일정이거나 이미 kakao_notifications가 있는 경우
+                if (kakaoNotificationStartField && event.extendedProps) {
+                    const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                    
+                    kakaoNotificationStartField.checked = userNotification.start || false;
+                    console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
+                }
+                if (kakaoNotificationEndField && event.extendedProps) {
+                    const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                    
+                    kakaoNotificationEndField.checked = userNotification.end || false;
+                    console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
+                    console.log('  - userNotification:', userNotification);
+                    console.log('  - kakaoNotifications:', kakaoNotifications);
+                }
             }
         }
         
