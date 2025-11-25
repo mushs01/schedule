@@ -665,30 +665,32 @@ function openEventModal(dateInfo = null, event = null) {
         }
         
         // 카카오톡 알림 설정 (사용자별)
-        const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
-        const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
-        
-        console.log('🔔 Loading kakao notification settings:');
-        console.log('  - extendedProps:', event.extendedProps);
-        
-        // 현재 로그인한 사용자 ID 가져오기
+        // 로그인 상태일 때만 체크박스가 존재함
         const currentUserId = window.kakaoNotification?.getCurrentUserId();
-        console.log('  - Current user ID:', currentUserId);
         
-        if (kakaoNotificationStartField && event.extendedProps) {
-            // 사용자별 알림 설정 확인
-            const kakaoNotifications = event.extendedProps.kakao_notifications || {};
-            const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+        if (currentUserId) {
+            const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
+            const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
             
-            kakaoNotificationStartField.checked = userNotification.start || false;
-            console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
-        }
-        if (kakaoNotificationEndField && event.extendedProps) {
-            const kakaoNotifications = event.extendedProps.kakao_notifications || {};
-            const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+            console.log('🔔 Loading kakao notification settings:');
+            console.log('  - extendedProps:', event.extendedProps);
+            console.log('  - Current user ID:', currentUserId);
             
-            kakaoNotificationEndField.checked = userNotification.end || false;
-            console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
+            if (kakaoNotificationStartField && event.extendedProps) {
+                // 사용자별 알림 설정 확인
+                const kakaoNotifications = event.extendedProps.kakao_notifications || {};
+                const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                
+                kakaoNotificationStartField.checked = userNotification.start || false;
+                console.log('  - Start checkbox set to:', kakaoNotificationStartField.checked);
+            }
+            if (kakaoNotificationEndField && event.extendedProps) {
+                const kakaoNotifications = event.extendedProps.kakao_notifications || {};
+                const userNotification = kakaoNotifications[currentUserId] || { start: false, end: false };
+                
+                kakaoNotificationEndField.checked = userNotification.end || false;
+                console.log('  - End checkbox set to:', kakaoNotificationEndField.checked);
+            }
         }
         
         // 반복 설정
@@ -738,20 +740,24 @@ function openEventModal(dateInfo = null, event = null) {
         document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
         // 카카오톡 알림 체크박스 초기화 (사용자별 디폴트)
-        const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
-        const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
-        
-        // 현재 사용자 이름 확인 (엄마 / 아빠)
-        const currentUserName = window.kakaoNotification?.getCurrentUserName() || '';
-        console.log('👤 Current user name for defaults:', currentUserName);
-        
-        if (kakaoNotificationStartField) {
-            // 엄마는 시작 알림 기본 ON, 아빠는 기본 OFF
-            kakaoNotificationStartField.checked = currentUserName.includes('엄마');
-        }
-        if (kakaoNotificationEndField) {
-            // 종료 알림은 모두 기본 OFF
-            kakaoNotificationEndField.checked = false;
+        // 로그인 상태일 때만 체크박스가 존재함
+        const currentUserId = window.kakaoNotification?.getCurrentUserId();
+        if (currentUserId) {
+            const kakaoNotificationStartField = document.getElementById('eventKakaoNotificationStart');
+            const kakaoNotificationEndField = document.getElementById('eventKakaoNotificationEnd');
+            
+            // 현재 사용자 이름 확인 (엄마 / 아빠)
+            const currentUserName = window.kakaoNotification?.getCurrentUserName() || '';
+            console.log('👤 Current user name for defaults:', currentUserName);
+            
+            if (kakaoNotificationStartField) {
+                // 엄마는 시작 알림 기본 ON, 아빠는 기본 OFF
+                kakaoNotificationStartField.checked = currentUserName.includes('엄마');
+            }
+            if (kakaoNotificationEndField) {
+                // 종료 알림은 모두 기본 OFF
+                kakaoNotificationEndField.checked = false;
+            }
         }
         
         if (dateInfo) {
