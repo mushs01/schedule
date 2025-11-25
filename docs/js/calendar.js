@@ -945,27 +945,65 @@ function navigateToday() {
 }
 
 /**
- * Navigate to previous period
+ * Navigate to previous period with animation
  */
 function navigatePrev() {
     if (!calendar) {
         console.error('Calendar not initialized');
         return;
     }
-    calendar.prev();
-    updateHeaderDate();
+    
+    // 애니메이션 추가
+    const viewHarness = document.querySelector('.fc-view-harness');
+    if (viewHarness) {
+        viewHarness.classList.add('transitioning-out');
+        
+        setTimeout(() => {
+            calendar.prev();
+            updateHeaderDate();
+            
+            viewHarness.classList.remove('transitioning-out');
+            viewHarness.classList.add('transitioning-in');
+            
+            setTimeout(() => {
+                viewHarness.classList.remove('transitioning-in');
+            }, 300);
+        }, 150);
+    } else {
+        calendar.prev();
+        updateHeaderDate();
+    }
 }
 
 /**
- * Navigate to next period
+ * Navigate to next period with animation
  */
 function navigateNext() {
     if (!calendar) {
         console.error('Calendar not initialized');
         return;
     }
-    calendar.next();
-    updateHeaderDate();
+    
+    // 애니메이션 추가
+    const viewHarness = document.querySelector('.fc-view-harness');
+    if (viewHarness) {
+        viewHarness.classList.add('transitioning-out');
+        
+        setTimeout(() => {
+            calendar.next();
+            updateHeaderDate();
+            
+            viewHarness.classList.remove('transitioning-out');
+            viewHarness.classList.add('transitioning-in');
+            
+            setTimeout(() => {
+                viewHarness.classList.remove('transitioning-in');
+            }, 300);
+        }, 150);
+    } else {
+        calendar.next();
+        updateHeaderDate();
+    }
 }
 
 /**
@@ -1051,6 +1089,38 @@ function markHolidays() {
 }
 
 /**
+ * Add swipe animation to calendar
+ */
+function addSwipeAnimation(element, direction) {
+    const calendarContent = element.querySelector('.fc-view-harness');
+    if (!calendarContent) return;
+    
+    // 애니메이션 클래스 추가
+    calendarContent.classList.add('swipe-transition');
+    
+    if (direction === 'prev') {
+        // 오른쪽으로 스와이프 (이전으로 이동) → 왼쪽에서 오른쪽으로 슬라이드
+        calendarContent.style.transform = 'translateX(-20px)';
+        calendarContent.style.opacity = '0.5';
+    } else {
+        // 왼쪽으로 스와이프 (다음으로 이동) → 오른쪽에서 왼쪽으로 슬라이드
+        calendarContent.style.transform = 'translateX(20px)';
+        calendarContent.style.opacity = '0.5';
+    }
+    
+    // 애니메이션 리셋
+    setTimeout(() => {
+        calendarContent.style.transform = 'translateX(0)';
+        calendarContent.style.opacity = '1';
+        
+        // 애니메이션 완료 후 클래스 제거
+        setTimeout(() => {
+            calendarContent.classList.remove('swipe-transition');
+        }, 300);
+    }, 150);
+}
+
+/**
  * Add swipe gesture to calendar for navigation (week/month)
  */
 function addSwipeGestureToDateHeader() {
@@ -1125,15 +1195,23 @@ function addSwipeGestureToDateHeader() {
         // 수평 스와이프가 수직 스와이프보다 크면 (좌우 스와이프 감지)
         if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
             const currentView = calendar.view.type;
-            if (deltaX > 0) {
-                // 오른쪽으로 스와이프 → 이전
-                console.log(`👈 이전 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
-                navigatePrev();
-            } else {
-                // 왼쪽으로 스와이프 → 다음
-                console.log(`👉 다음 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
-                navigateNext();
-            }
+            const direction = deltaX > 0 ? 'prev' : 'next';
+            
+            // 애니메이션 적용
+            addSwipeAnimation(calendarEl, direction);
+            
+            // 애니메이션 시작 후 약간의 지연을 두고 네비게이션
+            setTimeout(() => {
+                if (deltaX > 0) {
+                    // 오른쪽으로 스와이프 → 이전
+                    console.log(`👈 이전 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
+                    navigatePrev();
+                } else {
+                    // 왼쪽으로 스와이프 → 다음
+                    console.log(`👉 다음 ${currentView === 'dayGridMonth' ? '월' : '주/일'}로 이동`);
+                    navigateNext();
+                }
+            }, 100);
         }
     };
     
