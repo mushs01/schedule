@@ -411,6 +411,59 @@ const api = {
     },
 
     /**
+     * Get a single schedule by ID
+     */
+    async getSchedule(scheduleId) {
+        try {
+            const db = window.db;
+            const doc = await db.collection(SCHEDULES_COLLECTION).doc(scheduleId).get();
+            
+            if (!doc.exists) {
+                console.log('  ⚠️ Schedule not found:', scheduleId);
+                return null;
+            }
+            
+            const data = doc.data();
+            
+            // repeat_end_date 처리
+            let repeatEndDate = null;
+            if (data.repeat_end_date) {
+                if (typeof data.repeat_end_date === 'string') {
+                    repeatEndDate = data.repeat_end_date;
+                } else if (data.repeat_end_date.toDate) {
+                    repeatEndDate = data.repeat_end_date.toDate().toISOString();
+                }
+            }
+            
+            return {
+                id: doc.id,
+                title: data.title,
+                description: data.description,
+                start: data.start_datetime.toDate().toISOString(),
+                end: data.end_datetime ? data.end_datetime.toDate().toISOString() : null,
+                person: data.person,
+                persons: data.persons || [data.person],
+                color: data.color,
+                isPast: data.is_past || false,
+                kakao_notification_start: data.kakao_notification_start === true,
+                kakao_notification_end: data.kakao_notification_end === true,
+                kakao_notifications: data.kakao_notifications || {},
+                repeat_type: data.repeat_type || 'none',
+                repeat_end_date: repeatEndDate,
+                repeat_weekdays: data.repeat_weekdays || [],
+                repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
+                is_important: data.is_important === true,
+                exclude_dates: data.exclude_dates || [],
+                createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
+                updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
+            };
+        } catch (error) {
+            console.error('Error getting schedule:', error);
+            return null;
+        }
+    },
+
+    /**
      * Find related schedules (same title, start time, end time)
      * Used for finding schedules created together with multiple persons
      */

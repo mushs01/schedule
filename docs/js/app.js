@@ -1010,8 +1010,30 @@ async function handleEventFormSubmit(e) {
             console.log('  - start:', startDateTime.toISOString());
             console.log('  - end:', endDateTime.toISOString());
             
-            // 관련 일정 찾기 (같은 시간, 같은 제목의 다른 담당자 일정들)
-            const relatedSchedules = await api.findRelatedSchedules(originalTitle, originalStart, originalEnd);
+            // 관련 일정 찾기
+            let relatedSchedules = [];
+            
+            // 반복 일정인 경우: original_id로 찾기
+            if (currentEditingEvent.extendedProps && currentEditingEvent.extendedProps.original_id) {
+                const originalId = currentEditingEvent.extendedProps.original_id;
+                console.log('🔗 Finding schedule by original_id:', originalId);
+                
+                try {
+                    const originalSchedule = await api.getSchedule(originalId);
+                    if (originalSchedule) {
+                        relatedSchedules = [originalSchedule];
+                        console.log('  ✅ Found original schedule');
+                    }
+                } catch (error) {
+                    console.log('  ⚠️ Original schedule not found, searching by info');
+                }
+            }
+            
+            // original_id로 못 찾았으면 기존 방식으로 찾기
+            if (relatedSchedules.length === 0) {
+                relatedSchedules = await api.findRelatedSchedules(originalTitle, originalStart, originalEnd);
+            }
+            
             console.log('🔗 Related schedules:', relatedSchedules.length);
             
             // 기존 담당자 목록 (관련 일정들에서 추출)
