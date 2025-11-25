@@ -639,6 +639,11 @@ function updateLoginUI(isLoggedIn) {
         if (loggedInSection) loggedInSection.style.display = 'none';
         if (notificationSettings) notificationSettings.style.display = 'none';
     }
+    
+    // 일정 모달의 카카오 알림 UI도 업데이트
+    if (window.updateKakaoNotificationUI) {
+        window.updateKakaoNotificationUI();
+    }
 }
 
 /**

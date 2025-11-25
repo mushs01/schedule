@@ -552,6 +552,27 @@ function setupEventListeners() {
 }
 
 /**
+ * Update Kakao notification UI based on login status
+ */
+function updateKakaoNotificationUI() {
+    const checkboxes = document.getElementById('kakaoNotificationCheckboxes');
+    const message = document.getElementById('kakaoNotificationMessage');
+    
+    // Check if user is logged in to Kakao
+    const isKakaoLoggedIn = window.kakaoNotification?.getCurrentUserId();
+    
+    if (isKakaoLoggedIn) {
+        // Show checkboxes
+        if (checkboxes) checkboxes.style.display = 'flex';
+        if (message) message.style.display = 'none';
+    } else {
+        // Show message
+        if (checkboxes) checkboxes.style.display = 'none';
+        if (message) message.style.display = 'block';
+    }
+}
+
+/**
  * Open event modal for creating/editing
  */
 function openEventModal(dateInfo = null, event = null) {
@@ -569,6 +590,9 @@ function openEventModal(dateInfo = null, event = null) {
     
     currentEditingEvent = event;
     console.log('📝 currentEditingEvent set to:', currentEditingEvent);
+    
+    // Update Kakao notification UI based on login status
+    updateKakaoNotificationUI();
     
     // Reset form
     eventForm.reset();
@@ -1983,6 +2007,7 @@ function initTodaySummaryToggle() {
 // Make globals available
 window.showEventDetail = showEventDetail;
 window.openEventModal = openEventModal;
+window.updateKakaoNotificationUI = updateKakaoNotificationUI;
 window.closeEventModal = closeEventModal;
 window.showLoading = showLoading;
 window.showToast = showToast;
