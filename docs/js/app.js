@@ -1061,6 +1061,10 @@ async function handleEventFormSubmit(e) {
             for (const person of personsToUpdate) {
                 const scheduleToUpdate = relatedSchedules.find(s => s.person === person);
                 if (scheduleToUpdate) {
+                    // 기존 일정의 kakao_notifications 가져와서 현재 사용자 것만 업데이트
+                    const existingNotifications = scheduleToUpdate.kakao_notifications || {};
+                    const mergedNotifications = { ...existingNotifications, ...kakaoNotifications };
+                    
                     const scheduleData = {
                         title,
                         start_datetime: startDateTime.toISOString(),
@@ -1068,7 +1072,7 @@ async function handleEventFormSubmit(e) {
                         person: person,
                         persons: [person],
                         description: description || null,
-                        kakao_notifications: kakaoNotifications,
+                        kakao_notifications: mergedNotifications,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1077,6 +1081,7 @@ async function handleEventFormSubmit(e) {
                     };
                     
                     console.log(`🔄 Updating schedule for ${person}: ${scheduleToUpdate.id}`);
+                    console.log('  - Merged notifications:', mergedNotifications);
                     await api.updateSchedule(scheduleToUpdate.id, scheduleData);
                 }
             }
