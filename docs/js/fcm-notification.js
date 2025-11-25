@@ -38,7 +38,11 @@ async function initFCM() {
         messaging = firebase.messaging();
 
         // Service Worker 등록
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        // GitHub Pages 서브디렉토리를 고려한 경로
+        const basePath = location.pathname.split('/').slice(0, 2).join('/');
+        const swPath = `${basePath}/firebase-messaging-sw.js`;
+        console.log('📝 Service Worker 경로:', swPath);
+        const registration = await navigator.serviceWorker.register(swPath);
         console.log('✅ Service Worker 등록 완료:', registration);
 
         // 저장된 토큰 복구
