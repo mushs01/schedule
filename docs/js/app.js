@@ -195,6 +195,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
     }
     
+    window._stravaActivitiesByDate = window._stravaActivitiesByDate || {};
+    
     // Strava 연동된 경우 앱 실행 시 자동으로 운동 기록 가져오기 - 성공/실패 토스트로 간단 알림
     setTimeout(() => {
         try {
@@ -363,20 +365,25 @@ function setupEventListeners() {
     document.querySelectorAll('.view-btn, .view-switch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const view = e.currentTarget.dataset.view;
-            changeCalendarView(view);
+            const mode = e.currentTarget.dataset.mode;
+            if (mode === 'exercise') {
+                showExerciseView();
+            } else if (view) {
+                showScheduleView();
+                changeCalendarView(view);
+            }
             
-            // Update active state for sidebar buttons
             document.querySelectorAll('.view-switch-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll(`.view-switch-btn[data-view="${view}"]`).forEach(b => b.classList.add('active'));
+            if (mode === 'exercise') {
+                document.getElementById('exerciseRecordBtn')?.classList.add('active');
+            } else {
+                document.querySelectorAll(`.view-switch-btn[data-view="${view}"]`).forEach(b => b.classList.add('active'));
+            }
             
-            // 사이드바 자동 닫기
             const sidebar = document.querySelector('.gcal-sidebar');
             if (sidebar) {
-                if (window.innerWidth <= 768) {
-                    sidebar.classList.remove('show');
-                } else {
-                    sidebar.classList.add('hidden');
-                }
+                if (window.innerWidth <= 768) sidebar.classList.remove('show');
+                else sidebar.classList.add('hidden');
             }
         });
     });
@@ -494,6 +501,21 @@ function setupEventListeners() {
     if (closeBetaTestBtn) {
         closeBetaTestBtn.addEventListener('click', closeBetaTestModal);
     }
+    const exercisePrevMonth = document.getElementById('exercisePrevMonth');
+    const exerciseNextMonth = document.getElementById('exerciseNextMonth');
+    const closeExerciseDetailBtn = document.getElementById('closeExerciseDetailBtn');
+    if (exercisePrevMonth) exercisePrevMonth.addEventListener('click', () => {
+        exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1);
+        renderExerciseCalendar();
+    });
+    if (exerciseNextMonth) exerciseNextMonth.addEventListener('click', () => {
+        exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1);
+        renderExerciseCalendar();
+    });
+    if (closeExerciseDetailBtn) closeExerciseDetailBtn.addEventListener('click', () => {
+        const modal = document.getElementById('exerciseDetailModal');
+        if (modal) modal.classList.remove('active');
+    });
     if (stravaConnectBtn) {
         stravaConnectBtn.addEventListener('click', () => {
             try {
@@ -1726,6 +1748,129 @@ function closeBetaTestModal() {
     if (betaTestModal) betaTestModal.classList.remove('active');
 }
 
+let exerciseCalendarCurrentDate = new Date();
+
+function showExerciseView() {
+    const scheduleArea = document.getElementById('scheduleArea');
+    const exerciseArea = document.getElementById('exerciseArea');
+    const importantEvents = document.getElementById('importantEvents');
+    const todaySummary = document.getElementById('todaySummary');
+    const viewSelector = document.querySelector('.view-selector');
+    const fab = document.getElementById('addEventBtn');
+    if (scheduleArea) scheduleArea.style.display = 'none';
+    if (importantEvents) importantEvents.style.display = 'none';
+    if (todaySummary) todaySummary.style.display = 'none';
+    if (viewSelector) viewSelector.style.display = 'none';
+    if (fab) fab.style.display = 'none';
+    if (exerciseArea) {
+        exerciseArea.style.display = 'block';
+        renderExerciseCalendar();
+    }
+}
+
+function showScheduleView() {
+    const scheduleArea = document.getElementById('scheduleArea');
+    const exerciseArea = document.getElementById('exerciseArea');
+    const importantEvents = document.getElementById('importantEvents');
+    const todaySummary = document.getElementById('todaySummary');
+    const fab = document.getElementById('addEventBtn');
+    if (scheduleArea) scheduleArea.style.display = 'block';
+    if (exerciseArea) exerciseArea.style.display = 'none';
+    if (importantEvents) importantEvents.style.display = '';
+    if (todaySummary) todaySummary.style.display = '';
+    const vs = document.querySelector('.view-selector');
+    if (vs) vs.style.display = '';
+    if (fab) fab.style.display = '';
+}
+
+function getIntensityLevel(activity) {
+    const dist = (activity.distance || 0) / 1000;
+    const mins = (activity.moving_time || activity.elapsed_time || 0) / 60;
+    const score = dist * 2 + (mins / 10);
+    if (score > 50) return 'high';
+    if (score < 10) return 'low';
+    return 'medium';
+}
+
+function renderExerciseCalendar() {
+    const grid = document.getElementById('exerciseCalendarGrid');
+    const titleEl = document.getElementById('exerciseMonthTitle');
+    if (!grid || !titleEl) return;
+    const year = exerciseCalendarCurrentDate.getFullYear();
+    const month = exerciseCalendarCurrentDate.getMonth();
+    titleEl.textContent = `${year}년 ${month + 1}월`;
+    const byDate = window._stravaActivitiesByDate || {};
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startPad = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
+    for (let i = 0; i < startPad; i++) {
+        const d = new Date(year, month, -startPad + i + 1);
+        const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const acts = byDate[ds] || [];
+        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
+        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        html += `<div class="${cls}" data-date="${ds}">${d.getDate()}</div>`;
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+        const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const acts = byDate[ds] || [];
+        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
+        const cls = ['exercise-calendar-day', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        html += `<div class="${cls}" data-date="${ds}">${d}</div>`;
+    }
+    const totalCells = startPad + daysInMonth;
+    const remainder = totalCells % 7;
+    const extra = remainder ? 7 - remainder : 0;
+    for (let i = 0; i < extra; i++) {
+        const nd = new Date(year, month + 1, i + 1);
+        const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
+        const acts = byDate[ds] || [];
+        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
+        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        html += `<div class="${cls}" data-date="${ds}">${nd.getDate()}</div>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll('.exercise-calendar-day').forEach(cell => {
+        cell.addEventListener('click', () => {
+            const dateStr = cell.dataset.date;
+            const acts = (window._stravaActivitiesByDate || {})[dateStr] || [];
+            showExerciseDetail(dateStr, acts);
+        });
+    });
+}
+
+function showExerciseDetail(dateStr, activities) {
+    const modal = document.getElementById('exerciseDetailModal');
+    const titleEl = document.getElementById('exerciseDetailTitle');
+    const bodyEl = document.getElementById('exerciseDetailBody');
+    if (!modal || !titleEl || !bodyEl) return;
+    const [y, m, d] = dateStr.split('-');
+    titleEl.textContent = `${y}년 ${m}월 ${d}일 운동기록`;
+    if (!activities || activities.length === 0) {
+        bodyEl.innerHTML = '<p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>';
+    } else {
+        bodyEl.innerHTML = activities.map(a => {
+            const dist = a.distance ? (a.distance / 1000).toFixed(2) + ' km' : '';
+            const time = a.moving_time || a.elapsed_time;
+            const timeStr = time ? Math.floor(time / 60) + '분 ' + (time % 60) + '초' : '';
+            const elev = a.total_elevation_gain ? a.total_elevation_gain + 'm 상승' : '';
+            const cal = a.calories ? a.calories + ' kcal' : '';
+            const meta = [a.type || a.sport_type, dist, timeStr, elev, cal].filter(Boolean).join(' · ');
+            const extra = [];
+            if (a.average_speed) extra.push('평균속도 ' + (a.average_speed * 3.6).toFixed(1) + ' km/h');
+            if (a.average_watts) extra.push('평균파워 ' + a.average_watts + 'W');
+            if (a.average_cadence) extra.push('케이던스 ' + a.average_cadence);
+            const extraStr = extra.length ? '<div class="exercise-detail-meta" style="margin-top:4px">' + extra.join(', ') + '</div>' : '';
+            return `<div class="exercise-detail-item"><h4>${a.name || '운동'}</h4><div class="exercise-detail-meta">${meta}</div>${extraStr}</div>`;
+        }).join('');
+    }
+    modal.classList.add('active');
+}
+
 /**
  * Strava 디버그 정보 (연동 실패 원인 파악용)
  * 모바일 WebView vs 브라우저 localStorage 분리 시 토큰이 안 보일 수 있음
@@ -1856,16 +2001,46 @@ async function handleStravaFetch(silent) {
             display.textContent = '로딩 중...';
         }
         
-        const activities = await window.stravaModule.fetchActivities(30, 1);
+        const activities = await window.stravaModule.fetchActivities(200, 1);
         
         const formatted = (activities || []).map(a => ({
             id: a.id,
             name: a.name,
             type: a.type,
+            sport_type: a.sport_type,
             start_date: a.start_date,
-            elapsed_time: (a.elapsed_time || 0) + '초',
-            distance: a.distance ? (a.distance / 1000).toFixed(2) + 'km' : null
+            start_date_local: a.start_date_local,
+            elapsed_time: a.elapsed_time,
+            moving_time: a.moving_time,
+            distance: a.distance,
+            total_elevation_gain: a.total_elevation_gain,
+            average_speed: a.average_speed,
+            max_speed: a.max_speed,
+            average_cadence: a.average_cadence,
+            average_watts: a.average_watts,
+            max_watts: a.max_watts,
+            kilojoules: a.kilojoules,
+            calories: a.calories,
+            trainer: a.trainer,
+            commute: a.commute,
+            manual: a.manual,
+            private: a.private,
+            achievement_count: a.achievement_count,
+            kudos_count: a.kudos_count,
+            comment_count: a.comment_count,
+            workout_type: a.workout_type,
+            description: a.description,
+            device_name: a.device_name
         }));
+        
+        window._stravaActivitiesByDate = {};
+        (formatted || []).forEach(a => {
+            const d = (a.start_date_local || a.start_date || '').split('T')[0];
+            if (d) {
+                if (!window._stravaActivitiesByDate[d]) window._stravaActivitiesByDate[d] = [];
+                window._stravaActivitiesByDate[d].push(a);
+            }
+        });
         
         const now = new Date();
         const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1877,6 +2052,7 @@ async function handleStravaFetch(silent) {
         if (display) {
             display.textContent = JSON.stringify(formatted, null, 2);
         }
+        if (window.renderExerciseCalendar) window.renderExerciseCalendar();
         if (!noOverlay && window.showToast) window.showToast(`${formatted.length}개 운동 기록을 가져왔습니다.`, 'success');
         else if (noOverlay && window.showToast) window.showToast(`Strava ${formatted.length}개 운동 기록 자동 로드 완료`, 'info');
     } catch (error) {

@@ -72,7 +72,7 @@
         <!-- Sidebar -->
         <aside class="gcal-sidebar">
             <div class="sidebar-section">
-                <h3 class="sidebar-title">보기</h3>
+                <h3 class="sidebar-title">일정관리</h3>
                 <div class="view-switcher">
                     <button class="view-switch-btn" data-view="timeGridDay">
                         <span class="material-icons">view_day</span>
@@ -91,6 +91,13 @@
                         <span>일정 목록</span>
                     </button>
                 </div>
+            </div>
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">운동관리</h3>
+                <button class="view-switch-btn" id="exerciseRecordBtn" data-mode="exercise">
+                    <span class="material-icons">fitness_center</span>
+                    <span>운동기록</span>
+                </button>
             </div>
             <div class="sidebar-section">
                 <button class="view-switch-btn beta-test-btn" id="betaTestBtn">
@@ -142,7 +149,25 @@
                 </div>
             </div>
             
-            <div id="calendar"></div>
+            <!-- 일정 캘린더 (일정관리) -->
+            <div id="scheduleArea" class="schedule-area">
+                <div id="calendar"></div>
+            </div>
+            
+            <!-- 운동기록 캘린더 (운동관리) -->
+            <div id="exerciseArea" class="exercise-area" style="display: none;">
+                <div class="exercise-calendar-header">
+                    <button class="icon-btn" id="exercisePrevMonth" title="이전 달"><span class="material-icons">chevron_left</span></button>
+                    <h2 class="exercise-month-title" id="exerciseMonthTitle">2025년 1월</h2>
+                    <button class="icon-btn" id="exerciseNextMonth" title="다음 달"><span class="material-icons">chevron_right</span></button>
+                </div>
+                <div class="exercise-calendar-grid" id="exerciseCalendarGrid">
+                    <!-- JS로 생성 -->
+                </div>
+                <p class="exercise-legend" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
+                    <span class="material-icons" style="font-size: 14px; vertical-align: middle;">circle</span> 아빠 운동기록 (초록)
+                </p>
+            </div>
             
             <!-- Floating Action Button -->
             <button class="fab" id="addEventBtn" title="담당자 선택 (길게 누르면 일정 추가)" data-person="all">
@@ -492,6 +517,21 @@
                         <pre id="stravaDataDisplay" style="display: none;"></pre>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 운동기록 상세 모달 -->
+    <div class="modal" id="exerciseDetailModal">
+        <div class="modal-content gcal-modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 id="exerciseDetailTitle">운동기록</h2>
+                <button class="icon-btn" id="closeExerciseDetailBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body" id="exerciseDetailBody">
+                <p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>
             </div>
         </div>
     </div>
