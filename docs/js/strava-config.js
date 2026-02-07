@@ -12,8 +12,8 @@
  * 5. Authorization Callback Domain에 redirectUri의 도메인 등록 (예: localhost)
  */
 
-// 실제 Strava Client ID를 입력하세요.
+// 실제 Strava Client ID - 예시 값을 덮어씀 (|| 사용 시 예시 값이 유지되므로 명시적 할당)
 window.STRAVA_CONFIG = window.STRAVA_CONFIG || {};
-window.STRAVA_CONFIG.clientId = window.STRAVA_CONFIG.clientId || '200870';
-window.STRAVA_CONFIG.redirectUri = window.STRAVA_CONFIG.redirectUri || (window.location.origin + '/');
-window.STRAVA_CONFIG.scope = window.STRAVA_CONFIG.scope || 'read,activity:read_all';
+window.STRAVA_CONFIG.clientId = '200870';
+window.STRAVA_CONFIG.redirectUri = window.location.origin + '/';
+window.STRAVA_CONFIG.scope = 'read,activity:read_all';
