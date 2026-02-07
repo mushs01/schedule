@@ -12,6 +12,7 @@ let eventModal;
 let eventDetailModal;
 let searchModal;
 let settingsModal;
+let betaTestModal;
 let deleteRecurringModal;
 let eventForm;
 let loadingOverlay;
@@ -123,11 +124,24 @@ function openEventModalWithPerson(person) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
     
+    // Strava OAuth 콜백 처리 (URL에 code가 있으면 토큰 교환) - 실패 시에도 앱은 정상 동작
+    try {
+        if (window.stravaModule && typeof window.stravaModule.handleOAuthCallback === 'function') {
+            const wasCallback = await window.stravaModule.handleOAuthCallback();
+            if (wasCallback) {
+                setTimeout(() => openBetaTestModal(), 300);
+            }
+        }
+    } catch (e) {
+        console.warn('Strava OAuth 콜백 처리 중 오류 (무시됨):', e);
+    }
+    
     // Initialize DOM elements
     eventModal = document.getElementById('eventModal');
     eventDetailModal = document.getElementById('eventDetailModal');
     searchModal = document.getElementById('searchModal');
     settingsModal = document.getElementById('settingsModal');
+    betaTestModal = document.getElementById('betaTestModal');
     deleteRecurringModal = document.getElementById('deleteRecurringModal');
     eventForm = document.getElementById('eventForm');
     loadingOverlay = document.getElementById('loadingOverlay');
@@ -450,6 +464,55 @@ function setupEventListeners() {
         searchInput.addEventListener('input', handleSearch);
     }
     
+    // Beta Test functionality
+    const betaTestBtn = document.getElementById('betaTestBtn');
+    const closeBetaTestBtn = document.getElementById('closeBetaTestBtn');
+    const stravaConnectBtn = document.getElementById('stravaConnectBtn');
+    const stravaFetchBtn = document.getElementById('stravaFetchBtn');
+    const stravaDisconnectBtn = document.getElementById('stravaDisconnectBtn');
+    
+    if (betaTestBtn) {
+        betaTestBtn.addEventListener('click', openBetaTestModal);
+    }
+    if (closeBetaTestBtn) {
+        closeBetaTestBtn.addEventListener('click', closeBetaTestModal);
+    }
+    if (stravaConnectBtn) {
+        stravaConnectBtn.addEventListener('click', () => {
+            try {
+                if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
+                    window.stravaModule.connect();
+                } else {
+                    if (window.showToast) window.showToast('Strava 연동 모듈을 불러올 수 없습니다. (베타 기능)', 'error');
+                }
+            } catch (e) {
+                console.warn('Strava 연결 중 오류 (무시됨):', e);
+                if (window.showToast) window.showToast('Strava 연결 중 오류가 발생했습니다.', 'error');
+            }
+        });
+    }
+    if (stravaFetchBtn) {
+        stravaFetchBtn.addEventListener('click', () => {
+            try {
+                handleStravaFetch();
+            } catch (e) {
+                console.warn('Strava 데이터 가져오기 중 오류 (무시됨):', e);
+            }
+        });
+    }
+    if (stravaDisconnectBtn) {
+        stravaDisconnectBtn.addEventListener('click', () => {
+            try {
+                if (window.stravaModule && typeof window.stravaModule.disconnect === 'function') {
+                    window.stravaModule.disconnect();
+                    updateStravaUI();
+                }
+            } catch (e) {
+                console.warn('Strava 연동 해제 중 오류 (무시됨):', e);
+            }
+        });
+    }
+    
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -514,6 +577,12 @@ function setupEventListeners() {
     if (settingsModal) {
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) closeSettingsModal();
+        });
+    }
+    
+    if (betaTestModal) {
+        betaTestModal.addEventListener('click', (e) => {
+            if (e.target === betaTestModal) closeBetaTestModal();
         });
     }
     
@@ -1603,6 +1672,151 @@ function closeSettingsModal() {
     }
     settingsModal.classList.remove('active');
     console.log('✅ Settings modal closed');
+}
+
+/**
+ * Beta Test Modal - Strava 오류 시에도 모달은 열림, 연동 섹션만 비활성화
+ */
+function openBetaTestModal() {
+    try {
+        if (!betaTestModal) return;
+        updateStravaUI();
+        betaTestModal.classList.add('active');
+    } catch (e) {
+        console.warn('베타테스트 모달 열기 중 오류 (무시됨):', e);
+    }
+}
+
+function closeBetaTestModal() {
+    if (betaTestModal) betaTestModal.classList.remove('active');
+}
+
+function updateStravaUI() {
+    try {
+        const connectionStatusEl = document.getElementById('stravaConnectionStatus');
+        const dataStatusEl = document.getElementById('stravaDataStatus');
+        const notConnected = document.getElementById('stravaNotConnected');
+        const connected = document.getElementById('stravaConnected');
+        const athleteName = document.getElementById('stravaAthleteName');
+        
+        // 연동 상태 표시 업데이트
+        if (connectionStatusEl) {
+            const iconEl = connectionStatusEl.querySelector('.strava-status-icon');
+            const textEl = connectionStatusEl.querySelector('.strava-status-text');
+            connectionStatusEl.className = 'strava-status-item';
+            if (!window.stravaModule || typeof window.stravaModule.isConnected !== 'function') {
+                connectionStatusEl.classList.add('status-pending');
+                if (iconEl) iconEl.textContent = 'warning';
+                if (textEl) textEl.textContent = 'Strava 모듈을 불러올 수 없습니다';
+            } else if (window.stravaModule.isConnected()) {
+                connectionStatusEl.classList.add('status-success');
+                if (iconEl) iconEl.textContent = 'check_circle';
+                const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
+                const name = athlete ? ((athlete.firstname || '') + ' ' + (athlete.lastname || '')).trim() : '사용자';
+                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + name + ')';
+            } else {
+                connectionStatusEl.classList.add('status-pending');
+                if (iconEl) iconEl.textContent = 'link_off';
+                if (textEl) textEl.textContent = 'Strava 연결 안됨 - "Strava 연결" 버튼을 눌러주세요';
+            }
+        }
+        
+        // 데이터 상태 - 마지막 로드 결과가 있으면 표시, 없으면 기본값
+        if (dataStatusEl) {
+            const last = window._stravaLastDataStatus || { status: 'pending', message: '데이터 로드 전 - "운동 기록 가져오기" 버튼을 눌러주세요' };
+            updateStravaDataStatus(last.status, last.message);
+        }
+        
+        if (!notConnected || !connected) return;
+        
+        if (window.stravaModule && typeof window.stravaModule.isConnected === 'function' && window.stravaModule.isConnected()) {
+            notConnected.style.display = 'none';
+            connected.style.display = 'block';
+            const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
+            if (athleteName && athlete) {
+                athleteName.textContent = (athlete.firstname || '') + ' ' + (athlete.lastname || '');
+            }
+        } else {
+            notConnected.style.display = 'block';
+            connected.style.display = 'none';
+        }
+    } catch (e) {
+        console.warn('Strava UI 업데이트 중 오류 (무시됨):', e);
+    }
+}
+
+/**
+ * Strava 데이터 로드 상태 표시 업데이트
+ */
+function updateStravaDataStatus(status, message) {
+    const dataStatusEl = document.getElementById('stravaDataStatus');
+    if (!dataStatusEl) return;
+    const iconEl = dataStatusEl.querySelector('.strava-status-icon');
+    const textEl = dataStatusEl.querySelector('.strava-status-text');
+    dataStatusEl.className = 'strava-status-item status-' + (status || 'pending');
+    if (iconEl) iconEl.textContent = status === 'success' ? 'check_circle' : status === 'error' ? 'error' : status === 'loading' ? 'hourglass_empty' : 'info';
+    if (textEl) textEl.textContent = message || '데이터 로드 전';
+}
+
+async function handleStravaFetch() {
+    const placeholder = document.getElementById('stravaDataPlaceholder');
+    const display = document.getElementById('stravaDataDisplay');
+    
+    try {
+        if (!window.stravaModule || typeof window.stravaModule.fetchActivities !== 'function') {
+            const errorMsg = '✗ Strava 모듈을 불러올 수 없습니다';
+            window._stravaLastDataStatus = { status: 'error', message: errorMsg };
+            updateStravaDataStatus('error', errorMsg);
+            if (display) {
+                display.style.display = 'block';
+                display.textContent = 'Strava 연동 모듈을 불러올 수 없습니다. (베타 기능)';
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            return;
+        }
+        
+        updateStravaDataStatus('loading', '로딩 중...');
+        showLoading(true);
+        if (placeholder) placeholder.style.display = 'none';
+        if (display) {
+            display.style.display = 'block';
+            display.textContent = '로딩 중...';
+        }
+        
+        const activities = await window.stravaModule.fetchActivities(30, 1);
+        
+        const formatted = (activities || []).map(a => ({
+            id: a.id,
+            name: a.name,
+            type: a.type,
+            start_date: a.start_date,
+            elapsed_time: (a.elapsed_time || 0) + '초',
+            distance: a.distance ? (a.distance / 1000).toFixed(2) + 'km' : null
+        }));
+        
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const successMsg = `✓ ${formatted.length}개 운동 기록을 정상적으로 불러왔습니다 (${timeStr})`;
+        window._stravaLastDataStatus = { status: 'success', message: successMsg };
+        updateStravaDataStatus('success', successMsg);
+        
+        if (display) {
+            display.textContent = JSON.stringify(formatted, null, 2);
+        }
+        if (window.showToast) window.showToast(`${formatted.length}개 운동 기록을 가져왔습니다.`, 'success');
+    } catch (error) {
+        console.warn('Strava fetch error (베타 기능):', error);
+        const errorMsg = '✗ 데이터 불러오기 실패: ' + (error.message || '알 수 없는 오류');
+        window._stravaLastDataStatus = { status: 'error', message: errorMsg };
+        updateStravaDataStatus('error', errorMsg);
+        if (display) {
+            display.style.display = 'block';
+            display.textContent = '오류: ' + (error.message || '알 수 없는 오류');
+        }
+        if (window.showToast) window.showToast(error.message || '데이터를 가져오는데 실패했습니다.', 'error');
+    } finally {
+        showLoading(false);
+    }
 }
 
 /**

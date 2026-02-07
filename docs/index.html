@@ -92,6 +92,12 @@
                     </button>
                 </div>
             </div>
+            <div class="sidebar-section">
+                <button class="view-switch-btn beta-test-btn" id="betaTestBtn">
+                    <span class="material-icons">science</span>
+                    <span>베타테스트</span>
+                </button>
+            </div>
         </aside>
 
         <!-- Calendar Area -->
@@ -402,6 +408,74 @@
         </div>
     </div>
 
+    <!-- Beta Test Modal -->
+    <div class="modal" id="betaTestModal">
+        <div class="modal-content gcal-modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>
+                    <span class="material-icons" style="vertical-align: middle;">science</span>
+                    베타테스트 - Strava 운동 기록 연동
+                </h2>
+                <button class="icon-btn" id="closeBetaTestBtn">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="settings-description" style="margin-bottom: 16px; color: var(--text-secondary);">
+                    Strava 앱에서 기록한 운동 데이터를 웹앱으로 가져올 수 있습니다. (베타 기능)
+                </p>
+                <!-- 상태 표시 -->
+                <div class="strava-status-bar">
+                    <div class="strava-status-item" id="stravaConnectionStatus">
+                        <span class="material-icons strava-status-icon">help_outline</span>
+                        <span class="strava-status-text">연동 상태 확인 중...</span>
+                    </div>
+                    <div class="strava-status-item" id="stravaDataStatus">
+                        <span class="material-icons strava-status-icon">info</span>
+                        <span class="strava-status-text">데이터 로드 전</span>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>Strava 연동</h3>
+                    <div id="stravaConnectSection">
+                        <div id="stravaNotConnected" style="display: none;">
+                            <button class="btn-primary" id="stravaConnectBtn">
+                                <span class="material-icons">link</span>
+                                Strava 연결
+                            </button>
+                            <p class="settings-description" style="margin-top: 12px; font-size: 12px;">
+                                Strava 계정으로 로그인 후 운동 기록을 가져올 수 있습니다.
+                            </p>
+                        </div>
+                        <div id="stravaConnected" style="display: none;">
+                            <p class="settings-description" style="margin-bottom: 12px;">
+                                <span class="material-icons" style="color: #0f9d58; vertical-align: middle;">check_circle</span>
+                                <strong id="stravaAthleteName"></strong> 님과 연결됨
+                            </p>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-primary" id="stravaFetchBtn">
+                                    <span class="material-icons">refresh</span>
+                                    운동 기록 가져오기
+                                </button>
+                                <button class="btn-secondary" id="stravaDisconnectBtn">
+                                    <span class="material-icons">link_off</span>
+                                    연동 해제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>가져온 데이터</h3>
+                    <div id="stravaDataArea" class="strava-data-area">
+                        <p class="strava-data-placeholder" id="stravaDataPlaceholder">"운동 기록 가져오기" 버튼을 눌러 Strava 데이터를 로드하세요.</p>
+                        <pre id="stravaDataDisplay" style="display: none;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Modal -->
     <div class="modal" id="searchModal">
         <div class="modal-content gcal-modal">
@@ -510,6 +584,12 @@
     
     <!-- Firebase Config -->
     <script src="js/firebase-config.js?v=22"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+    
+    <!-- Strava Config (베타) - strava-config-example.js를 strava-config.js로 복사 후 clientId 입력 -->
+    <script src="js/strava-config-example.js?v=1"></script>
+    <script src="js/strava-config.js?v=1"></script>
+    <script src="js/strava.js?v=1"></script>
 
     <!-- Custom JS -->
     <script src="js/fcm-notification.js?v=330"></script>

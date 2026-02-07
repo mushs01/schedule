@@ -2354,3 +2354,54 @@ body {
         padding: 4px 6px;
     }
 }
+
+/* 베타테스트 - Strava 상태 표시 */
+.strava-status-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-blue);
+}
+.strava-status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+.strava-status-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.strava-status-item.status-success .strava-status-icon { color: #0f9d58; }
+.strava-status-item.status-error .strava-status-icon { color: #d32f2f; }
+.strava-status-item.status-pending .strava-status-icon { color: var(--text-secondary); }
+.strava-status-item.status-loading .strava-status-icon { color: var(--primary-blue); }
+.strava-status-text { color: var(--text-primary); }
+
+/* 베타테스트 - Strava 데이터 영역 */
+.strava-data-area {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    font-size: 13px;
+}
+.strava-data-placeholder {
+    color: var(--text-secondary);
+    margin: 0;
+}
+.strava-data-area pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+    font-family: 'Roboto Mono', monospace;
+}
+.beta-test-btn {
+    width: 100%;
+    justify-content: flex-start;
+}
