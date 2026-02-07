@@ -15,16 +15,9 @@
  * 6. Authorization Callback Domain → 로컬: localhost, 배포: your-domain.com
  */
 
-// Strava 앱 Client ID (필수)
-// 이 파일을 strava-config.js로 복사하고 실제 값 입력
+// Strava 앱 Client ID (필수) - Strava 개발자 페이지에서 발급받은 Application ID
 window.STRAVA_CONFIG = {
-    // Strava 개발자 페이지에서 발급받은 Client ID
-    clientId: 'YOUR_STRAVA_CLIENT_ID',
-    
-    // OAuth 콜백 URL - Strava 앱 설정에 등록한 URL과 정확히 일치해야 함
-    // 예: http://localhost:8000/ 또는 https://your-app.vercel.app/
+    clientId: '200870',
     redirectUri: (typeof window !== 'undefined') ? (window.location.origin + '/') : 'http://localhost:8000/',
-    
-    // API 요청 시 필요한 권한 범위
     scope: 'read,activity:read_all'
 };
