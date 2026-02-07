@@ -85,16 +85,18 @@ async function initFCM() {
             );
         });
 
-        // 토큰 갱신 핸들러
-        messaging.onTokenRefresh(async () => {
-            console.log('🔄 FCM 토큰 갱신...');
-            try {
-                const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
-                await saveFCMToken(newToken);
-            } catch (error) {
-                console.error('❌ 토큰 갱신 실패:', error);
-            }
-        });
+        // 토큰 갱신 핸들러 (Firebase v10+ 에서 onTokenRefresh 제거됨 - 존재 시에만 등록)
+        if (typeof messaging.onTokenRefresh === 'function') {
+            messaging.onTokenRefresh(async () => {
+                console.log('🔄 FCM 토큰 갱신...');
+                try {
+                    const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
+                    await saveFCMToken(newToken);
+                } catch (error) {
+                    console.error('❌ 토큰 갱신 실패:', error);
+                }
+            });
+        }
 
         // UI 업데이트
         updateNotificationUI();

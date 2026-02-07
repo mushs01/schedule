@@ -1885,10 +1885,6 @@ function renderExerciseCalendar() {
     personFilterEl.innerHTML = filterHtml;
     const filterPersons = getExerciseFilterPersons();
     const showAll = filterPersons.includes('all');
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startPad = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
