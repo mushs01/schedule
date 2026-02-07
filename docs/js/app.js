@@ -124,22 +124,7 @@ function openEventModalWithPerson(person) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
     
-    // Strava OAuth 콜백 처리 (URL에 code가 있으면 토큰 교환) - 성공/실패 모두 모달 열어서 결과 확인
-    try {
-        const hadCode = !!new URLSearchParams(window.location.search).get('code');
-        if (hadCode && window.showToast) window.showToast('Strava 연동 처리 중...', 'info');
-        if (window.stravaModule && typeof window.stravaModule.handleOAuthCallback === 'function') {
-            await window.stravaModule.handleOAuthCallback();
-            if (hadCode) setTimeout(() => openBetaTestModal(), 300);
-        }
-    } catch (e) {
-        console.warn('Strava OAuth 콜백 처리 중 오류:', e);
-        window._stravaLastError = (e && e.message) || '알 수 없는 오류';
-        if (window.showToast) window.showToast('연동 실패: ' + (window._stravaLastError || ''), 'error');
-        setTimeout(() => openBetaTestModal(), 300);
-    }
-    
-    // Initialize DOM elements
+    // Initialize DOM elements (Strava보다 먼저 - 앱이 항상 정상 실행되도록)
     eventModal = document.getElementById('eventModal');
     eventDetailModal = document.getElementById('eventDetailModal');
     searchModal = document.getElementById('searchModal');
@@ -191,6 +176,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Check API health
     checkAPIHealth();
+    
+    // Strava OAuth 콜백 (URL에 code 있을 때) - 비차단, 실패해도 앱 정상 실행
+    const hadCode = !!new URLSearchParams(window.location.search).get('code');
+    if (hadCode && window.stravaModule && typeof window.stravaModule.handleOAuthCallback === 'function') {
+        if (window.showToast) window.showToast('Strava 연동 처리 중...', 'info');
+        window.stravaModule.handleOAuthCallback()
+            .then(ok => {
+                if (ok && window.showToast) window.showToast('Strava 연동 완료', 'success');
+                else if (!ok && window.showToast) window.showToast('Strava 연동 실패 (앱은 정상 사용 가능)', 'info');
+                if (hadCode) setTimeout(() => openBetaTestModal(), 300);
+            })
+            .catch(e => {
+                console.warn('Strava OAuth 오류:', e);
+                window._stravaLastError = (e && e.message) || '알 수 없는 오류';
+                if (window.showToast) window.showToast('Strava 연동 실패 (앱은 정상 사용 가능)', 'info');
+                setTimeout(() => openBetaTestModal(), 300);
+            });
+    }
+    
+    // Strava 연동된 경우 앱 실행 시 자동으로 운동 기록 가져오기 - 성공/실패 토스트로 간단 알림
+    setTimeout(() => {
+        try {
+            if (window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected()) {
+                handleStravaFetch(true);
+            }
+        } catch (e) {
+            console.warn('Strava 자동 로드 오류 (무시됨):', e);
+        }
+    }, 3500);
 });
 
 /**
@@ -1816,9 +1830,10 @@ function updateStravaDataStatus(status, message) {
     if (textEl) textEl.textContent = message || '데이터 로드 전';
 }
 
-async function handleStravaFetch() {
+async function handleStravaFetch(silent) {
     const placeholder = document.getElementById('stravaDataPlaceholder');
     const display = document.getElementById('stravaDataDisplay');
+    const noOverlay = !!silent;
     
     try {
         if (!window.stravaModule || typeof window.stravaModule.fetchActivities !== 'function') {
@@ -1834,7 +1849,7 @@ async function handleStravaFetch() {
         }
         
         updateStravaDataStatus('loading', '로딩 중...');
-        showLoading(true);
+        if (!noOverlay) showLoading(true);
         if (placeholder) placeholder.style.display = 'none';
         if (display) {
             display.style.display = 'block';
@@ -1856,12 +1871,14 @@ async function handleStravaFetch() {
         const timeStr = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const successMsg = `✓ ${formatted.length}개 운동 기록을 정상적으로 불러왔습니다 (${timeStr})`;
         window._stravaLastDataStatus = { status: 'success', message: successMsg };
+        window._stravaLastFormattedData = formatted;
         updateStravaDataStatus('success', successMsg);
         
         if (display) {
             display.textContent = JSON.stringify(formatted, null, 2);
         }
-        if (window.showToast) window.showToast(`${formatted.length}개 운동 기록을 가져왔습니다.`, 'success');
+        if (!noOverlay && window.showToast) window.showToast(`${formatted.length}개 운동 기록을 가져왔습니다.`, 'success');
+        else if (noOverlay && window.showToast) window.showToast(`Strava ${formatted.length}개 운동 기록 자동 로드 완료`, 'info');
     } catch (error) {
         console.warn('Strava fetch error (베타 기능):', error);
         const errorMsg = '✗ 데이터 불러오기 실패: ' + (error.message || '알 수 없는 오류');
@@ -1871,9 +1888,10 @@ async function handleStravaFetch() {
             display.style.display = 'block';
             display.textContent = '오류: ' + (error.message || '알 수 없는 오류');
         }
-        if (window.showToast) window.showToast(error.message || '데이터를 가져오는데 실패했습니다.', 'error');
+        if (!noOverlay && window.showToast) window.showToast(error.message || '데이터를 가져오는데 실패했습니다.', 'error');
+        else if (noOverlay && window.showToast) window.showToast('Strava 운동 기록 로드 실패 (앱은 정상 사용 가능)', 'info');
     } finally {
-        showLoading(false);
+        if (!noOverlay) showLoading(false);
     }
 }
 
