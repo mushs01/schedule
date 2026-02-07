@@ -15,6 +15,19 @@ const VAPID_KEY = 'BFHk1qz9PJ6XbOWWenn-I6NsK_B-nwpQhNFiKjlQXEUv2yfgZgARXs4rSnWJB
 let messaging = null;
 let currentFCMToken = null;
 let swRegistration = null; // Service Worker Registration 저장
+let messagingScriptLoaded = false;
+
+/** firebase-messaging 스크립트 동적 로드 (Strava 연동 시 404 오류 방지) */
+function loadMessagingScript() {
+    if (messagingScriptLoaded || (typeof firebase !== 'undefined' && firebase.messaging)) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js';
+        script.onload = () => { messagingScriptLoaded = true; resolve(); };
+        script.onerror = () => reject(new Error('firebase-messaging 로드 실패'));
+        document.head.appendChild(script);
+    });
+}
 
 /**
  * FCM 초기화
@@ -22,6 +35,8 @@ let swRegistration = null; // Service Worker Registration 저장
 async function initFCM() {
     try {
         console.log('🔔 FCM 초기화 시작...');
+
+        await loadMessagingScript();
 
         // Service Worker 지원 확인
         if (!('serviceWorker' in navigator)) {
@@ -99,6 +114,8 @@ async function initFCM() {
 async function requestNotificationPermission() {
     try {
         console.log('🔔 알림 권한 요청...');
+
+        if (!messaging && !swRegistration) await initFCM();
 
         // 사용자 설정 확인
         if (!isUserSet()) {
