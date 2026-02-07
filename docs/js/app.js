@@ -1802,6 +1802,10 @@ function showScheduleView() {
     const vs = document.querySelector('.view-selector');
     if (vs) vs.style.display = '';
     if (fab) fab.style.display = '';
+    // 운동기록에서 돌아올 때 캘린더 크기 재계산
+    if (window.calendarModule && window.calendarModule.updateSize) {
+        setTimeout(() => window.calendarModule.updateSize(), 50);
+    }
 }
 
 function getIntensityLevel(activity) {

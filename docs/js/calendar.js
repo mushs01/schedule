@@ -219,6 +219,25 @@ function initCalendar() {
     setTimeout(() => {
         addSwipeGestureToDateHeader();
     }, 600);
+    
+    // 모바일/앱 첫 실행 시 일정 미표시 방지: 레이아웃 완료 후 updateSize 호출
+    const doUpdateSize = updateCalendarSize;
+    setTimeout(doUpdateSize, 300);
+    setTimeout(doUpdateSize, 800);
+    
+    // 앱 포그라운드 복귀 / bfcache 복원 시 일정 다시 그리기
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') doUpdateSize();
+    });
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) doUpdateSize(); // bfcache에서 복원
+    });
+    
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(doUpdateSize, 150);
+    });
 }
 
 /**
@@ -1249,10 +1268,17 @@ function addSwipeGestureToDateHeader() {
     console.log('✅ 캘린더 스와이프 제스처 활성화 (모든 뷰 - 월/주/일)');
 }
 
+function updateCalendarSize() {
+    try {
+        if (calendar) calendar.updateSize();
+    } catch (e) { /* ignore */ }
+}
+
 window.calendarModule = {
     init: initCalendar,
     changeView,
     refresh: refreshCalendar,
+    updateSize: updateCalendarSize,
     filter: filterByPerson,
     filterByPersons,
     getCurrentDate,
