@@ -219,6 +219,13 @@ function initCalendar() {
     setTimeout(() => {
         addSwipeGestureToDateHeader();
     }, 600);
+    
+    // 모바일 첫 로드 시 레이아웃 지연으로 크기 0 되는 경우 대비 (1회만)
+    setTimeout(() => {
+        try {
+            if (calendar) calendar.updateSize();
+        } catch (e) { /* ignore */ }
+    }, 600);
 }
 
 /**

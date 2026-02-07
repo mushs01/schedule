@@ -124,6 +124,13 @@ function openEventModalWithPerson(person) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
     
+    // 메뉴/버튼 리스너 먼저 등록 (다른 초기화 실패해도 메뉴는 동작하도록)
+    try {
+        setupEventListeners();
+    } catch (e) {
+        console.error('❌ setupEventListeners failed:', e);
+    }
+    
     // Initialize DOM elements (Strava보다 먼저 - 앱이 항상 정상 실행되도록)
     eventModal = document.getElementById('eventModal');
     eventDetailModal = document.getElementById('eventDetailModal');
@@ -146,11 +153,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast: !!toast
     });
     
-    // Initialize calendar
-    if (window.calendarModule) {
-        calendarModule.init();
-    } else {
-        console.error('❌ calendarModule not found!');
+    // Initialize calendar (try-catch: 실패해도 메뉴/UI는 동작하도록)
+    try {
+        if (window.calendarModule && typeof calendarModule.init === 'function') {
+            calendarModule.init();
+        } else {
+            console.error('❌ calendarModule not found!');
+        }
+    } catch (e) {
+        console.error('❌ Calendar init failed:', e);
+        // 지연 후 재시도 (CDN/레이아웃 지연 대응)
+        setTimeout(() => {
+            try {
+                if (window.calendarModule && typeof calendarModule.init === 'function') {
+                    calendarModule.init();
+                }
+            } catch (e2) {
+                console.error('❌ Calendar retry failed:', e2);
+            }
+        }, 500);
     }
     
     // Load AI summary
@@ -164,9 +185,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.kakaoNotification) {
         window.kakaoNotification.init();
     }
-    
-    // Setup event listeners
-    setupEventListeners();
     
     // Setup person checkbox listeners
     setupPersonCheckboxListeners();
