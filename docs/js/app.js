@@ -1839,9 +1839,7 @@ const EXERCISE_PERSON_CONFIG = {
 
 function getExerciseFilterPersons() {
     const btns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
-    const persons = Array.from(btns).map(b => b.dataset.exercisePerson).filter(Boolean);
-    if (persons.length === 0 || persons.includes('all')) return ['all'];
-    return persons;
+    return Array.from(btns).map(b => b.dataset.exercisePerson).filter(Boolean);
 }
 
 function renderExerciseCalendar() {
@@ -1875,8 +1873,9 @@ function renderExerciseCalendar() {
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
         (byDate[ds] || []).forEach(a => { if (a.person) personsInMonth.add(a.person); });
     }
-    const personList = ['all', ...Array.from(personsInMonth).filter(p => p !== 'all')];
-    const keepActive = (p) => prevSelection.includes('all') || prevSelection.includes(p);
+    // 가족(전체) 기록 없음 - 해당 월에 기록 있는 사람만 표시
+    const personList = Array.from(personsInMonth).filter(p => p !== 'all');
+    const keepActive = (p) => prevSelection.length === 0 || prevSelection.includes(p);
     const filterHtml = personList.map(p => {
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#1a73e8' };
         const active = keepActive(p) ? ' active' : '';
@@ -1884,11 +1883,11 @@ function renderExerciseCalendar() {
     }).join('');
     personFilterEl.innerHTML = filterHtml;
     const filterPersons = getExerciseFilterPersons();
-    const showAll = filterPersons.includes('all');
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
-    const filterActs = (arr) => showAll ? arr : arr.filter(a => filterPersons.includes(a.person));
+    // 활성 아이콘에 해당하는 기록만 표시 (비활성화 시 해당 사람 기록 숨김)
+    const filterActs = (arr) => filterPersons.length === 0 ? [] : arr.filter(a => filterPersons.includes(a.person));
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
         const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
