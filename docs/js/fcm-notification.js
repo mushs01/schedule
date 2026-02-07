@@ -36,9 +36,12 @@ async function initFCM() {
         }
 
         // Service Worker 먼저 등록 (Firebase Messaging 초기화 전에)
-        // GitHub Pages 서브디렉토리를 고려한 경로
-        const basePath = location.pathname.split('/').slice(0, 2).join('/');
-        const swPath = `${basePath}/firebase-messaging-sw.js`;
+        // GitHub Pages: mushs01.github.io/schedule/ -> basePath = /schedule
+        let basePath = location.pathname.split('/').slice(0, 2).join('/') || '/';
+        if (location.origin === 'https://mushs01.github.io' && !basePath.includes('schedule')) {
+            basePath = '/schedule';
+        }
+        const swPath = `${basePath}/firebase-messaging-sw.js`.replace(/\/+/g, '/');
         console.log('📝 Service Worker 경로:', swPath);
         swRegistration = await navigator.serviceWorker.register(swPath, {
             scope: basePath + '/'
@@ -419,10 +422,10 @@ function updateUserUI() {
     }
 }
 
-// 페이지 로드 시 자동 초기화
+// 페이지 로드 시 자동 초기화 - Strava OAuth 복귀 후에 실행 (FCM 오류가 Strava 연동 실패로 표시되는 것 방지)
 document.addEventListener('DOMContentLoaded', () => {
-    initFCM();
     updateUserUI();
+    setTimeout(() => initFCM(), 2000);
 });
 
 // 전역 함수 노출
