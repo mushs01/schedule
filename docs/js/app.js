@@ -513,6 +513,13 @@ function setupEventListeners() {
         });
     }
     
+    document.querySelectorAll('#stravaRefreshStatusBtn, #stravaRefreshStatusBtnNotConnected').forEach(btn => {
+        if (btn) btn.addEventListener('click', () => {
+            updateStravaUI();
+            if (window.showToast) window.showToast('연결 상태를 확인했습니다.', 'info');
+        });
+    });
+    
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -1682,6 +1689,8 @@ function openBetaTestModal() {
         if (!betaTestModal) return;
         updateStravaUI();
         betaTestModal.classList.add('active');
+        // OAuth 복귀 직후 등 타이밍 이슈 대비 - 잠시 후 한 번 더 UI 갱신
+        setTimeout(updateStravaUI, 500);
     } catch (e) {
         console.warn('베타테스트 모달 열기 중 오류 (무시됨):', e);
     }

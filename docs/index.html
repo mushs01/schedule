@@ -438,7 +438,7 @@
                 <div class="settings-section">
                     <h3>Strava 연동</h3>
                     <div id="stravaConnectSection">
-                        <div id="stravaNotConnected" style="display: none;">
+                        <div id="stravaNotConnected" style="display: block;">
                             <button class="btn-primary" id="stravaConnectBtn">
                                 <span class="material-icons">link</span>
                                 Strava 연결
@@ -446,11 +446,21 @@
                             <p class="settings-description" style="margin-top: 12px; font-size: 12px;">
                                 Strava 계정으로 로그인 후 운동 기록을 가져올 수 있습니다.
                             </p>
+                            <p class="settings-description" style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">
+                                (연동 후 돌아왔는데 연결됨이 안 보이면 "상태 새로고침"을 눌러보세요)
+                            </p>
+                            <button class="btn-secondary" id="stravaRefreshStatusBtnNotConnected" style="margin-top: 8px;">
+                                <span class="material-icons">sync</span>
+                                상태 새로고침
+                            </button>
                         </div>
                         <div id="stravaConnected" style="display: none;">
-                            <p class="settings-description" style="margin-bottom: 12px;">
+                            <p class="settings-description" style="margin-bottom: 8px;">
                                 <span class="material-icons" style="color: #0f9d58; vertical-align: middle;">check_circle</span>
                                 <strong id="stravaAthleteName"></strong> 님과 연결됨
+                            </p>
+                            <p class="settings-description" style="margin-bottom: 12px; font-size: 12px; color: var(--text-secondary);">
+                                아래 "운동 기록 가져오기" 버튼을 눌러 데이터를 불러오세요.
                             </p>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <button class="btn-primary" id="stravaFetchBtn">
@@ -460,6 +470,10 @@
                                 <button class="btn-secondary" id="stravaDisconnectBtn">
                                     <span class="material-icons">link_off</span>
                                     연동 해제
+                                </button>
+                                <button class="btn-secondary" id="stravaRefreshStatusBtn" title="연결 상태 다시 확인">
+                                    <span class="material-icons">sync</span>
+                                    상태 새로고침
                                 </button>
                             </div>
                         </div>
