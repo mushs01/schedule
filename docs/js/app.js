@@ -512,6 +512,36 @@ function setupEventListeners() {
         exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1);
         renderExerciseCalendar();
     });
+    document.querySelectorAll('.exercise-person-filter .person-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+            renderExerciseCalendar();
+        });
+    });
+    const exerciseSwipeArea = document.getElementById('exerciseArea');
+    if (exerciseSwipeArea) {
+        let touchStartX = 0;
+        exerciseSwipeArea.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        exerciseSwipeArea.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1); }
+                else { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1); }
+                renderExerciseCalendar();
+            }
+        }, { passive: true });
+        let mouseStartX = 0;
+        exerciseSwipeArea.addEventListener('mousedown', e => { mouseStartX = e.clientX; });
+        exerciseSwipeArea.addEventListener('mouseup', e => {
+            const diff = mouseStartX - e.clientX;
+            if (Math.abs(diff) > 60) {
+                if (diff > 0) { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1); }
+                else { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1); }
+                renderExerciseCalendar();
+            }
+        });
+    }
     if (closeExerciseDetailBtn) closeExerciseDetailBtn.addEventListener('click', () => {
         const modal = document.getElementById('exerciseDetailModal');
         if (modal) modal.classList.remove('active');
@@ -1792,10 +1822,19 @@ function getIntensityLevel(activity) {
     return 'medium';
 }
 
+function getExerciseFilterPersons() {
+    const btns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
+    const persons = Array.from(btns).map(b => b.dataset.exercisePerson).filter(Boolean);
+    if (persons.length === 0 || persons.includes('all')) return ['all'];
+    return persons;
+}
+
 function renderExerciseCalendar() {
     const grid = document.getElementById('exerciseCalendarGrid');
     const titleEl = document.getElementById('exerciseMonthTitle');
     if (!grid || !titleEl) return;
+    const filterPersons = getExerciseFilterPersons();
+    const showAll = filterPersons.includes('all');
     const year = exerciseCalendarCurrentDate.getFullYear();
     const month = exerciseCalendarCurrentDate.getMonth();
     titleEl.textContent = `${year}년 ${month + 1}월`;
@@ -1807,19 +1846,24 @@ function renderExerciseCalendar() {
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
+    const filterActs = (arr) => showAll ? arr : arr.filter(a => filterPersons.includes(a.person));
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
         const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        const acts = byDate[ds] || [];
+        const acts = filterActs(byDate[ds] || []);
+        const persons = [...new Set(acts.map(a => a.person))];
         const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
+        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
         html += `<div class="${cls}" data-date="${ds}">${d.getDate()}</div>`;
     }
     for (let d = 1; d <= daysInMonth; d++) {
         const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        const acts = byDate[ds] || [];
+        const acts = filterActs(byDate[ds] || []);
+        const persons = [...new Set(acts.map(a => a.person))];
         const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const cls = ['exercise-calendar-day', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
+        const cls = ['exercise-calendar-day', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
         html += `<div class="${cls}" data-date="${ds}">${d}</div>`;
     }
     const totalCells = startPad + daysInMonth;
@@ -1828,16 +1872,18 @@ function renderExerciseCalendar() {
     for (let i = 0; i < extra; i++) {
         const nd = new Date(year, month + 1, i + 1);
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
-        const acts = byDate[ds] || [];
+        const acts = filterActs(byDate[ds] || []);
+        const persons = [...new Set(acts.map(a => a.person))];
         const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise' : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
+        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
+        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
         html += `<div class="${cls}" data-date="${ds}">${nd.getDate()}</div>`;
     }
     grid.innerHTML = html;
     grid.querySelectorAll('.exercise-calendar-day').forEach(cell => {
         cell.addEventListener('click', () => {
             const dateStr = cell.dataset.date;
-            const acts = (window._stravaActivitiesByDate || {})[dateStr] || [];
+            const acts = filterActs((window._stravaActivitiesByDate || {})[dateStr] || []);
             showExerciseDetail(dateStr, acts);
         });
     });
@@ -2037,8 +2083,9 @@ async function handleStravaFetch(silent) {
         (formatted || []).forEach(a => {
             const d = (a.start_date_local || a.start_date || '').split('T')[0];
             if (d) {
+                const act = { ...a, person: 'dad' };
                 if (!window._stravaActivitiesByDate[d]) window._stravaActivitiesByDate[d] = [];
-                window._stravaActivitiesByDate[d].push(a);
+                window._stravaActivitiesByDate[d].push(act);
             }
         });
         

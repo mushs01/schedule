@@ -2470,6 +2470,8 @@ body {
     border-radius: 50%;
     background: #0f9d58;
 }
+.exercise-calendar-day.has-exercise-dad::after { background: #0f9d58; }
+.exercise-calendar-day.has-exercise-mom::after { background: #f4511e; }
 .exercise-calendar-day.has-exercise.intensity-high::after {
     width: 12px;
     height: 12px;
@@ -2478,6 +2480,19 @@ body {
     width: 6px;
     height: 6px;
 }
+.exercise-person-filter {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+.exercise-person-filter .person-filter-btn {
+    width: 44px;
+    height: 44px;
+}
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8; }
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58; }
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e; }
 .exercise-detail-item {
     padding: 12px;
     margin-bottom: 8px;

@@ -156,7 +156,18 @@
             
             <!-- 운동기록 캘린더 (운동관리) -->
             <div id="exerciseArea" class="exercise-area" style="display: none;">
-                <div class="exercise-calendar-header">
+                <div class="exercise-person-filter">
+                    <button class="person-filter-btn active" data-exercise-person="all" data-color="#1a73e8">
+                        <img src="images/all.png" alt="전체" class="person-avatar">
+                    </button>
+                    <button class="person-filter-btn active" data-exercise-person="dad" data-color="#0f9d58">
+                        <img src="images/dad.png" alt="아빠" class="person-avatar">
+                    </button>
+                    <button class="person-filter-btn active" data-exercise-person="mom" data-color="#f4511e">
+                        <img src="images/mom.png" alt="엄마" class="person-avatar">
+                    </button>
+                </div>
+                <div class="exercise-calendar-header" id="exerciseCalendarHeader">
                     <button class="icon-btn" id="exercisePrevMonth" title="이전 달"><span class="material-icons">chevron_left</span></button>
                     <h2 class="exercise-month-title" id="exerciseMonthTitle">2025년 1월</h2>
                     <button class="icon-btn" id="exerciseNextMonth" title="다음 달"><span class="material-icons">chevron_right</span></button>
@@ -164,9 +175,6 @@
                 <div class="exercise-calendar-grid" id="exerciseCalendarGrid">
                     <!-- JS로 생성 -->
                 </div>
-                <p class="exercise-legend" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);">
-                    <span class="material-icons" style="font-size: 14px; vertical-align: middle;">circle</span> 아빠 운동기록 (초록)
-                </p>
             </div>
             
             <!-- Floating Action Button -->
