@@ -180,11 +180,14 @@
         clearCodeFromUrl();
         try {
             await exchangeCodeForToken(code);
+            window._stravaLastError = null;
             if (window.showToast) window.showToast('Strava 연동이 완료되었습니다!', 'success');
             return true;
         } catch (error) {
             console.error('Strava token exchange error:', error);
-            if (window.showToast) window.showToast('Strava 연동에 실패했습니다: ' + (error.message || '알 수 없는 오류'), 'error');
+            const msg = error.message || '알 수 없는 오류';
+            window._stravaLastError = msg;
+            if (window.showToast) window.showToast('Strava 연동에 실패했습니다: ' + msg, 'error');
             return false;
         }
     }

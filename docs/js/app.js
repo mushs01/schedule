@@ -124,16 +124,19 @@ function openEventModalWithPerson(person) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
     
-    // Strava OAuth 콜백 처리 (URL에 code가 있으면 토큰 교환) - 실패 시에도 앱은 정상 동작
+    // Strava OAuth 콜백 처리 (URL에 code가 있으면 토큰 교환) - 성공/실패 모두 모달 열어서 결과 확인
     try {
+        const hadCode = !!new URLSearchParams(window.location.search).get('code');
+        if (hadCode && window.showToast) window.showToast('Strava 연동 처리 중...', 'info');
         if (window.stravaModule && typeof window.stravaModule.handleOAuthCallback === 'function') {
-            const wasCallback = await window.stravaModule.handleOAuthCallback();
-            if (wasCallback) {
-                setTimeout(() => openBetaTestModal(), 300);
-            }
+            await window.stravaModule.handleOAuthCallback();
+            if (hadCode) setTimeout(() => openBetaTestModal(), 300);
         }
     } catch (e) {
-        console.warn('Strava OAuth 콜백 처리 중 오류 (무시됨):', e);
+        console.warn('Strava OAuth 콜백 처리 중 오류:', e);
+        window._stravaLastError = (e && e.message) || '알 수 없는 오류';
+        if (window.showToast) window.showToast('연동 실패: ' + (window._stravaLastError || ''), 'error');
+        setTimeout(() => openBetaTestModal(), 300);
     }
     
     // Initialize DOM elements
@@ -1714,14 +1717,16 @@ function closeBetaTestModal() {
  * 모바일 WebView vs 브라우저 localStorage 분리 시 토큰이 안 보일 수 있음
  */
 function getStravaDebugInfo() {
-    const hasToken = !!(window.stravaModule && window.stravaModule.getStoredTokens && window.stravaModule.getStoredTokens().accessToken);
     const isConnected = !!(window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected());
     if (isConnected) {
         const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
         const name = athlete ? ((athlete.firstname || '') + ' ' + (athlete.lastname || '')).trim() : '';
         return { isConnected: true, msg: '✓ 연결됨: ' + (name || 'Strava') };
     }
-    // 토큰 없음 - 모바일 앱(홈화면 추가)에서 열었을 가능성
+    const lastErr = window._stravaLastError;
+    if (lastErr) {
+        return { isConnected: false, msg: '연결 실패: ' + lastErr + ' (다시 Strava 연결을 눌러 재시도)' };
+    }
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
     if (isStandalone) {
         return { isConnected: false, msg: '앱에서 열림 - Chrome/Safari 브라우저에서 mushs01.github.io/schedule/ 를 직접 열고 다시 연동해보세요.' };
@@ -1756,10 +1761,15 @@ function updateStravaUI() {
                 connectionStatusEl.classList.add('status-pending');
                 if (iconEl) iconEl.textContent = 'link_off';
                 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
+                const lastErr = window._stravaLastError;
                 if (textEl) {
-                    textEl.textContent = isStandalone
-                        ? 'Strava 연결 안됨 - 브라우저에서 mushs01.github.io/schedule/ 를 열고 연동해주세요'
-                        : 'Strava 연결 안됨 - "Strava 연결" 버튼을 눌러주세요';
+                    if (lastErr) {
+                        textEl.textContent = 'Strava 연결 실패: ' + lastErr;
+                    } else {
+                        textEl.textContent = isStandalone
+                            ? 'Strava 연결 안됨 - 브라우저에서 mushs01.github.io/schedule/ 를 열고 연동해주세요'
+                            : 'Strava 연결 안됨 - "Strava 연결" 버튼을 눌러주세요';
+                    }
                 }
             }
         }
