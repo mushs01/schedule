@@ -1908,9 +1908,6 @@ function renderExerciseCalendar() {
         const cls = ['exercise-calendar-day', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
         html += `<div class="${cls}" data-date="${ds}">${d}</div>`;
     }
-    const totalCells = startPad + daysInMonth;
-    const remainder = totalCells % 7;
-    const extra = remainder ? 7 - remainder : 0;
     for (let i = 0; i < extra; i++) {
         const nd = new Date(year, month + 1, i + 1);
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
