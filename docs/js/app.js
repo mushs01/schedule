@@ -516,9 +516,18 @@ function setupEventListeners() {
     document.querySelectorAll('#stravaRefreshStatusBtn, #stravaRefreshStatusBtnNotConnected').forEach(btn => {
         if (btn) btn.addEventListener('click', () => {
             updateStravaUI();
-            if (window.showToast) window.showToast('연결 상태를 확인했습니다.', 'info');
+            const debug = getStravaDebugInfo();
+            if (window.showToast) window.showToast(debug.msg, debug.isConnected ? 'success' : 'info');
         });
     });
+    
+    const stravaOpenInBrowserBtn = document.getElementById('stravaOpenInBrowserBtn');
+    if (stravaOpenInBrowserBtn) {
+        stravaOpenInBrowserBtn.addEventListener('click', () => {
+            window.open('https://mushs01.github.io/schedule/', '_blank', 'noopener');
+            if (window.showToast) window.showToast('브라우저에서 열었습니다. Strava 연결을 진행해주세요.', 'info');
+        });
+    }
     
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
@@ -1700,6 +1709,26 @@ function closeBetaTestModal() {
     if (betaTestModal) betaTestModal.classList.remove('active');
 }
 
+/**
+ * Strava 디버그 정보 (연동 실패 원인 파악용)
+ * 모바일 WebView vs 브라우저 localStorage 분리 시 토큰이 안 보일 수 있음
+ */
+function getStravaDebugInfo() {
+    const hasToken = !!(window.stravaModule && window.stravaModule.getStoredTokens && window.stravaModule.getStoredTokens().accessToken);
+    const isConnected = !!(window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected());
+    if (isConnected) {
+        const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
+        const name = athlete ? ((athlete.firstname || '') + ' ' + (athlete.lastname || '')).trim() : '';
+        return { isConnected: true, msg: '✓ 연결됨: ' + (name || 'Strava') };
+    }
+    // 토큰 없음 - 모바일 앱(홈화면 추가)에서 열었을 가능성
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
+    if (isStandalone) {
+        return { isConnected: false, msg: '앱에서 열림 - Chrome/Safari 브라우저에서 mushs01.github.io/schedule/ 를 직접 열고 다시 연동해보세요.' };
+    }
+    return { isConnected: false, msg: '연결 안됨. "Strava 연결" 버튼을 눌러 연동해주세요.' };
+}
+
 function updateStravaUI() {
     try {
         const connectionStatusEl = document.getElementById('stravaConnectionStatus');
@@ -1726,7 +1755,12 @@ function updateStravaUI() {
             } else {
                 connectionStatusEl.classList.add('status-pending');
                 if (iconEl) iconEl.textContent = 'link_off';
-                if (textEl) textEl.textContent = 'Strava 연결 안됨 - "Strava 연결" 버튼을 눌러주세요';
+                const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
+                if (textEl) {
+                    textEl.textContent = isStandalone
+                        ? 'Strava 연결 안됨 - 브라우저에서 mushs01.github.io/schedule/ 를 열고 연동해주세요'
+                        : 'Strava 연결 안됨 - "Strava 연결" 버튼을 눌러주세요';
+                }
             }
         }
         
@@ -1737,6 +1771,11 @@ function updateStravaUI() {
         }
         
         if (!notConnected || !connected) return;
+        
+        // standalone(앱) 모드일 때 "브라우저에서 열기" 버튼 표시
+        const openInBrowserBtn = document.getElementById('stravaOpenInBrowserBtn');
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
+        if (openInBrowserBtn) openInBrowserBtn.style.display = isStandalone ? 'inline-flex' : 'none';
         
         if (window.stravaModule && typeof window.stravaModule.isConnected === 'function' && window.stravaModule.isConnected()) {
             notConnected.style.display = 'none';
