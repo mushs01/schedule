@@ -501,22 +501,13 @@ function setupEventListeners() {
     if (closeBetaTestBtn) {
         closeBetaTestBtn.addEventListener('click', closeBetaTestModal);
     }
-    const exercisePrevMonth = document.getElementById('exercisePrevMonth');
-    const exerciseNextMonth = document.getElementById('exerciseNextMonth');
     const closeExerciseDetailBtn = document.getElementById('closeExerciseDetailBtn');
-    if (exercisePrevMonth) exercisePrevMonth.addEventListener('click', () => {
-        exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1);
-        renderExerciseCalendar();
-    });
-    if (exerciseNextMonth) exerciseNextMonth.addEventListener('click', () => {
-        exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1);
-        renderExerciseCalendar();
-    });
-    document.querySelectorAll('.exercise-person-filter .person-filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+    document.getElementById('exercisePersonFilter')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.person-filter-btn');
+        if (btn) {
             btn.classList.toggle('active');
             renderExerciseCalendar();
-        });
+        }
     });
     const exerciseSwipeArea = document.getElementById('exerciseArea');
     if (exerciseSwipeArea) {
@@ -1822,6 +1813,12 @@ function getIntensityLevel(activity) {
     return 'medium';
 }
 
+const EXERCISE_PERSON_CONFIG = {
+    all: { img: 'images/all.png', color: '#1a73e8' },
+    dad: { img: 'images/dad.png', color: '#0f9d58' },
+    mom: { img: 'images/mom.png', color: '#f4511e' }
+};
+
 function getExerciseFilterPersons() {
     const btns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
     const persons = Array.from(btns).map(b => b.dataset.exercisePerson).filter(Boolean);
@@ -1832,13 +1829,44 @@ function getExerciseFilterPersons() {
 function renderExerciseCalendar() {
     const grid = document.getElementById('exerciseCalendarGrid');
     const titleEl = document.getElementById('exerciseMonthTitle');
-    if (!grid || !titleEl) return;
-    const filterPersons = getExerciseFilterPersons();
-    const showAll = filterPersons.includes('all');
+    const personFilterEl = document.getElementById('exercisePersonFilter');
+    if (!grid || !titleEl || !personFilterEl) return;
+    const prevSelection = getExerciseFilterPersons();
     const year = exerciseCalendarCurrentDate.getFullYear();
     const month = exerciseCalendarCurrentDate.getMonth();
     titleEl.textContent = `${year}년 ${month + 1}월`;
     const byDate = window._stravaActivitiesByDate || {};
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startPad = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    const personsInMonth = new Set();
+    for (let i = 0; i < startPad; i++) {
+        const d = new Date(year, month, -startPad + i + 1);
+        const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        (byDate[ds] || []).forEach(a => { if (a.person) personsInMonth.add(a.person); });
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+        const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        (byDate[ds] || []).forEach(a => { if (a.person) personsInMonth.add(a.person); });
+    }
+    const remainder = (startPad + daysInMonth) % 7;
+    const extra = remainder ? 7 - remainder : 0;
+    for (let i = 0; i < extra; i++) {
+        const nd = new Date(year, month + 1, i + 1);
+        const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
+        (byDate[ds] || []).forEach(a => { if (a.person) personsInMonth.add(a.person); });
+    }
+    const personList = ['all', ...Array.from(personsInMonth).filter(p => p !== 'all')];
+    const keepActive = (p) => prevSelection.includes('all') || prevSelection.includes(p);
+    const filterHtml = personList.map(p => {
+        const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#1a73e8' };
+        const active = keepActive(p) ? ' active' : '';
+        return `<button class="person-filter-btn${active}" data-exercise-person="${p}" data-color="${cfg.color}"><img src="${cfg.img}" alt="${p}" class="person-avatar"></button>`;
+    }).join('');
+    personFilterEl.innerHTML = filterHtml;
+    const filterPersons = getExerciseFilterPersons();
+    const showAll = filterPersons.includes('all');
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const startPad = firstDay.getDay();

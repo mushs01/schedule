@@ -2415,13 +2415,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
     margin-bottom: 16px;
+    padding: 12px 0;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.exercise-calendar-header:active {
+    cursor: grabbing;
 }
 .exercise-month-title {
     font-size: 18px;
     font-weight: 500;
-    min-width: 140px;
     text-align: center;
 }
 .exercise-calendar-grid {
@@ -2484,15 +2489,22 @@ body {
     display: flex;
     gap: 8px;
     justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
     margin-bottom: 16px;
+    padding: 8px 0;
 }
 .exercise-person-filter .person-filter-btn {
     width: 44px;
     height: 44px;
+    border-color: transparent;
 }
-.exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8; }
-.exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58; }
-.exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e; }
+.exercise-person-filter .person-filter-btn.active {
+    border-width: 3px;
+}
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8 !important; }
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58 !important; }
+.exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e !important; }
 .exercise-detail-item {
     padding: 12px;
     margin-bottom: 8px;
