@@ -15,14 +15,20 @@
  * 6. Authorization Callback Domain → 로컬: localhost, 배포: your-domain.com
  */
 
-// Strava OAuth redirect_uri - 앱의 실제 경로 포함 (GitHub Pages: /Schedule/ 등)
+// Strava OAuth redirect_uri - GitHub Pages는 소문자 /schedule/ 사용 (대소문자 통일)
 function _getStravaRedirectUri() {
     if (typeof window === 'undefined') return 'http://localhost:8000/';
-    let url = window.location.origin + window.location.pathname;
+    const origin = window.location.origin;
+    // GitHub Pages (mushs01.github.io): 소문자 /schedule/ 로 고정 (핸드폰 404 방지)
+    if (origin === 'https://mushs01.github.io') return 'https://mushs01.github.io/schedule/';
+    // 로컬
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) return origin + '/';
+    // 기타: 현재 경로 사용
+    let url = origin + window.location.pathname;
     url = url.split('?')[0].split('#')[0];
     if (url.match(/\.[a-z]+$/i)) url = url.substring(0, url.lastIndexOf('/') + 1);
     else if (!url.endsWith('/')) url = url + '/';
-    return url;
+    return url.toLowerCase();
 }
 // Strava 앱 Client ID (필수) - Strava 개발자 페이지에서 발급받은 Application ID
 window.STRAVA_CONFIG = {
