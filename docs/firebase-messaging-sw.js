@@ -1,6 +1,7 @@
 /**
  * Firebase Cloud Messaging Service Worker
  * 백그라운드에서 푸시 알림을 받기 위한 서비스 워커
+ * Version: 2 (캐시 무효화용)
  */
 
 // Firebase SDK 임포트
