@@ -522,14 +522,16 @@
     <!-- 운동기록 상세 모달 -->
     <div class="modal" id="exerciseDetailModal">
         <div class="modal-content gcal-modal" style="max-width: 500px;">
-            <div class="modal-header">
-                <h2 id="exerciseDetailTitle">운동기록</h2>
+            <div class="modal-header event-detail-header">
+                <div class="event-detail-header-content" id="exerciseDetailHeader">
+                    <!-- 날짜와 사람 아이콘이 여기에 표시됨 -->
+                </div>
                 <button class="icon-btn" id="closeExerciseDetailBtn">
                     <span class="material-icons">close</span>
                 </button>
             </div>
-            <div class="modal-body" id="exerciseDetailBody">
-                <p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>
+            <div class="event-detail" id="exerciseDetailBody">
+                <!-- 운동 기록 항목들이 여기에 표시됨 -->
             </div>
         </div>
     </div>
@@ -651,6 +653,6 @@
     <script src="js/fcm-notification.js?v=331"></script>
     <script src="js/api.js?v=310"></script>
     <script src="js/calendar.js?v=260"></script>
-    <script src="js/app.js?v=314"></script>
+    <script src="js/app.js?v=315"></script>
 </body>
 </html>

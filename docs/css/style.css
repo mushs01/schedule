@@ -2505,18 +2505,57 @@ body {
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e !important; }
-.exercise-detail-item {
-    padding: 12px;
-    margin-bottom: 8px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #0f9d58;
+/* 운동기록 상세 - 사람별 섹션 */
+.exercise-person-section {
+    margin-bottom: 24px;
 }
-.exercise-detail-item h4 {
-    margin: 0 0 8px 0;
-    font-size: 15px;
+.exercise-person-section:last-child {
+    margin-bottom: 0;
 }
-.exercise-detail-meta {
+.exercise-person-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.exercise-person-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.exercise-person-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+}
+.exercise-person-count {
     font-size: 13px;
     color: var(--text-secondary);
+    background: var(--hover-bg);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+.exercise-activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.exercise-activities-list .event-detail-row {
+    margin-bottom: 0;
+    padding: 12px;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-blue);
+}
+.exercise-activities-list .event-detail-row .detail-content strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+    color: var(--text-primary);
+    font-weight: 500;
 }
