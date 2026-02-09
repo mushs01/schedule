@@ -471,6 +471,14 @@ function setupEventListeners() {
     const nextViewBtn = document.getElementById('nextViewBtn');
     
     if (todayBtn) todayBtn.addEventListener('click', () => {
+        // 운동기록 화면이면 오늘 날짜로 이동
+        const exerciseArea = document.getElementById('exerciseArea');
+        if (exerciseArea && exerciseArea.style.display !== 'none') {
+            exerciseCalendarCurrentDate = new Date();
+            renderExerciseCalendar();
+            return;
+        }
+        // 일정 화면이면 캘린더 오늘로 이동
         if (window.calendarModule && window.calendarModule.navigateToday) {
             window.calendarModule.navigateToday();
         }
@@ -1944,45 +1952,40 @@ function showExerciseDetail(dateStr, activities) {
         `;
         bodyEl.innerHTML = '<p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>';
     } else {
-        // 사람별로 그룹화하여 헤더에 아이콘 표시
-        const persons = [...new Set(activities.map(a => a.person || 'all'))];
-        const personAvatarsHTML = persons.map(p => {
-            const cfg = EXERCISE_PERSON_CONFIG[p] || EXERCISE_PERSON_CONFIG.all;
-            return `<img src="${cfg.img}" alt="${window.PERSON_NAMES[p] || p}" class="event-detail-avatar">`;
-        }).join('');
-        
-        // 헤더: 날짜와 사람 아이콘들 (일정 세부와 동일 형식)
-        headerEl.innerHTML = `
-            <div class="event-detail-title-row">
-                <div class="event-detail-avatars">
-                    ${personAvatarsHTML}
-                </div>
-                <h2 class="event-detail-title">${dateText} 운동기록</h2>
-            </div>
-        `;
-        
         // 본문: 각 운동을 event-detail-row 형식으로 표시 (일정 세부와 동일)
         let bodyHTML = '';
-        activities.forEach(a => {
+        activities.forEach((a, index) => {
             const person = a.person || 'all';
             const cfg = EXERCISE_PERSON_CONFIG[person] || EXERCISE_PERSON_CONFIG.all;
             const personName = window.PERSON_NAMES[person] || person;
+            const exerciseName = a.name || '운동';
             
-            // 운동명
-            bodyHTML += `
-                <div class="event-detail-row">
-                    <span class="material-icons detail-icon">fitness_center</span>
-                    <span class="detail-content">${a.name || '운동'}</span>
-                </div>
-            `;
+            // 첫 번째 운동이면 헤더에 아이콘과 운동명 표시
+            if (index === 0) {
+                const personAvatarsHTML = `<img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">`;
+                headerEl.innerHTML = `
+                    <div class="event-detail-title-row">
+                        <div class="event-detail-avatars">
+                            ${personAvatarsHTML}
+                        </div>
+                        <h2 class="event-detail-title">${exerciseName}</h2>
+                    </div>
+                `;
+            }
             
-            // 담당자
-            bodyHTML += `
-                <div class="event-detail-row">
-                    <span class="material-icons detail-icon">person</span>
-                    <span class="detail-content">${personName}</span>
-                </div>
-            `;
+            // 여러 운동이 있으면 각 운동마다 헤더처럼 표시
+            if (activities.length > 1 && index > 0) {
+                const personAvatarsHTML = `<img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">`;
+                bodyHTML += `
+                    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                        <div class="event-detail-title-row" style="margin-bottom: 12px;">
+                            <div class="event-detail-avatars">
+                                ${personAvatarsHTML}
+                            </div>
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 500;">${exerciseName}</h3>
+                        </div>
+                `;
+            }
             
             // 운동 종류
             if (a.type || a.sport_type) {
@@ -2075,9 +2078,9 @@ function showExerciseDetail(dateStr, activities) {
                 `;
             }
             
-            // 운동 사이 구분선 (마지막이 아니면)
-            if (a !== activities[activities.length - 1]) {
-                bodyHTML += '<div style="height: 1px; background: var(--border-color); margin: 16px 0;"></div>';
+            // 여러 운동이 있으면 섹션 닫기
+            if (activities.length > 1 && index > 0) {
+                bodyHTML += `</div>`;
             }
         });
         
