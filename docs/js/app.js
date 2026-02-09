@@ -124,14 +124,7 @@ function openEventModalWithPerson(person) {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOMContentLoaded - calendarModule:', window.calendarModule);
     
-    // 메뉴/버튼 리스너 먼저 등록 (다른 초기화 실패해도 메뉴는 동작하도록)
-    try {
-        setupEventListeners();
-    } catch (e) {
-        console.error('❌ setupEventListeners failed:', e);
-    }
-    
-    // Initialize DOM elements (Strava보다 먼저 - 앱이 항상 정상 실행되도록)
+    // DOM 요소 먼저 초기화 (setupEventListeners에서 eventForm 등 사용)
     eventModal = document.getElementById('eventModal');
     eventDetailModal = document.getElementById('eventDetailModal');
     searchModal = document.getElementById('searchModal');
@@ -141,6 +134,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     eventForm = document.getElementById('eventForm');
     loadingOverlay = document.getElementById('loadingOverlay');
     toast = document.getElementById('toast');
+    
+    // 메뉴·폼 등 리스너 등록 (캘린더 init 실패해도 동작하도록 try-catch)
+    try {
+        setupEventListeners();
+    } catch (e) {
+        console.error('❌ setupEventListeners failed:', e);
+    }
     
     console.log('📋 DOM Elements initialized:', {
         eventModal: !!eventModal,
