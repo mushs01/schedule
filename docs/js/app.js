@@ -1944,20 +1944,14 @@ function showExerciseDetail(dateStr, activities) {
         `;
         bodyEl.innerHTML = '<p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>';
     } else {
-        // 사람별로 그룹화
-        const byPerson = {};
-        activities.forEach(a => {
-            const person = a.person || 'all';
-            if (!byPerson[person]) byPerson[person] = [];
-            byPerson[person].push(a);
-        });
-        
-        // 헤더: 날짜와 사람 아이콘들
-        const personAvatarsHTML = Object.keys(byPerson).map(p => {
+        // 사람별로 그룹화하여 헤더에 아이콘 표시
+        const persons = [...new Set(activities.map(a => a.person || 'all'))];
+        const personAvatarsHTML = persons.map(p => {
             const cfg = EXERCISE_PERSON_CONFIG[p] || EXERCISE_PERSON_CONFIG.all;
             return `<img src="${cfg.img}" alt="${window.PERSON_NAMES[p] || p}" class="event-detail-avatar">`;
         }).join('');
         
+        // 헤더: 날짜와 사람 아이콘들 (일정 세부와 동일 형식)
         headerEl.innerHTML = `
             <div class="event-detail-title-row">
                 <div class="event-detail-avatars">
@@ -1967,66 +1961,124 @@ function showExerciseDetail(dateStr, activities) {
             </div>
         `;
         
-        // 본문: 사람별로 항목 표시
+        // 본문: 각 운동을 event-detail-row 형식으로 표시 (일정 세부와 동일)
         let bodyHTML = '';
-        Object.keys(byPerson).forEach(person => {
-            const personActivities = byPerson[person];
+        activities.forEach(a => {
+            const person = a.person || 'all';
             const cfg = EXERCISE_PERSON_CONFIG[person] || EXERCISE_PERSON_CONFIG.all;
             const personName = window.PERSON_NAMES[person] || person;
             
-            // 사람별 섹션
+            // 운동명
             bodyHTML += `
-                <div class="exercise-person-section">
-                    <div class="exercise-person-header">
-                        <img src="${cfg.img}" alt="${personName}" class="exercise-person-icon">
-                        <span class="exercise-person-name">${personName}</span>
-                        <span class="exercise-person-count">${personActivities.length}개</span>
-                    </div>
-                    <div class="exercise-activities-list">
+                <div class="event-detail-row">
+                    <span class="material-icons detail-icon">fitness_center</span>
+                    <span class="detail-content">${a.name || '운동'}</span>
+                </div>
             `;
             
-            // 각 운동 항목
-            personActivities.forEach(a => {
-                const dist = a.distance ? (a.distance / 1000).toFixed(2) + ' km' : '';
-                const time = a.moving_time || a.elapsed_time;
-                const timeStr = time ? Math.floor(time / 60) + '분 ' + (time % 60) + '초' : '';
-                const elev = a.total_elevation_gain ? a.total_elevation_gain + 'm 상승' : '';
-                const cal = a.calories ? a.calories + ' kcal' : '';
+            // 담당자
+            bodyHTML += `
+                <div class="event-detail-row">
+                    <span class="material-icons detail-icon">person</span>
+                    <span class="detail-content">${personName}</span>
+                </div>
+            `;
+            
+            // 운동 종류
+            if (a.type || a.sport_type) {
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">category</span>
+                        <span class="detail-content">${a.type || a.sport_type}</span>
+                    </div>
+                `;
+            }
+            
+            // 거리
+            if (a.distance) {
+                const dist = (a.distance / 1000).toFixed(2) + ' km';
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">straighten</span>
+                        <span class="detail-content">${dist}</span>
+                    </div>
+                `;
+            }
+            
+            // 시간
+            const time = a.moving_time || a.elapsed_time;
+            if (time) {
+                const hours = Math.floor(time / 3600);
+                const minutes = Math.floor((time % 3600) / 60);
+                const seconds = time % 60;
+                let timeStr = '';
+                if (hours > 0) timeStr += hours + '시간 ';
+                if (minutes > 0) timeStr += minutes + '분 ';
+                if (seconds > 0 || timeStr === '') timeStr += seconds + '초';
                 
                 bodyHTML += `
                     <div class="event-detail-row">
-                        <span class="material-icons detail-icon">fitness_center</span>
-                        <div class="detail-content">
-                            <strong>${a.name || '운동'}</strong>
-                            <div style="margin-top: 4px; color: var(--text-secondary); font-size: 13px;">
-                                ${[a.type || a.sport_type, dist, timeStr, elev, cal].filter(Boolean).join(' · ')}
-                            </div>
-                `;
-                
-                // 추가 정보 (평균속도, 파워, 케이던스)
-                const extra = [];
-                if (a.average_speed) extra.push(`평균속도 ${(a.average_speed * 3.6).toFixed(1)} km/h`);
-                if (a.average_watts) extra.push(`평균파워 ${a.average_watts}W`);
-                if (a.average_cadence) extra.push(`케이던스 ${a.average_cadence}`);
-                
-                if (extra.length > 0) {
-                    bodyHTML += `
-                            <div style="margin-top: 4px; color: var(--text-secondary); font-size: 12px;">
-                                ${extra.join(', ')}
-                            </div>
-                    `;
-                }
-                
-                bodyHTML += `
-                        </div>
+                        <span class="material-icons detail-icon">schedule</span>
+                        <span class="detail-content">${timeStr}</span>
                     </div>
                 `;
-            });
+            }
             
-            bodyHTML += `
+            // 상승고도
+            if (a.total_elevation_gain) {
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">trending_up</span>
+                        <span class="detail-content">${a.total_elevation_gain}m 상승</span>
                     </div>
-                </div>
-            `;
+                `;
+            }
+            
+            // 칼로리
+            if (a.calories) {
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">local_fire_department</span>
+                        <span class="detail-content">${a.calories} kcal</span>
+                    </div>
+                `;
+            }
+            
+            // 평균속도
+            if (a.average_speed) {
+                const speed = (a.average_speed * 3.6).toFixed(1) + ' km/h';
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">speed</span>
+                        <span class="detail-content">평균속도 ${speed}</span>
+                    </div>
+                `;
+            }
+            
+            // 평균파워
+            if (a.average_watts) {
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">bolt</span>
+                        <span class="detail-content">평균파워 ${a.average_watts}W</span>
+                    </div>
+                `;
+            }
+            
+            // 케이던스
+            if (a.average_cadence) {
+                bodyHTML += `
+                    <div class="event-detail-row">
+                        <span class="material-icons detail-icon">repeat</span>
+                        <span class="detail-content">케이던스 ${a.average_cadence}</span>
+                    </div>
+                `;
+            }
+            
+            // 운동 사이 구분선 (마지막이 아니면)
+            if (a !== activities[activities.length - 1]) {
+                bodyHTML += '<div style="height: 1px; background: var(--border-color); margin: 16px 0;"></div>';
+            }
         });
         
         bodyEl.innerHTML = bodyHTML;
