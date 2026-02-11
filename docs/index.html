@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=299">
+    <link rel="stylesheet" href="css/style.css?v=300">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -97,7 +97,7 @@
             <div class="sidebar-section">
                 <h3 class="sidebar-title">운동관리</h3>
                 <button class="view-switch-btn" id="exerciseRecordBtn" data-mode="exercise">
-                    <span class="material-icons">fitness_center</span>
+                    <span class="material-icons">directions_run</span>
                     <span>운동기록</span>
                 </button>
             </div>
@@ -156,13 +156,10 @@
                 <div id="calendar"></div>
             </div>
             
-            <!-- 운동기록 캘린더 (운동관리) -->
+            <!-- 운동기록 캘린더 (운동관리) - 년/월은 화면 상단 헤더와 연동 -->
             <div id="exerciseArea" class="exercise-area" style="display: none;">
                 <div class="exercise-person-filter" id="exercisePersonFilter">
                     <!-- JS로 해당 월 기록 있는 사람만 동적 생성 -->
-                </div>
-                <div class="exercise-calendar-header" id="exerciseCalendarHeader">
-                    <h2 class="exercise-month-title" id="exerciseMonthTitle">2025년 1월</h2>
                 </div>
                 <div class="exercise-calendar-grid" id="exerciseCalendarGrid">
                     <!-- JS로 생성 -->
@@ -660,6 +657,6 @@
     <script src="js/fcm-notification.js?v=331"></script>
     <script src="js/api.js?v=310"></script>
     <script src="js/calendar.js?v=260"></script>
-    <script src="js/app.js?v=320"></script>
+    <script src="js/app.js?v=321"></script>
 </body>
 </html>

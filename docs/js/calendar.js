@@ -1256,6 +1256,12 @@ function addSwipeGestureToDateHeader() {
     console.log('✅ 캘린더 스와이프 제스처 활성화 (모든 뷰 - 월/주/일)');
 }
 
+function gotoDate(date) {
+    if (!calendar) return;
+    calendar.gotoDate(date);
+    updateHeaderDate();
+}
+
 window.calendarModule = {
     init: initCalendar,
     changeView,
@@ -1265,7 +1271,9 @@ window.calendarModule = {
     getCurrentDate,
     navigateToday,
     navigatePrev,
-    navigateNext
+    navigateNext,
+    gotoDate,
+    updateHeaderDate
 };
 
 console.log('✅ calendarModule exported:', window.calendarModule);

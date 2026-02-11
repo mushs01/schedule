@@ -475,28 +475,32 @@ function setupEventListeners() {
     const nextViewBtn = document.getElementById('nextViewBtn');
     
     if (todayBtn) todayBtn.addEventListener('click', () => {
-        // 운동기록 화면이면 오늘 날짜로 이동
-        const exerciseArea = document.getElementById('exerciseArea');
-        if (exerciseArea && exerciseArea.style.display !== 'none') {
-            exerciseCalendarCurrentDate = new Date();
-            renderExerciseCalendar();
-            return;
-        }
-        // 일정 화면이면 캘린더 오늘로 이동
         if (window.calendarModule && window.calendarModule.navigateToday) {
             window.calendarModule.navigateToday();
         }
+        const exerciseArea = document.getElementById('exerciseArea');
+        if (exerciseArea && exerciseArea.style.display !== 'none') {
+            renderExerciseCalendar();
+        }
     });
-    
+
     if (prevViewBtn) prevViewBtn.addEventListener('click', () => {
         if (window.calendarModule && window.calendarModule.navigatePrev) {
             window.calendarModule.navigatePrev();
         }
+        const exerciseArea = document.getElementById('exerciseArea');
+        if (exerciseArea && exerciseArea.style.display !== 'none') {
+            renderExerciseCalendar();
+        }
     });
-    
+
     if (nextViewBtn) nextViewBtn.addEventListener('click', () => {
         if (window.calendarModule && window.calendarModule.navigateNext) {
             window.calendarModule.navigateNext();
+        }
+        const exerciseArea = document.getElementById('exerciseArea');
+        if (exerciseArea && exerciseArea.style.display !== 'none') {
+            renderExerciseCalendar();
         }
     });
     
@@ -546,9 +550,9 @@ function setupEventListeners() {
         exerciseSwipeArea.addEventListener('touchend', e => {
             const touchEndX = e.changedTouches[0].clientX;
             const diff = touchStartX - touchEndX;
-            if (Math.abs(diff) > 60) {
-                if (diff > 0) { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1); }
-                else { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1); }
+            if (Math.abs(diff) > 60 && window.calendarModule) {
+                if (diff > 0) window.calendarModule.navigateNext();
+                else window.calendarModule.navigatePrev();
                 renderExerciseCalendar();
             }
         }, { passive: true });
@@ -557,8 +561,10 @@ function setupEventListeners() {
         exerciseSwipeArea.addEventListener('mouseup', e => {
             const diff = mouseStartX - e.clientX;
             if (Math.abs(diff) > 60) {
-                if (diff > 0) { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() + 1); }
-                else { exerciseCalendarCurrentDate.setMonth(exerciseCalendarCurrentDate.getMonth() - 1); }
+                if (window.calendarModule && window.calendarModule.navigateNext) {
+                    if (diff > 0) window.calendarModule.navigateNext();
+                    else window.calendarModule.navigatePrev();
+                }
                 renderExerciseCalendar();
             }
         });
@@ -1824,6 +1830,9 @@ function showExerciseView() {
     if (fab) fab.style.display = 'none';
     if (exerciseArea) {
         exerciseArea.style.display = 'block';
+        if (window.calendarModule && window.calendarModule.gotoDate) {
+            window.calendarModule.gotoDate(exerciseCalendarCurrentDate);
+        }
         renderExerciseCalendar();
     }
 }
@@ -1867,13 +1876,14 @@ function getExerciseFilterPersons() {
 
 function renderExerciseCalendar() {
     const grid = document.getElementById('exerciseCalendarGrid');
-    const titleEl = document.getElementById('exerciseMonthTitle');
     const personFilterEl = document.getElementById('exercisePersonFilter');
-    if (!grid || !titleEl || !personFilterEl) return;
+    if (!grid || !personFilterEl) return;
     const prevSelection = getExerciseFilterPersons();
-    const year = exerciseCalendarCurrentDate.getFullYear();
-    const month = exerciseCalendarCurrentDate.getMonth();
-    titleEl.textContent = `${year}년 ${month + 1}월`;
+    const exerciseArea = document.getElementById('exerciseArea');
+    const useCalendarDate = exerciseArea && exerciseArea.style.display !== 'none' && window.calendarModule && window.calendarModule.getCurrentDate;
+    const refDate = useCalendarDate ? window.calendarModule.getCurrentDate() : exerciseCalendarCurrentDate;
+    const year = refDate.getFullYear();
+    const month = refDate.getMonth();
     const byDate = window._stravaActivitiesByDate || {};
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
@@ -1989,11 +1999,10 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
         const acts = byPerson[p];
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#808080' };
         const personName = window.PERSON_NAMES ? (window.PERSON_NAMES[p] || p) : p;
-        let totalDist = 0, totalTime = 0, totalElev = 0;
+        let totalDist = 0, totalTime = 0;
         acts.forEach(a => {
             totalDist += (a.distance || 0) / 1000;
             totalTime += (a.moving_time || a.elapsed_time || 0);
-            totalElev += (a.total_elevation_gain || 0);
         });
         const timeStr = totalTime >= 3600
             ? `${Math.floor(totalTime / 3600)}시간 ${Math.floor((totalTime % 3600) / 60)}분`
@@ -2007,10 +2016,9 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
                     <span class="exercise-summary-name">${personName}</span>
                 </div>
                 <div class="exercise-summary-stats">
-                    <span class="exercise-summary-stat"><span class="material-icons">fitness_center</span> ${acts.length}회</span>
+                    <span class="exercise-summary-stat"><span class="material-icons">directions_run</span> ${acts.length}회</span>
                     ${totalDist > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">straighten</span> ${totalDist.toFixed(1)}km</span>` : ''}
                     ${totalTime > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">schedule</span> ${timeStr}</span>` : ''}
-                    ${totalElev > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">trending_up</span> ${totalElev}m</span>` : ''}
                 </div>
             </div>
         `;
@@ -2047,7 +2055,7 @@ function getSportIcon(type) {
     if (t.includes('ride') || t.includes('cycling') || t.includes('bike')) return 'directions_bike';
     if (t.includes('swim')) return 'pool';
     if (t.includes('walk') || t.includes('hike')) return 'directions_walk';
-    return 'fitness_center';
+    return 'directions_run';
 }
 
 function formatPace(activity) {
@@ -2122,7 +2130,6 @@ function showExerciseDetail(dateStr, activities) {
                 </div>
                 ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : ''}
                 <div class="exercise-detail-extra">
-                    ${a.total_elevation_gain ? `<span class="exercise-extra-item"><span class="material-icons">trending_up</span> ${a.total_elevation_gain}m</span>` : ''}
                     ${a.calories ? `<span class="exercise-extra-item"><span class="material-icons">local_fire_department</span> ${a.calories} kcal</span>` : ''}
                     ${a.average_speed && !pace ? `<span class="exercise-extra-item"><span class="material-icons">speed</span> ${(a.average_speed * 3.6).toFixed(1)} km/h</span>` : ''}
                 </div>
@@ -2135,7 +2142,7 @@ function showExerciseDetail(dateStr, activities) {
             <h2 class="event-detail-title">${dateText} 운동기록</h2>
         </div>
     `;
-    bodyEl.innerHTML = bodyHTML;
+    bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer">From Strava App</p>';
     modal.classList.add('active');
 
     requestAnimationFrame(() => {
