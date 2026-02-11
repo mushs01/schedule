@@ -27,6 +27,8 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-72x72.png">
     
+    <!-- Leaflet CSS (운동 경로 지도) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <!-- FullCalendar CSS -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
     
@@ -35,7 +37,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=298">
+    <link rel="stylesheet" href="css/style.css?v=299">
 </head>
 <body>
     <!-- Google Calendar Style Header -->
@@ -522,9 +524,9 @@
         </div>
     </div>
 
-    <!-- 운동기록 상세 모달 -->
+    <!-- 운동기록 상세 모달 (Strava 스타일: 운동타입, 거리, 페이스, 시간, 지도) -->
     <div class="modal" id="exerciseDetailModal">
-        <div class="modal-content gcal-modal" style="max-width: 500px;">
+        <div class="modal-content gcal-modal exercise-detail-modal" style="max-width: 500px;">
             <div class="modal-header event-detail-header">
                 <div class="event-detail-header-content" id="exerciseDetailHeader">
                     <!-- 날짜와 사람 아이콘이 여기에 표시됨 -->
@@ -534,7 +536,7 @@
                 </button>
             </div>
             <div class="event-detail" id="exerciseDetailBody">
-                <!-- 운동 기록 항목들이 여기에 표시됨 -->
+                <!-- Strava 스타일: 운동타입, 주요 수치(거리/페이스/시간), 지도, 상세 정보 -->
             </div>
         </div>
     </div>
@@ -634,6 +636,8 @@
         </div>
     </div>
 
+    <!-- Leaflet JS (운동 경로 지도) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <!-- FullCalendar JS -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     
@@ -656,6 +660,6 @@
     <script src="js/fcm-notification.js?v=331"></script>
     <script src="js/api.js?v=310"></script>
     <script src="js/calendar.js?v=260"></script>
-    <script src="js/app.js?v=319"></script>
+    <script src="js/app.js?v=320"></script>
 </body>
 </html>

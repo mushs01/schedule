@@ -563,10 +563,19 @@ function setupEventListeners() {
             }
         });
     }
-    if (closeExerciseDetailBtn) closeExerciseDetailBtn.addEventListener('click', () => {
+    function closeExerciseDetailModal() {
         const modal = document.getElementById('exerciseDetailModal');
         if (modal) modal.classList.remove('active');
-    });
+        _exerciseDetailMaps.forEach(m => { try { m.remove(); } catch (_) {} });
+        _exerciseDetailMaps = [];
+    }
+    if (closeExerciseDetailBtn) closeExerciseDetailBtn.addEventListener('click', closeExerciseDetailModal);
+    const exerciseDetailModal = document.getElementById('exerciseDetailModal');
+    if (exerciseDetailModal) {
+        exerciseDetailModal.addEventListener('click', (e) => {
+            if (e.target === exerciseDetailModal) closeExerciseDetailModal();
+        });
+    }
     if (stravaConnectBtn) {
         stravaConnectBtn.addEventListener('click', () => {
             try {
@@ -2011,158 +2020,138 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
     container.classList.remove('empty');
 }
 
+/**
+ * Google Polyline 디코더 (Strava map.summary_polyline 용)
+ */
+function decodePolyline(encoded) {
+    if (!encoded || typeof encoded !== 'string') return [];
+    const points = [];
+    let index = 0, lat = 0, lng = 0;
+    while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+        const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+        lat += dlat;
+        shift = 0; result = 0;
+        do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+        const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+        lng += dlng;
+        points.push([lat / 1e5, lng / 1e5]);
+    }
+    return points;
+}
+
+function getSportIcon(type) {
+    const t = (type || '').toLowerCase();
+    if (t.includes('run')) return 'directions_run';
+    if (t.includes('ride') || t.includes('cycling') || t.includes('bike')) return 'directions_bike';
+    if (t.includes('swim')) return 'pool';
+    if (t.includes('walk') || t.includes('hike')) return 'directions_walk';
+    return 'fitness_center';
+}
+
+function formatPace(activity) {
+    const distKm = (activity.distance || 0) / 1000;
+    const timeSec = activity.moving_time || activity.elapsed_time || 0;
+    if (!distKm || distKm < 0.01 || !timeSec) return null;
+    const paceMinPerKm = (timeSec / 60) / distKm;
+    const m = Math.floor(paceMinPerKm);
+    const s = Math.round((paceMinPerKm % 1) * 60);
+    return m + ':' + String(s).padStart(2, '0') + ' /km';
+}
+
+function formatTimeShort(timeSec) {
+    if (!timeSec) return null;
+    const h = Math.floor(timeSec / 3600);
+    const m = Math.floor((timeSec % 3600) / 60);
+    if (h > 0) return h + 'h ' + m + 'm';
+    if (m > 0) return m + '분';
+    return timeSec + '초';
+}
+
+let _exerciseDetailMaps = [];
+
 function showExerciseDetail(dateStr, activities) {
     const modal = document.getElementById('exerciseDetailModal');
     const headerEl = document.getElementById('exerciseDetailHeader');
     const bodyEl = document.getElementById('exerciseDetailBody');
     if (!modal || !headerEl || !bodyEl) return;
-    
+
+    _exerciseDetailMaps.forEach(m => { try { m.remove(); } catch (_) {} });
+    _exerciseDetailMaps = [];
+
     const [y, m, d] = dateStr.split('-');
     const dateText = `${y}년 ${m}월 ${d}일`;
-    
+
     if (!activities || activities.length === 0) {
-        headerEl.innerHTML = `
-            <div class="event-detail-title-row">
-                <h2 class="event-detail-title">${dateText} 운동기록</h2>
+        headerEl.innerHTML = `<div class="event-detail-title-row"><h2 class="event-detail-title">${dateText} 운동기록</h2></div>`;
+        bodyEl.innerHTML = '<p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>';
+        modal.classList.add('active');
+        return;
+    }
+
+    let bodyHTML = '';
+    activities.forEach((a, index) => {
+        const person = a.person || 'all';
+        const cfg = EXERCISE_PERSON_CONFIG[person] || EXERCISE_PERSON_CONFIG.all;
+        const personName = window.PERSON_NAMES ? (window.PERSON_NAMES[person] || person) : person;
+        const exerciseName = a.name || (a.type || a.sport_type || '운동');
+        const sportType = a.type || a.sport_type || 'Workout';
+        const sportIcon = getSportIcon(sportType);
+        const distKm = a.distance ? (a.distance / 1000).toFixed(2) : null;
+        const pace = formatPace(a);
+        const timeSec = a.moving_time || a.elapsed_time;
+        const timeStr = formatTimeShort(timeSec);
+        const hasMap = a.map && (a.map.summary_polyline || a.map.polyline);
+
+        const sep = index > 0 ? ' exercise-detail-sep' : '';
+        bodyHTML += `
+            <div class="exercise-detail-card${sep}" data-activity-index="${index}">
+                <div class="exercise-detail-header-row">
+                    <img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">
+                    <span class="exercise-detail-name">${exerciseName}</span>
+                </div>
+                <div class="exercise-detail-type">
+                    <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
+                    <span>${sportType}</span>
+                </div>
+                <div class="exercise-detail-metrics">
+                    ${distKm ? `<div class="exercise-detail-metric"><span class="metric-label">거리</span><span class="metric-value">${distKm} km</span></div>` : ''}
+                    ${pace ? `<div class="exercise-detail-metric"><span class="metric-label">페이스</span><span class="metric-value">${pace}</span></div>` : ''}
+                    ${timeStr ? `<div class="exercise-detail-metric"><span class="metric-label">시간</span><span class="metric-value">${timeStr}</span></div>` : ''}
+                </div>
+                ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : ''}
+                <div class="exercise-detail-extra">
+                    ${a.total_elevation_gain ? `<span class="exercise-extra-item"><span class="material-icons">trending_up</span> ${a.total_elevation_gain}m</span>` : ''}
+                    ${a.calories ? `<span class="exercise-extra-item"><span class="material-icons">local_fire_department</span> ${a.calories} kcal</span>` : ''}
+                    ${a.average_speed && !pace ? `<span class="exercise-extra-item"><span class="material-icons">speed</span> ${(a.average_speed * 3.6).toFixed(1)} km/h</span>` : ''}
+                </div>
             </div>
         `;
-        bodyEl.innerHTML = '<p class="no-schedule">해당 날짜에 운동 기록이 없습니다</p>';
-    } else {
-        // 본문: 각 운동을 event-detail-row 형식으로 표시 (일정 세부와 동일)
-        let bodyHTML = '';
-        activities.forEach((a, index) => {
-            const person = a.person || 'all';
-            const cfg = EXERCISE_PERSON_CONFIG[person] || EXERCISE_PERSON_CONFIG.all;
-            const personName = window.PERSON_NAMES[person] || person;
-            const exerciseName = a.name || '운동';
-            
-            // 첫 번째 운동이면 헤더에 아이콘과 운동명 표시
-            if (index === 0) {
-                const personAvatarsHTML = `<img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">`;
-                headerEl.innerHTML = `
-                    <div class="event-detail-title-row">
-                        <div class="event-detail-avatars">
-                            ${personAvatarsHTML}
-                        </div>
-                        <h2 class="event-detail-title">${exerciseName}</h2>
-                    </div>
-                `;
-            }
-            
-            // 여러 운동이 있으면 각 운동마다 헤더처럼 표시
-            if (activities.length > 1 && index > 0) {
-                const personAvatarsHTML = `<img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">`;
-                bodyHTML += `
-                    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                        <div class="event-detail-title-row" style="margin-bottom: 12px;">
-                            <div class="event-detail-avatars">
-                                ${personAvatarsHTML}
-                            </div>
-                            <h3 style="margin: 0; font-size: 18px; font-weight: 500;">${exerciseName}</h3>
-                        </div>
-                `;
-            }
-            
-            // 운동 종류
-            if (a.type || a.sport_type) {
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">category</span>
-                        <span class="detail-content">${a.type || a.sport_type}</span>
-                    </div>
-                `;
-            }
-            
-            // 거리
-            if (a.distance) {
-                const dist = (a.distance / 1000).toFixed(2) + ' km';
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">straighten</span>
-                        <span class="detail-content">${dist}</span>
-                    </div>
-                `;
-            }
-            
-            // 시간
-            const time = a.moving_time || a.elapsed_time;
-            if (time) {
-                const hours = Math.floor(time / 3600);
-                const minutes = Math.floor((time % 3600) / 60);
-                const seconds = time % 60;
-                let timeStr = '';
-                if (hours > 0) timeStr += hours + '시간 ';
-                if (minutes > 0) timeStr += minutes + '분 ';
-                if (seconds > 0 || timeStr === '') timeStr += seconds + '초';
-                
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">schedule</span>
-                        <span class="detail-content">${timeStr}</span>
-                    </div>
-                `;
-            }
-            
-            // 상승고도
-            if (a.total_elevation_gain) {
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">trending_up</span>
-                        <span class="detail-content">${a.total_elevation_gain}m 상승</span>
-                    </div>
-                `;
-            }
-            
-            // 칼로리
-            if (a.calories) {
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">local_fire_department</span>
-                        <span class="detail-content">${a.calories} kcal</span>
-                    </div>
-                `;
-            }
-            
-            // 평균속도
-            if (a.average_speed) {
-                const speed = (a.average_speed * 3.6).toFixed(1) + ' km/h';
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">speed</span>
-                        <span class="detail-content">평균속도 ${speed}</span>
-                    </div>
-                `;
-            }
-            
-            // 평균파워
-            if (a.average_watts) {
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">bolt</span>
-                        <span class="detail-content">평균파워 ${a.average_watts}W</span>
-                    </div>
-                `;
-            }
-            
-            // 케이던스
-            if (a.average_cadence) {
-                bodyHTML += `
-                    <div class="event-detail-row">
-                        <span class="material-icons detail-icon">repeat</span>
-                        <span class="detail-content">케이던스 ${a.average_cadence}</span>
-                    </div>
-                `;
-            }
-            
-            // 여러 운동이 있으면 섹션 닫기
-            if (activities.length > 1 && index > 0) {
-                bodyHTML += `</div>`;
-            }
-        });
-        
-        bodyEl.innerHTML = bodyHTML;
-    }
+    });
+
+    headerEl.innerHTML = `
+        <div class="event-detail-title-row">
+            <h2 class="event-detail-title">${dateText} 운동기록</h2>
+        </div>
+    `;
+    bodyEl.innerHTML = bodyHTML;
     modal.classList.add('active');
+
+    requestAnimationFrame(() => {
+        activities.forEach((a, index) => {
+            const enc = a.map && (a.map.summary_polyline || a.map.polyline);
+            const mapEl = document.getElementById(`exerciseMap_${index}`);
+            if (!mapEl || !enc || typeof L === 'undefined') return;
+            const coords = decodePolyline(enc);
+            if (coords.length < 2) return;
+            const map = L.map(mapEl, { attributionControl: false }).setView(coords[0], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+            L.polyline(coords, { color: '#f4511e', weight: 4, opacity: 0.9 }).addTo(map);
+            map.fitBounds(coords, { padding: [20, 20] });
+            _exerciseDetailMaps.push(map);
+        });
+    });
 }
 
 /**
@@ -2324,7 +2313,8 @@ async function handleStravaFetch(silent) {
             comment_count: a.comment_count,
             workout_type: a.workout_type,
             description: a.description,
-            device_name: a.device_name
+            device_name: a.device_name,
+            map: a.map
         }));
         
         window._stravaActivitiesByDate = {};
