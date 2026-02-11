@@ -16,6 +16,7 @@
         isConnected: function() { return false; },
         getAthlete: function() { return null; },
         getStoredTokens: function() { return {}; },
+        ensureConnectionAtStartup: async function() {},
         onDisconnect: null
     };
 
@@ -146,6 +147,66 @@
     }
 
     /**
+     * 토큰 만료 체크 (만료 1시간 전이면 갱신 필요 - 연동 유지 강화)
+     */
+    function isTokenExpired() {
+        const { expiresAt } = getStoredTokens();
+        if (!expiresAt) return true;
+        const now = Math.floor(Date.now() / 1000);
+        const buffer = 3600; // 1시간 버퍼 (만료 전 미리 갱신)
+        return expiresAt - buffer <= now;
+    }
+
+    /**
+     * Refresh token으로 access token 갱신
+     */
+    async function refreshAccessToken() {
+        const { refreshToken } = getStoredTokens();
+        if (!refreshToken) {
+            throw new Error('Refresh token이 없습니다. 다시 연결해주세요.');
+        }
+
+        if (typeof firebase === 'undefined' || typeof firebase.functions !== 'function') {
+            throw new Error('Firebase Functions를 불러올 수 없습니다.');
+        }
+
+        const functions = firebase.functions();
+        const refreshStravaToken = functions.httpsCallable('refreshStravaToken');
+        const result = await refreshStravaToken({ refresh_token: refreshToken });
+        const data = result.data;
+
+        if (!data || !data.access_token) {
+            throw new Error(data?.message || '토큰 갱신 실패');
+        }
+
+        storeTokens(
+            data.access_token,
+            data.refresh_token,
+            data.expires_at,
+            data.athlete || getStoredTokens().athlete // athlete는 갱신 시 변경되지 않을 수 있음
+        );
+
+        console.log('✅ Strava 토큰 자동 갱신 완료');
+        return data;
+    }
+
+    /**
+     * 토큰이 만료되었거나 곧 만료되면 자동 갱신
+     */
+    async function ensureValidToken() {
+        if (isTokenExpired()) {
+            console.log('🔄 Strava 토큰 만료됨 - 자동 갱신 시도...');
+            try {
+                await refreshAccessToken();
+            } catch (error) {
+                console.error('❌ 토큰 갱신 실패:', error);
+                clearTokens();
+                throw new Error('연동이 만료되었습니다. 다시 연결해주세요.');
+            }
+        }
+    }
+
+    /**
      * Strava API - 운동 기록 목록 가져오기
      */
     async function fetchActivities(perPage = 30, page = 1) {
@@ -153,16 +214,23 @@
         if (!accessToken) {
             throw new Error('Strava에 연결되어 있지 않습니다.');
         }
+
+        // 토큰 만료 체크 및 자동 갱신
+        await ensureValidToken();
+
+        // 갱신 후 최신 토큰 가져오기
+        const { accessToken: latestToken } = getStoredTokens();
         const url = `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}`;
         const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${latestToken}`,
                 'Accept': 'application/json'
             }
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             if (response.status === 401) {
+                // 갱신 실패 시 토큰 삭제
                 clearTokens();
                 throw new Error('연동이 만료되었습니다. 다시 연결해주세요.');
             }
@@ -193,11 +261,19 @@
     }
 
     /**
-     * 연동 여부 확인
+     * 연동 여부 확인 (만료 체크 포함)
      */
     function isConnected() {
-        const { accessToken } = getStoredTokens();
-        return !!accessToken;
+        const { accessToken, refreshToken } = getStoredTokens();
+        if (!accessToken) return false;
+        // refreshToken이 있으면 만료되어도 갱신 가능하므로 연결됨으로 간주
+        if (refreshToken && isTokenExpired()) {
+            // 만료되었지만 갱신 가능 - 백그라운드에서 갱신 시도 (비동기)
+            refreshAccessToken().catch(err => {
+                console.warn('백그라운드 토큰 갱신 실패:', err);
+            });
+        }
+        return true;
     }
 
     /**
@@ -205,6 +281,21 @@
      */
     function getAthlete() {
         return getStoredTokens().athlete;
+    }
+
+    /**
+     * 앱 시작 시 토큰 사전 갱신 (연동 유지)
+     */
+    async function ensureConnectionAtStartup() {
+        const { refreshToken } = getStoredTokens();
+        if (!refreshToken) return;
+        if (isTokenExpired()) {
+            try {
+                await refreshAccessToken();
+            } catch (e) {
+                console.warn('Strava 앱 시작 토큰 갱신 실패:', e);
+            }
+        }
     }
 
     // Export
@@ -216,6 +307,7 @@
         isConnected,
         getAthlete,
         getStoredTokens,
+        ensureConnectionAtStartup,
         onDisconnect: null
     };
 

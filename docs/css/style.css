@@ -2505,4 +2505,68 @@ body {
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e !important; }
+
+/* 한 달 운동 요약 (달력 아래) */
+.exercise-monthly-summary {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+.exercise-summary-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--text-primary);
+}
+.exercise-summary-empty {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+.exercise-summary-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.exercise-summary-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 12px 16px;
+    border-left: 4px solid var(--person-color, #808080);
+}
+.exercise-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.exercise-summary-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.exercise-summary-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+.exercise-summary-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.exercise-summary-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.exercise-summary-stat .material-icons {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
 /* 운동기록 상세 - 일정 세부와 동일한 형식 사용 */

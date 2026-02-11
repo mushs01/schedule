@@ -215,16 +215,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     window._stravaActivitiesByDate = window._stravaActivitiesByDate || {};
     
-    // Strava 연동된 경우 앱 실행 시 자동으로 운동 기록 가져오기 - 성공/실패 토스트로 간단 알림
-    setTimeout(() => {
+    // Strava 연동 유지: 앱 시작 시 토큰 사전 갱신 후 운동 기록 자동 로드
+    (async () => {
         try {
+            if (window.stravaModule && window.stravaModule.ensureConnectionAtStartup) {
+                await window.stravaModule.ensureConnectionAtStartup();
+            }
+            await new Promise(r => setTimeout(r, 2500)); // 초기화 대기
             if (window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected()) {
                 handleStravaFetch(true);
             }
         } catch (e) {
             console.warn('Strava 자동 로드 오류 (무시됨):', e);
         }
-    }, 3500);
+    })();
 });
 
 /**
@@ -1842,7 +1846,9 @@ function getIntensityLevel(activity) {
 const EXERCISE_PERSON_CONFIG = {
     all: { img: 'images/all.png', color: '#1a73e8' },
     dad: { img: 'images/dad.png', color: '#0f9d58' },
-    mom: { img: 'images/mom.png', color: '#f4511e' }
+    mom: { img: 'images/mom.png', color: '#f4511e' },
+    juhwan: { img: 'images/juhwan.png', color: '#9c27b0' },
+    taehwan: { img: 'images/taehwan.png', color: '#f9a825' }
 };
 
 function getExerciseFilterPersons() {
@@ -1933,6 +1939,76 @@ function renderExerciseCalendar() {
             showExerciseDetail(dateStr, acts);
         });
     });
+
+    // 사용자별 한 달 운동 요약 렌더링 (해당 월 전체 기준, 필터 무관)
+    renderExerciseMonthlySummary(year, month, byDate, arr => arr);
+}
+
+function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
+    const container = document.getElementById('exerciseMonthlySummary');
+    if (!container) return;
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+
+    // 해당 월 데이터 수집 (현재 달 일자만, 필터 적용)
+    const byPerson = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+        const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const acts = (filterActs || (a => a))(byDate[ds] || []);
+        acts.forEach(a => {
+            const p = a.person || 'all';
+            if (p === 'all') return;
+            if (!byPerson[p]) byPerson[p] = [];
+            byPerson[p].push(a);
+        });
+    }
+
+    const personList = Object.keys(byPerson).sort((a, b) => {
+        const order = ['dad', 'mom', 'juhwan', 'taehwan'];
+        return (order.indexOf(a) < 0 ? 99 : order.indexOf(a)) - (order.indexOf(b) < 0 ? 99 : order.indexOf(b));
+    });
+
+    if (personList.length === 0) {
+        container.innerHTML = '<p class="exercise-summary-empty">이번 달 운동 기록이 없습니다</p>';
+        container.classList.add('empty');
+        return;
+    }
+
+    let html = '<h3 class="exercise-summary-title">한 달 운동 요약</h3><div class="exercise-summary-cards">';
+    personList.forEach(p => {
+        const acts = byPerson[p];
+        const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#808080' };
+        const personName = window.PERSON_NAMES ? (window.PERSON_NAMES[p] || p) : p;
+        let totalDist = 0, totalTime = 0, totalElev = 0;
+        acts.forEach(a => {
+            totalDist += (a.distance || 0) / 1000;
+            totalTime += (a.moving_time || a.elapsed_time || 0);
+            totalElev += (a.total_elevation_gain || 0);
+        });
+        const timeStr = totalTime >= 3600
+            ? `${Math.floor(totalTime / 3600)}시간 ${Math.floor((totalTime % 3600) / 60)}분`
+            : totalTime >= 60
+                ? `${Math.floor(totalTime / 60)}분`
+                : `${totalTime}초`;
+        html += `
+            <div class="exercise-summary-card" data-person="${p}" style="--person-color: ${cfg.color}">
+                <div class="exercise-summary-header">
+                    <img src="${cfg.img}" alt="${personName}" class="exercise-summary-avatar">
+                    <span class="exercise-summary-name">${personName}</span>
+                </div>
+                <div class="exercise-summary-stats">
+                    <span class="exercise-summary-stat"><span class="material-icons">fitness_center</span> ${acts.length}회</span>
+                    ${totalDist > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">straighten</span> ${totalDist.toFixed(1)}km</span>` : ''}
+                    ${totalTime > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">schedule</span> ${timeStr}</span>` : ''}
+                    ${totalElev > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">trending_up</span> ${totalElev}m</span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.classList.remove('empty');
 }
 
 function showExerciseDetail(dateStr, activities) {
