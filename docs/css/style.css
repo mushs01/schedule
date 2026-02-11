@@ -2406,10 +2406,16 @@ body {
     justify-content: flex-start;
 }
 
-/* 운동기록 캘린더 */
+/* 운동기록 캘린더 - 세로 스크롤 비활성화, 수평 스와이프로 월 변경 */
+.gcal-content.exercise-view {
+    overflow: hidden;
+    touch-action: pan-x;
+}
 .exercise-area {
     padding: 16px;
     flex: 1;
+    overflow: hidden;
+    touch-action: pan-x;
 }
 .exercise-calendar-header {
     display: flex;
@@ -2522,6 +2528,11 @@ body {
 }
 .exercise-detail-header-row .event-detail-avatar { width: 36px; height: 36px; }
 .exercise-detail-name { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.exercise-detail-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
 .exercise-detail-type {
     display: flex;
     align-items: center;
