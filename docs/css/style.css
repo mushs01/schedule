@@ -2606,6 +2606,13 @@ body {
     font-weight: 600;
     margin: 0 0 12px;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.exercise-summary-title .exercise-summary-fire {
+    font-size: 20px;
+    color: #f4511e;
 }
 .exercise-summary-empty {
     margin: 0;

@@ -485,22 +485,26 @@ function setupEventListeners() {
     });
 
     if (prevViewBtn) prevViewBtn.addEventListener('click', () => {
-        if (window.calendarModule && window.calendarModule.navigatePrev) {
-            window.calendarModule.navigatePrev();
-        }
         const exerciseArea = document.getElementById('exerciseArea');
         if (exerciseArea && exerciseArea.style.display !== 'none') {
+            if (window.calendarModule && window.calendarModule.navigatePrevMonth) {
+                window.calendarModule.navigatePrevMonth();
+            }
             renderExerciseCalendar();
+        } else if (window.calendarModule && window.calendarModule.navigatePrev) {
+            window.calendarModule.navigatePrev();
         }
     });
 
     if (nextViewBtn) nextViewBtn.addEventListener('click', () => {
-        if (window.calendarModule && window.calendarModule.navigateNext) {
-            window.calendarModule.navigateNext();
-        }
         const exerciseArea = document.getElementById('exerciseArea');
         if (exerciseArea && exerciseArea.style.display !== 'none') {
+            if (window.calendarModule && window.calendarModule.navigateNextMonth) {
+                window.calendarModule.navigateNextMonth();
+            }
             renderExerciseCalendar();
+        } else if (window.calendarModule && window.calendarModule.navigateNext) {
+            window.calendarModule.navigateNext();
         }
     });
     
@@ -562,9 +566,9 @@ function setupEventListeners() {
             const touchEndY = e.changedTouches[0].clientY;
             const diffX = touchStartX - touchEndX;
             const diffY = Math.abs(touchStartY - touchEndY);
-            if (Math.abs(diffX) > 50 && Math.abs(diffX) > diffY && window.calendarModule) {
-                if (diffX > 0) window.calendarModule.navigateNext();
-                else window.calendarModule.navigatePrev();
+            if (Math.abs(diffX) > 40 && Math.abs(diffX) > diffY && window.calendarModule) {
+                if (diffX > 0) window.calendarModule.navigateNextMonth();
+                else window.calendarModule.navigatePrevMonth();
                 renderExerciseCalendar();
             }
         }, { passive: true });
@@ -572,9 +576,9 @@ function setupEventListeners() {
         exerciseSwipeArea.addEventListener('mousedown', e => { mouseStartX = e.clientX; });
         exerciseSwipeArea.addEventListener('mouseup', e => {
             const diff = mouseStartX - e.clientX;
-            if (Math.abs(diff) > 50 && window.calendarModule) {
-                if (diff > 0) window.calendarModule.navigateNext();
-                else window.calendarModule.navigatePrev();
+            if (Math.abs(diff) > 40 && window.calendarModule) {
+                if (diff > 0) window.calendarModule.navigateNextMonth();
+                else window.calendarModule.navigatePrevMonth();
                 renderExerciseCalendar();
             }
         });
@@ -2008,7 +2012,7 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
         return;
     }
 
-    let html = '<h3 class="exercise-summary-title">한 달 운동 요약</h3><div class="exercise-summary-cards">';
+    let html = '<h3 class="exercise-summary-title">이번달에는 이렇게 운동했어요 <span class="material-icons exercise-summary-fire">local_fire_department</span></h3><div class="exercise-summary-cards">';
     personList.forEach(p => {
         const acts = byPerson[p];
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#808080' };
@@ -2084,16 +2088,16 @@ function formatPace(activity) {
 
 function formatExerciseMeta(activity) {
     const dtStr = activity.start_date_local || activity.start_date || '';
-    if (!dtStr) return 'Strava App';
-    const d = new Date(dtStr);
+    const d = dtStr ? new Date(dtStr) : null;
     const now = new Date();
-    const isToday = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    const timePart = d.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true });
-    const datePart = isToday ? '오늘' : `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+    const isToday = d && d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    const timePart = d ? d.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+    const datePart = d ? (isToday ? '오늘' : `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`) : '';
     const loc = [activity.location_city, activity.location_state].filter(Boolean).join(', ') || (activity.location_country || '');
-    const parts = [`${datePart} ${timePart}`, 'Strava App'];
+    const parts = [];
+    if (datePart || timePart) parts.push(`${datePart} ${timePart}`.trim());
     if (loc) parts.push(loc);
-    return parts.join(' - ');
+    return parts.join(' - ') || '-';
 }
 
 function formatTimeShort(timeSec) {

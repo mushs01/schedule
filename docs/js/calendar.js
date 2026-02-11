@@ -923,17 +923,18 @@ function updateHeaderDate() {
     const month = currentDate.getMonth() + 1;
     const date = currentDate.getDate();
     
-    let displayText = '';
+    const exerciseArea = document.getElementById('exerciseArea');
+    const isExerciseView = exerciseArea && exerciseArea.style.display !== 'none';
     
-    if (currentView === 'dayGridMonth') {
-        // 월 보기: "2025년 10월"
+    let displayText = '';
+    if (isExerciseView) {
         displayText = `${year}년 ${month}월`;
-    } else if (currentView === 'timeGridWeek' || currentView === 'listWeek') {
-        // 주 보기: "2025년 10월"
+    } else if (currentView === 'dayGridMonth' || currentView === 'timeGridWeek' || currentView === 'listWeek') {
         displayText = `${year}년 ${month}월`;
     } else if (currentView === 'timeGridDay') {
-        // 일 보기: "2025년 10월 18일"
         displayText = `${year}년 ${month}월 ${date}일`;
+    } else {
+        displayText = `${year}년 ${month}월`;
     }
     
     currentMonthEl.textContent = displayText;
@@ -1262,6 +1263,22 @@ function gotoDate(date) {
     updateHeaderDate();
 }
 
+function navigatePrevMonth() {
+    if (!calendar) return;
+    const d = calendar.getDate();
+    d.setMonth(d.getMonth() - 1);
+    calendar.gotoDate(d);
+    updateHeaderDate();
+}
+
+function navigateNextMonth() {
+    if (!calendar) return;
+    const d = calendar.getDate();
+    d.setMonth(d.getMonth() + 1);
+    calendar.gotoDate(d);
+    updateHeaderDate();
+}
+
 window.calendarModule = {
     init: initCalendar,
     changeView,
@@ -1273,7 +1290,9 @@ window.calendarModule = {
     navigatePrev,
     navigateNext,
     gotoDate,
-    updateHeaderDate
+    updateHeaderDate,
+    navigatePrevMonth,
+    navigateNextMonth
 };
 
 console.log('✅ calendarModule exported:', window.calendarModule);
