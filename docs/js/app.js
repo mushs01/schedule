@@ -2209,7 +2209,7 @@ function showExerciseDetail(dateStr, activities) {
     });
 
     headerEl.innerHTML = '';
-    bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer"><a href="https://www.strava.com" target="_blank" rel="noopener">From Strava App</a></p>';
+    bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer">From <a href="https://www.strava.com" target="_blank" rel="noopener">Strava App</a></p>';
     modal.classList.add('active');
 
     activities.forEach(async (a, index) => {
@@ -2235,7 +2235,21 @@ function showExerciseDetail(dateStr, activities) {
             if (coords.length < 2) return;
             const map = L.map(mapEl, { attributionControl: false }).setView(coords[0], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-            L.polyline(coords, { color: '#f4511e', weight: 4, opacity: 0.9 }).addTo(map);
+            L.polyline(coords, { color: '#f4511e', weight: 2, opacity: 0.9 }).addTo(map);
+            const startIcon = L.divIcon({
+                className: 'exercise-map-marker',
+                html: '<span class="exercise-marker-label">출발</span>',
+                iconSize: [36, 20],
+                iconAnchor: [18, 10]
+            });
+            const endIcon = L.divIcon({
+                className: 'exercise-map-marker',
+                html: '<span class="exercise-marker-label">도착</span>',
+                iconSize: [36, 20],
+                iconAnchor: [18, 10]
+            });
+            L.marker(coords[0], { icon: startIcon }).addTo(map);
+            L.marker(coords[coords.length - 1], { icon: endIcon }).addTo(map);
             map.fitBounds(coords, { padding: [20, 20] });
             _exerciseDetailMaps.push(map);
         });

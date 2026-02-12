@@ -2573,6 +2573,17 @@ body {
     background: var(--hover-bg);
 }
 .exercise-detail-map.leaflet-container { font-family: inherit; }
+.exercise-map-marker { background: none !important; border: none !important; }
+.exercise-marker-label {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+    background: #f4511e;
+    border-radius: 4px;
+    white-space: nowrap;
+}
 .exercise-detail-extra {
     display: flex;
     flex-wrap: wrap;
@@ -2590,11 +2601,11 @@ body {
     margin: 16px 0 0;
     padding-top: 0;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     text-align: center;
 }
 .exercise-detail-strava-footer a {
-    color: var(--primary-blue, #1a73e8);
+    color: #f4511e;
     text-decoration: none;
 }
 .exercise-detail-strava-footer a:hover {
