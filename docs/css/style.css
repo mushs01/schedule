@@ -1986,7 +1986,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Loading Overlay - 가족 운동 이미지 배경 + 회전하는 로딩바 */
+/* Loading Overlay - 가족 운동 이미지 배경 + 회전하는 로딩바 (배경 이미지는 index에서 문서 기준 경로로 지정) */
 .loading-overlay {
     display: none;
     position: fixed;
@@ -1995,7 +1995,6 @@ body {
     right: 0;
     bottom: 0;
     background-color: #2a2a2a;
-    background-image: url('../images/loading.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
