@@ -2126,8 +2126,10 @@ async function reverseGeocode(lat, lng) {
         const data = await res.json();
         const addr = data.address || {};
         const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+        const dong = addr.suburb || addr.neighbourhood || addr.quarter || addr.district || '';
         const state = addr.state || addr.province || addr.region || '';
-        return [city, state].filter(Boolean).join(', ') || addr.country || '';
+        const loc = dong ? [city, dong].filter(Boolean).join(' ') : [city, state].filter(Boolean).join(', ');
+        return loc || addr.country || '';
     } catch (_) {
         return '';
     }
@@ -2207,7 +2209,7 @@ function showExerciseDetail(dateStr, activities) {
     });
 
     headerEl.innerHTML = '';
-    bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer">From Strava App</p>';
+    bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer"><a href="https://www.strava.com" target="_blank" rel="noopener">From Strava App</a></p>';
     modal.classList.add('active');
 
     activities.forEach(async (a, index) => {

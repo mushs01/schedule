@@ -2588,11 +2588,17 @@ body {
 .exercise-extra-item .material-icons { font-size: 16px; }
 .exercise-detail-strava-footer {
     margin: 16px 0 0;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
+    padding-top: 0;
     font-size: 12px;
     color: var(--text-secondary);
     text-align: center;
+}
+.exercise-detail-strava-footer a {
+    color: var(--primary-blue, #1a73e8);
+    text-decoration: none;
+}
+.exercise-detail-strava-footer a:hover {
+    text-decoration: underline;
 }
 
 /* 한 달 운동 요약 (달력 아래) */
