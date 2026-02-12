@@ -2101,15 +2101,14 @@ function parseStravaLocalDateTime(dtStr) {
 function formatExerciseMetaSync(activity) {
     const dtStr = activity.start_date_local || activity.start_date || '';
     const p = parseStravaLocalDateTime(dtStr);
-    const now = new Date();
-    const isToday = p && p.y === now.getFullYear() && p.mo === now.getMonth() + 1 && p.d === now.getDate();
+    const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
     let timePart = '';
     let datePart = '';
     if (p) {
-        const ampm = p.h >= 12 ? '오후' : '오전';
         const h12 = p.h % 12 || 12;
-        timePart = `${ampm} ${h12}:${String(p.min).padStart(2, '0')}`;
-        datePart = isToday ? '오늘' : `${p.y}년 ${p.mo}월 ${p.d}일`;
+        timePart = `${h12}:${String(p.min).padStart(2, '0')} ${p.h >= 12 ? 'PM' : 'AM'}`;
+        const dow = new Date(p.y, p.mo - 1, p.d).getDay();
+        datePart = `${p.y}-${String(p.mo).padStart(2, '0')}-${String(p.d).padStart(2, '0')}(${DAY_NAMES[dow]})`;
     }
     const loc = getLocationFromActivity(activity);
     const parts = [];
