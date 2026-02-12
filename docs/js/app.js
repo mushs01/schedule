@@ -2019,18 +2019,16 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
                 ? `${Math.floor(totalTime / 60)}분`
                 : totalTime === 0 ? '' : `${totalTime}초`;
         const hasRecord = acts.length > 0;
+        const statsHtml = [
+            `<span class="exercise-summary-stat"><span class="material-icons">directions_run</span> ${acts.length}회</span>`,
+            totalDist > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">straighten</span> ${totalDist.toFixed(1)}km</span>` : '',
+            totalTime > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">schedule</span> ${timeStr}</span>` : '',
+            !hasRecord ? '<span class="exercise-summary-stat exercise-summary-no-data">기록 없음</span>' : ''
+        ].filter(Boolean).join('');
         html += `
-            <div class="exercise-summary-card ${hasRecord ? '' : 'exercise-summary-card-empty'}" data-person="${p}" style="--person-color: ${cfg.color}">
-                <div class="exercise-summary-header">
-                    <img src="${cfg.img}" alt="${personName}" class="exercise-summary-avatar">
-                    <span class="exercise-summary-name">${personName}</span>
-                </div>
-                <div class="exercise-summary-stats">
-                    <span class="exercise-summary-stat"><span class="material-icons">directions_run</span> ${acts.length}회</span>
-                    ${totalDist > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">straighten</span> ${totalDist.toFixed(1)}km</span>` : ''}
-                    ${totalTime > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">schedule</span> ${timeStr}</span>` : ''}
-                    ${!hasRecord ? '<span class="exercise-summary-stat exercise-summary-no-data">기록 없음</span>' : ''}
-                </div>
+            <div class="exercise-summary-card ${hasRecord ? '' : 'exercise-summary-card-empty'}" data-person="${p}" style="--person-color: ${cfg.color}" title="${personName}">
+                <img src="${cfg.img}" alt="${personName}" class="exercise-summary-avatar">
+                <div class="exercise-summary-stats">${statsHtml}</div>
             </div>
         `;
     });
