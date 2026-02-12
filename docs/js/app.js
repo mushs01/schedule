@@ -2086,18 +2086,51 @@ function formatPace(activity) {
     return m + ':' + String(s).padStart(2, '0') + ' /km';
 }
 
-function formatExerciseMeta(activity) {
-    const dtStr = activity.start_date_local || activity.start_date || '';
-    const d = dtStr ? new Date(dtStr) : null;
-    const now = new Date();
-    const isToday = d && d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    const timePart = d ? d.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
-    const datePart = d ? (isToday ? '오늘' : `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`) : '';
+function getLocationFromActivity(activity) {
     const loc = [activity.location_city, activity.location_state].filter(Boolean).join(', ') || (activity.location_country || '');
+    return loc;
+}
+
+function parseStravaLocalDateTime(dtStr) {
+    if (!dtStr) return null;
+    const m = String(dtStr).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    if (!m) return null;
+    return { y: parseInt(m[1], 10), mo: parseInt(m[2], 10), d: parseInt(m[3], 10), h: parseInt(m[4], 10), min: parseInt(m[5], 10) };
+}
+
+function formatExerciseMetaSync(activity) {
+    const dtStr = activity.start_date_local || activity.start_date || '';
+    const p = parseStravaLocalDateTime(dtStr);
+    const now = new Date();
+    const isToday = p && p.y === now.getFullYear() && p.mo === now.getMonth() + 1 && p.d === now.getDate();
+    let timePart = '';
+    let datePart = '';
+    if (p) {
+        const ampm = p.h >= 12 ? '오후' : '오전';
+        const h12 = p.h % 12 || 12;
+        timePart = `${ampm} ${h12}:${String(p.min).padStart(2, '0')}`;
+        datePart = isToday ? '오늘' : `${p.y}년 ${p.mo}월 ${p.d}일`;
+    }
+    const loc = getLocationFromActivity(activity);
     const parts = [];
     if (datePart || timePart) parts.push(`${datePart} ${timePart}`.trim());
     if (loc) parts.push(loc);
-    return parts.join(' - ') || '-';
+    return { text: parts.join(' · ') || '-', needsGeocode: !loc && activity.start_latlng && activity.start_latlng.length >= 2 };
+}
+
+async function reverseGeocode(lat, lng) {
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        const addr = data.address || {};
+        const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+        const state = addr.state || addr.province || addr.region || '';
+        return [city, state].filter(Boolean).join(', ') || addr.country || '';
+    } catch (_) {
+        return '';
+    }
 }
 
 function formatTimeShort(timeSec) {
@@ -2144,13 +2177,16 @@ function showExerciseDetail(dateStr, activities) {
         const timeStr = formatTimeShort(timeSec);
         const hasMap = a.map && (a.map.summary_polyline || a.map.polyline);
 
-        const metaText = formatExerciseMeta(a);
+        const metaResult = formatExerciseMetaSync(a);
+        const metaText = metaResult.text;
+        const needsGeocode = metaResult.needsGeocode;
+        const metaId = needsGeocode ? `exercise-meta-${index}` : '';
         const sep = index > 0 ? ' exercise-detail-sep' : '';
         bodyHTML += `
             <div class="exercise-detail-card${sep}" data-activity-index="${index}">
                 <div class="exercise-detail-header-row">
                     <img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">
-                    <span class="exercise-detail-meta">${metaText}</span>
+                    <span class="exercise-detail-meta" id="${metaId}">${metaText}</span>
                 </div>
                 <div class="exercise-detail-type">
                     <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
@@ -2173,6 +2209,20 @@ function showExerciseDetail(dateStr, activities) {
     headerEl.innerHTML = '';
     bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer">From Strava App</p>';
     modal.classList.add('active');
+
+    activities.forEach(async (a, index) => {
+        const metaEl = document.getElementById(`exercise-meta-${index}`);
+        if (!metaEl || !a.start_latlng || a.start_latlng.length < 2) return;
+        const loc = getLocationFromActivity(a);
+        if (loc) return;
+        await new Promise(r => setTimeout(r, index * 1100));
+        const [lat, lng] = a.start_latlng;
+        const locationName = await reverseGeocode(lat, lng);
+        if (!locationName || !metaEl.parentNode) return;
+        const metaResult = formatExerciseMetaSync(a);
+        const dateTimePart = metaResult.text.replace(/ · $/, '').trim();
+        metaEl.textContent = dateTimePart ? `${dateTimePart} · ${locationName}` : locationName;
+    });
 
     requestAnimationFrame(() => {
         activities.forEach((a, index) => {
@@ -2353,7 +2403,8 @@ async function handleStravaFetch(silent) {
             map: a.map,
             location_city: a.location_city,
             location_state: a.location_state,
-            location_country: a.location_country
+            location_country: a.location_country,
+            start_latlng: a.start_latlng
         }));
         
         window._stravaActivitiesByDate = {};
