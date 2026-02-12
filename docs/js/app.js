@@ -613,6 +613,21 @@ function setupEventListeners() {
             }
         });
     }
+    const stravaAddAccountBtn = document.getElementById('stravaAddAccountBtn');
+    if (stravaAddAccountBtn) {
+        stravaAddAccountBtn.addEventListener('click', () => {
+            try {
+                if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
+                    window.stravaModule.connect();
+                } else {
+                    if (window.showToast) window.showToast('Strava 연동 모듈을 불러올 수 없습니다.', 'error');
+                }
+            } catch (e) {
+                console.warn('Strava 계정 추가 중 오류 (무시됨):', e);
+                if (window.showToast) window.showToast('Strava 계정 추가 중 오류가 발생했습니다.', 'error');
+            }
+        });
+    }
     if (stravaFetchBtn) {
         stravaFetchBtn.addEventListener('click', () => {
             try {
