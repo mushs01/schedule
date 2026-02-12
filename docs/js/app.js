@@ -1714,6 +1714,7 @@ async function loadAISummary() {
  * Show/hide loading overlay
  */
 function showLoading(show) {
+    if (!loadingOverlay) return;
     if (show) {
         loadingOverlay.classList.add('active');
     } else {
