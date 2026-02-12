@@ -1080,7 +1080,7 @@ body {
 
 /* 일정 제목과 날짜/시간 영역 사이 여백 */
 #eventModal .form-group:first-of-type {
-    margin-top: 14px;
+    margin-top: 20px;
 }
 
 .modal-title-input {
@@ -1635,8 +1635,8 @@ body {
     cursor: pointer;
     text-align: center;
     padding: 0;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--text-primary);
     position: relative;
     margin: 0;
@@ -1656,21 +1656,15 @@ body {
     display: block;
     width: 100%;
     border: none;
-    background: transparent;
-    cursor: pointer;
-    text-align: left;
-    padding: 0;
-    font-family: inherit;
-}
-
-
-.datetime-time-capsule {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
     background: #f1f3f4;
-    border-radius: 20px;
+    cursor: pointer;
+    text-align: center;
     padding: 10px 14px;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    border-radius: 20px;
     transition: background 0.2s;
 }
 
