@@ -2654,8 +2654,8 @@ body {
     text-align: center;
 }
 .exercise-summary-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 8px;
 }
 .exercise-summary-card-empty {
