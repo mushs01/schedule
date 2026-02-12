@@ -542,7 +542,7 @@ function setupEventListeners() {
     const closeExerciseDetailBtn = document.getElementById('closeExerciseDetailBtn');
     document.getElementById('exercisePersonFilter')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.person-filter-btn');
-        if (btn) {
+        if (btn && !btn.disabled) {
             btn.classList.toggle('active');
             renderExerciseCalendar();
         }
@@ -1886,6 +1886,7 @@ const EXERCISE_PERSON_CONFIG = {
     juhwan: { img: 'images/juhwan.png', color: '#9c27b0' },
     taehwan: { img: 'images/taehwan.png', color: '#f9a825' }
 };
+const EXERCISE_FAMILY_ORDER = ['dad', 'mom', 'juhwan', 'taehwan'];
 
 function getExerciseFilterPersons() {
     const btns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
@@ -1924,16 +1925,18 @@ function renderExerciseCalendar() {
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
         (byDate[ds] || []).forEach(a => { if (a.person) personsInMonth.add(a.person); });
     }
-    // 가족(전체) 기록 없음 - 해당 월에 기록 있는 사람만 표시
-    const personList = Array.from(personsInMonth).filter(p => p !== 'all');
+    // 가족 모두 표시, 기록 없으면 아이콘 비활성화
+    const personList = EXERCISE_FAMILY_ORDER.slice();
     const keepActive = (p) => prevSelection.length === 0 || prevSelection.includes(p);
     const filterHtml = personList.map(p => {
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#1a73e8' };
-        const active = keepActive(p) ? ' active' : '';
-        return `<button class="person-filter-btn${active}" data-exercise-person="${p}" data-color="${cfg.color}"><img src="${cfg.img}" alt="${p}" class="person-avatar"></button>`;
+        const hasRecord = personsInMonth.has(p);
+        const active = hasRecord && keepActive(p) ? ' active' : '';
+        const noRecord = hasRecord ? '' : ' no-records';
+        return `<button class="person-filter-btn${active}${noRecord}" data-exercise-person="${p}" data-color="${cfg.color}" ${!hasRecord ? 'disabled' : ''}><img src="${cfg.img}" alt="${p}" class="person-avatar"></button>`;
     }).join('');
     personFilterEl.innerHTML = filterHtml;
-    const filterPersons = getExerciseFilterPersons();
+    const filterPersons = getExerciseFilterPersons().filter(p => personsInMonth.has(p));
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
@@ -1984,37 +1987,25 @@ function renderExerciseCalendar() {
 function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
     const container = document.getElementById('exerciseMonthlySummary');
     if (!container) return;
-    const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
 
-    // 해당 월 데이터 수집 (현재 달 일자만, 필터 적용)
     const byPerson = {};
+    for (const p of EXERCISE_FAMILY_ORDER) byPerson[p] = [];
     for (let d = 1; d <= daysInMonth; d++) {
         const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         const acts = (filterActs || (a => a))(byDate[ds] || []);
         acts.forEach(a => {
             const p = a.person || 'all';
-            if (p === 'all') return;
-            if (!byPerson[p]) byPerson[p] = [];
+            if (p === 'all' || !byPerson[p]) return;
             byPerson[p].push(a);
         });
     }
 
-    const personList = Object.keys(byPerson).sort((a, b) => {
-        const order = ['dad', 'mom', 'juhwan', 'taehwan'];
-        return (order.indexOf(a) < 0 ? 99 : order.indexOf(a)) - (order.indexOf(b) < 0 ? 99 : order.indexOf(b));
-    });
-
-    if (personList.length === 0) {
-        container.innerHTML = '<p class="exercise-summary-empty">이번 달 운동 기록이 없습니다</p>';
-        container.classList.add('empty');
-        return;
-    }
-
+    const personList = EXERCISE_FAMILY_ORDER.slice();
     let html = '<h3 class="exercise-summary-title">이번달에는 이렇게 운동했어요 <span class="material-icons exercise-summary-fire">local_fire_department</span></h3><div class="exercise-summary-cards">';
     personList.forEach(p => {
-        const acts = byPerson[p];
+        const acts = byPerson[p] || [];
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#808080' };
         const personName = window.PERSON_NAMES ? (window.PERSON_NAMES[p] || p) : p;
         let totalDist = 0, totalTime = 0;
@@ -2026,9 +2017,10 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
             ? `${Math.floor(totalTime / 3600)}시간 ${Math.floor((totalTime % 3600) / 60)}분`
             : totalTime >= 60
                 ? `${Math.floor(totalTime / 60)}분`
-                : `${totalTime}초`;
+                : totalTime === 0 ? '' : `${totalTime}초`;
+        const hasRecord = acts.length > 0;
         html += `
-            <div class="exercise-summary-card" data-person="${p}" style="--person-color: ${cfg.color}">
+            <div class="exercise-summary-card ${hasRecord ? '' : 'exercise-summary-card-empty'}" data-person="${p}" style="--person-color: ${cfg.color}">
                 <div class="exercise-summary-header">
                     <img src="${cfg.img}" alt="${personName}" class="exercise-summary-avatar">
                     <span class="exercise-summary-name">${personName}</span>
@@ -2037,6 +2029,7 @@ function renderExerciseMonthlySummary(year, month, byDate, filterActs) {
                     <span class="exercise-summary-stat"><span class="material-icons">directions_run</span> ${acts.length}회</span>
                     ${totalDist > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">straighten</span> ${totalDist.toFixed(1)}km</span>` : ''}
                     ${totalTime > 0 ? `<span class="exercise-summary-stat"><span class="material-icons">schedule</span> ${timeStr}</span>` : ''}
+                    ${!hasRecord ? '<span class="exercise-summary-stat exercise-summary-no-data">기록 없음</span>' : ''}
                 </div>
             </div>
         `;

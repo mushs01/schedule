@@ -2511,6 +2511,16 @@ body {
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="all"] { border-color: #1a73e8 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="dad"] { border-color: #0f9d58 !important; }
 .exercise-person-filter .person-filter-btn.active[data-exercise-person="mom"] { border-color: #f4511e !important; }
+.exercise-person-filter .person-filter-btn.no-records,
+.exercise-person-filter .person-filter-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    filter: grayscale(0.6);
+}
+.exercise-person-filter .person-filter-btn.no-records:hover,
+.exercise-person-filter .person-filter-btn:disabled:hover {
+    transform: none;
+}
 
 /* 운동 세부 화면 - Strava 스타일 (운동타입, 거리, 페이스, 시간, 지도) */
 .exercise-detail-modal .event-detail { padding: 0 20px 20px; }
@@ -2647,6 +2657,16 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+.exercise-summary-card-empty {
+    opacity: 0.85;
+}
+.exercise-summary-card-empty .exercise-summary-name {
+    color: var(--text-secondary);
+}
+.exercise-summary-no-data {
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 .exercise-summary-card {
     background: var(--card-bg);
