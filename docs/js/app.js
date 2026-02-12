@@ -2247,15 +2247,15 @@ function showExerciseDetail(dateStr, activities) {
             }
             const startIcon = L.divIcon({
                 className: 'exercise-map-marker',
-                html: '<span class="exercise-marker-dot exercise-marker-start" title="출발"></span>',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                html: '<span class="exercise-marker-icon exercise-marker-start" title="출발"><span class="material-icons">play_arrow</span></span>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
             });
             const endIcon = L.divIcon({
                 className: 'exercise-map-marker',
-                html: '<span class="exercise-marker-dot exercise-marker-end" title="도착"></span>',
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+                html: '<span class="exercise-marker-icon exercise-marker-end" title="도착"><span class="material-icons">flag</span></span>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
             });
             L.marker(start, { icon: startIcon }).addTo(map);
             L.marker(end, { icon: endIcon }).addTo(map);
