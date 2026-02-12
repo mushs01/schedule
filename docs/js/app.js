@@ -376,8 +376,8 @@ function setupEventListeners() {
         eventForm.addEventListener('submit', handleEventFormSubmit);
     }
 
-    // 오전/오후 버튼 초기화
-    initAmpmButtons();
+    // 날짜/시간 가로 배치 + 휠 피커 초기화
+    initDateTimeWheel();
     
     // Event detail actions
     const editEventBtn = document.getElementById('editEventBtn');
@@ -827,9 +827,6 @@ function openEventModal(dateInfo = null, event = null) {
         document.getElementById('eventStartDate').value = formatDateInput(startDate);
         document.getElementById('eventStartTime').value = formatTimeInput(startDate);
         
-        // 요일 업데이트
-        updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
-        
         // 종료 날짜/시간 설정
         if (endDate) {
             document.getElementById('eventEndDate').value = formatDateInput(endDate);
@@ -842,8 +839,7 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventEndTime').value = formatTimeInput(defaultEndDate);
         }
         
-        // 종료 요일 업데이트
-        updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
+        updateDateTimeDisplays();
         
         // 담당자 설정 (체크박스) - 모든 체크박스 초기화
         document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
@@ -1039,62 +1035,38 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventStartDate').value = startDateStr;
             document.getElementById('eventStartTime').value = startTimeStr;
             
-            // 요일 업데이트
-            updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
-            
             console.log('Set start date/time:', startDateStr, startTimeStr);
             
             // 종료 날짜/시간 자동 설정
             if (endDate) {
-                // 드래그로 선택한 경우 - end 시간이 있음
                 const endDateStr = formatDateInput(endDate);
                 const endTimeStr = formatTimeInput(endDate);
-                
                 document.getElementById('eventEndDate').value = endDateStr;
                 document.getElementById('eventEndTime').value = endTimeStr;
-                
-                // 요일 업데이트
-                updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
-                
                 console.log('🎯 드래그 선택 - 종료 날짜/시간:', endDateStr, endTimeStr);
             } else {
-                // 단순 클릭의 경우 - 시작 시간 + 1시간
                 const defaultEndDate = new Date(startDate.getTime() + 60 * 60 * 1000);
                 const endDateStr = formatDateInput(defaultEndDate);
                 const endTimeStr = formatTimeInput(defaultEndDate);
-                
                 document.getElementById('eventEndDate').value = endDateStr;
                 document.getElementById('eventEndTime').value = endTimeStr;
-                
-                // 요일 업데이트
-                updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
-                
                 console.log('👆 클릭 선택 - 종료 시간 +1시간:', endDateStr, endTimeStr);
             }
         } else {
-            // 날짜 정보가 없으면 현재 시간 사용
             const now = new Date();
             const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-            
             document.getElementById('eventStartDate').value = formatDateInput(now);
             document.getElementById('eventStartTime').value = formatTimeInput(now);
             document.getElementById('eventEndDate').value = formatDateInput(oneHourLater);
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
-            
-            // 요일 업데이트
-            updateDayOfWeekDisplay('eventStartDate', 'startDayOfWeek');
-            updateDayOfWeekDisplay('eventEndDate', 'endDayOfWeek');
-            
             console.log('📅 기본값 사용 (현재 시간)');
         }
     }
     
     console.log('Opening modal...');
 
-    // 오전/오후 버튼 상태 동기화
-    updateAmpmButtonState('eventStartTime');
-    updateAmpmButtonState('eventEndTime');
-    
+    updateDateTimeDisplays();
+
     // 약간의 딜레이를 주어 캘린더 클릭 이벤트가 모달 내부로 전파되지 않도록 함
     setTimeout(() => {
         eventModal.classList.add('active');
@@ -2873,49 +2845,171 @@ function formatTimeInput(date) {
     return `${hours}:${minutes}`;
 }
 
-/**
- * 오전/오후 버튼 상태를 시간 입력값에 맞게 업데이트
- */
-function updateAmpmButtonState(timeInputId) {
-    const timeInput = document.getElementById(timeInputId);
-    if (!timeInput) return;
-    const btns = document.querySelectorAll(`.ampm-btn[data-time-id="${timeInputId}"]`);
-    btns.forEach(btn => btn.classList.remove('active'));
-    const val = timeInput.value;
-    if (val && val.includes(':')) {
-        const [h, m] = val.split(':').map(Number);
-        const hour = h || 0;
-        const period = hour < 12 ? 'am' : 'pm';
-        const active = document.querySelector(`.ampm-btn[data-time-id="${timeInputId}"][data-period="${period}"]`);
-        if (active) active.classList.add('active');
+/** 날짜 짧은 표시: "2월 12일 (목)" */
+function formatDateShort(date) {
+    if (!date || !(date instanceof Date) || isNaN(date)) return '';
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const day = days[date.getDay()];
+    return `${m}월 ${d}일 (${day})`;
+}
+
+/** 24h "HH:mm" -> 캡슐 표시 "오전/오후 H:mm" (10분 단위 반올림 반영) */
+function formatTimeCapsule(timeStr24) {
+    if (!timeStr24 || !timeStr24.includes(':')) return '오후 12:00';
+    const [h, m] = timeStr24.split(':').map(Number);
+    const hour = h || 0;
+    const minute = Math.round((m || 0) / 10) * 10;
+    const period = hour < 12 ? '오전' : '오후';
+    const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    const minStr = String(minute).padStart(2, '0');
+    return `${period} ${hour12}:${minStr}`;
+}
+
+/** 분을 10분 단위로 반올림 */
+function roundMinutesTo10(min) {
+    return Math.round((min || 0) / 10) * 10;
+}
+
+/** 시작/종료 날짜·시간 표시 텍스트 갱신 */
+function updateDateTimeDisplays() {
+    const startDateInput = document.getElementById('eventStartDate');
+    const endDateInput = document.getElementById('eventEndDate');
+    const startTimeInput = document.getElementById('eventStartTime');
+    const endTimeInput = document.getElementById('eventEndTime');
+    const startDateText = document.getElementById('startDateText');
+    const endDateText = document.getElementById('endDateText');
+    const startTimeCapsule = document.getElementById('startTimeCapsule');
+    const endTimeCapsule = document.getElementById('endTimeCapsule');
+    if (!startDateInput || !endDateInput || !startTimeInput || !endTimeInput) return;
+    if (startDateInput.value) {
+        const d = new Date(startDateInput.value);
+        if (startDateText) startDateText.textContent = formatDateShort(d);
+        if (startTimeCapsule) startTimeCapsule.textContent = formatTimeCapsule(startTimeInput.value);
+    }
+    if (endDateInput.value) {
+        const d = new Date(endDateInput.value);
+        if (endDateText) endDateText.textContent = formatDateShort(d);
+        if (endTimeCapsule) endTimeCapsule.textContent = formatTimeCapsule(endTimeInput.value);
     }
 }
 
-/**
- * 오전/오후 버튼 클릭 시 시간 토글
- */
-function initAmpmButtons() {
-    document.querySelectorAll('.ampm-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const timeInputId = btn.dataset.timeId;
-            const period = btn.dataset.period;
-            const timeInput = document.getElementById(timeInputId);
-            if (!timeInput) return;
-            let [h, m] = (timeInput.value || '00:00').split(':').map(Number);
-            h = h || 0;
-            m = m || 0;
-            if (period === 'am') {
-                if (h >= 12) h -= 12;
-            } else {
-                if (h < 12) h += 12;
-            }
-            timeInput.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-            updateAmpmButtonState(timeInputId);
-        });
-    });
-    document.getElementById('eventStartTime')?.addEventListener('input', () => updateAmpmButtonState('eventStartTime'));
-    document.getElementById('eventEndTime')?.addEventListener('input', () => updateAmpmButtonState('eventEndTime'));
+/** 휠에서 선택한 값으로 24h "HH:mm" 생성 (분 10분 단위) */
+function getTimeFromWheel(ampm, hour12, minute10) {
+    let h = parseInt(hour12, 10) || 12;
+    if (ampm === '오전') {
+        if (h === 12) h = 0;
+    } else {
+        if (h !== 12) h += 12;
+    }
+    const m = Math.min(50, Math.round((minute10 || 0) / 10) * 10);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/** 휠 열 때 현재 시간으로 휠 위치 설정 */
+function setWheelToTime(timeStr24) {
+    const [h, m] = (timeStr24 || '12:00').split(':').map(Number);
+    const hour = h || 0;
+    const minute = Math.min(50, roundMinutesTo10(m || 0));
+    const ampm = hour < 12 ? '오전' : '오후';
+    const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    const listAmpm = document.getElementById('wheelAmpm');
+    const listHour = document.getElementById('wheelHour');
+    const listMinute = document.getElementById('wheelMinute');
+    if (!listAmpm || !listHour || !listMinute) return;
+    const ampmIndex = ampm === '오전' ? 0 : 1;
+    const hourIndex = hour12 - 1;
+    const minuteIndex = minute / 10;
+    const itemH = 36;
+    listAmpm.scrollTop = ampmIndex * itemH;
+    listHour.scrollTop = hourIndex * itemH;
+    listMinute.scrollTop = minuteIndex * itemH;
+}
+
+/** 휠에서 현재 선택값 읽기 (스크롤 위치 기반) */
+function getWheelSelection() {
+    const itemH = 36;
+    const padding = 72;
+    const center = (el) => {
+        if (!el) return -1;
+        const viewportCenter = el.scrollTop + el.clientHeight / 2;
+        const index = Math.round((viewportCenter - padding - itemH / 2) / itemH);
+        return Math.max(0, index);
+    };
+    const listAmpm = document.getElementById('wheelAmpm');
+    const listHour = document.getElementById('wheelHour');
+    const listMinute = document.getElementById('wheelMinute');
+    const ampmItems = ['오전', '오후'];
+    const hourItems = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+    const minuteItems = ['00', '10', '20', '30', '40', '50'];
+    const ampmIdx = center(listAmpm);
+    const hourIdx = center(listHour);
+    const minuteIdx = center(listMinute);
+    return {
+        ampm: ampmItems[Math.min(ampmIdx, 1)] || '오후',
+        hour12: hourItems[Math.min(hourIdx, 11)] || '12',
+        minute10: minuteItems[Math.min(minuteIdx, 5)] || '00'
+    };
+}
+
+let currentTimeWheelSide = 'start';
+
+function initDateTimeWheel() {
+    const overlay = document.getElementById('timeWheelOverlay');
+    const startCapsule = document.getElementById('startTimeCapsule');
+    const endCapsule = document.getElementById('endTimeCapsule');
+    const closeBtn = document.getElementById('timeWheelClose');
+    const confirmBtn = document.getElementById('timeWheelConfirm');
+    const titleEl = document.getElementById('timeWheelTitle');
+
+    const ampmList = document.getElementById('wheelAmpm');
+    const hourList = document.getElementById('wheelHour');
+    const minuteList = document.getElementById('wheelMinute');
+    if (!ampmList || !hourList || !minuteList) return;
+
+    ampmList.innerHTML = ['오전', '오후'].map((v, i) =>
+        `<div class="time-wheel-item" data-value="${v}">${v}</div>`
+    ).join('');
+    hourList.innerHTML = Array.from({ length: 12 }, (_, i) => {
+        const n = i + 1;
+        return `<div class="time-wheel-item" data-value="${n}">${n}</div>`;
+    }).join('');
+    minuteList.innerHTML = ['00', '10', '20', '30', '40', '50'].map((v) =>
+        `<div class="time-wheel-item" data-value="${v}">${v}</div>`
+    ).join('');
+
+    function openWheel(side) {
+        currentTimeWheelSide = side;
+        const timeInput = document.getElementById(side === 'start' ? 'eventStartTime' : 'eventEndTime');
+        if (titleEl) titleEl.textContent = side === 'start' ? '시작 시간' : '종료 시간';
+        if (overlay) overlay.classList.add('active');
+        const timeStr = timeInput ? timeInput.value : '12:00';
+        requestAnimationFrame(() => setWheelToTime(timeStr));
+    }
+
+    function closeWheel() {
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    function onConfirm() {
+        const sel = getWheelSelection();
+        const timeStr = getTimeFromWheel(sel.ampm, sel.hour12, parseInt(sel.minute10, 10));
+        const timeInput = document.getElementById(currentTimeWheelSide === 'start' ? 'eventStartTime' : 'eventEndTime');
+        const capsule = currentTimeWheelSide === 'start' ? startCapsule : endCapsule;
+        if (timeInput) timeInput.value = timeStr;
+        if (capsule) capsule.textContent = formatTimeCapsule(timeStr);
+        closeWheel();
+    }
+
+    if (startCapsule) startCapsule.addEventListener('click', () => openWheel('start'));
+    if (endCapsule) endCapsule.addEventListener('click', () => openWheel('end'));
+    if (closeBtn) closeBtn.addEventListener('click', closeWheel);
+    if (confirmBtn) confirmBtn.addEventListener('click', onConfirm);
+    if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWheel(); });
+
+    document.getElementById('eventStartDate')?.addEventListener('change', updateDateTimeDisplays);
+    document.getElementById('eventEndDate')?.addEventListener('change', updateDateTimeDisplays);
 }
 
 /**

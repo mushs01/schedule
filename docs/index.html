@@ -188,33 +188,54 @@
                     </button>
                 </div>
                 
-                <!-- 시작/종료 날짜/시간 -->
+                <!-- 시작/종료 날짜/시간 - 가로 배치 -->
                 <div class="form-group">
                     <label class="form-label" title="일정 시간">
                         <span class="material-icons form-icon">schedule</span>
                     </label>
-                    <div class="datetime-column">
-                        <div class="datetime-row-with-day">
-                            <input type="date" id="eventStartDate" required class="date-input">
-                            <span class="day-of-week" id="startDayOfWeek"></span>
-                            <div class="time-picker-group">
-                                <input type="time" id="eventStartTime" required class="time-input">
-                                <div class="ampm-buttons">
-                                    <button type="button" class="ampm-btn am" data-time-id="eventStartTime" data-period="am">오전</button>
-                                    <button type="button" class="ampm-btn pm" data-time-id="eventStartTime" data-period="pm">오후</button>
-                                </div>
+                    <div class="datetime-horizontal">
+                        <input type="time" id="eventStartTime" required class="datetime-hidden-input">
+                        <input type="time" id="eventEndTime" required class="datetime-hidden-input">
+                        <div class="datetime-block" data-side="start">
+                            <label class="datetime-date-row" id="startDateRow">
+                                <input type="date" id="eventStartDate" required class="date-input-overlay">
+                                <span class="datetime-date-text" id="startDateText"></span>
+                            </label>
+                            <button type="button" class="datetime-time-capsule" id="startTimeCapsule">오후 12:00</button>
+                        </div>
+                        <span class="datetime-arrow" aria-hidden="true">→</span>
+                        <div class="datetime-block" data-side="end">
+                            <label class="datetime-date-row" id="endDateRow">
+                                <input type="date" id="eventEndDate" required class="date-input-overlay">
+                                <span class="datetime-date-text" id="endDateText"></span>
+                            </label>
+                            <button type="button" class="datetime-time-capsule" id="endTimeCapsule">오후 1:00</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 시간 휠 피커 (오전/오후, 시, 분 10분단위) -->
+                <div class="time-wheel-overlay" id="timeWheelOverlay">
+                    <div class="time-wheel-sheet">
+                        <div class="time-wheel-header">
+                            <span class="time-wheel-title" id="timeWheelTitle">시작 시간</span>
+                            <button type="button" class="time-wheel-close" id="timeWheelClose">
+                                <span class="material-icons">close</span>
+                            </button>
+                        </div>
+                        <div class="time-wheel-body">
+                            <div class="time-wheel-column" data-col="ampm">
+                                <div class="time-wheel-list" id="wheelAmpm"></div>
+                            </div>
+                            <div class="time-wheel-column" data-col="hour">
+                                <div class="time-wheel-list" id="wheelHour"></div>
+                            </div>
+                            <span class="time-wheel-sep">:</span>
+                            <div class="time-wheel-column" data-col="minute">
+                                <div class="time-wheel-list" id="wheelMinute"></div>
                             </div>
                         </div>
-                        <div class="datetime-row-with-day">
-                            <input type="date" id="eventEndDate" required class="date-input">
-                            <span class="day-of-week" id="endDayOfWeek"></span>
-                            <div class="time-picker-group">
-                                <input type="time" id="eventEndTime" required class="time-input">
-                                <div class="ampm-buttons">
-                                    <button type="button" class="ampm-btn am" data-time-id="eventEndTime" data-period="am">오전</button>
-                                    <button type="button" class="ampm-btn pm" data-time-id="eventEndTime" data-period="pm">오후</button>
-                                </div>
-                            </div>
+                        <div class="time-wheel-footer">
+                            <button type="button" class="btn btn-primary" id="timeWheelConfirm">확인</button>
                         </div>
                     </div>
                 </div>

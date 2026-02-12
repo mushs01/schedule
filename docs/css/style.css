@@ -1598,89 +1598,237 @@ body {
     flex: 1;
 }
 
-/* 날짜/시간 입력 열 */
-.datetime-column {
+/* 날짜/시간 입력 - 가로 배치 (시작 → 마침) */
+.datetime-hidden-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.datetime-horizontal {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.datetime-row-with-day {
-    display: flex;
-    gap: 6px;
     align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
 }
 
-.day-of-week {
-    font-size: 12px;
-    color: var(--primary-blue);
-    font-weight: 500;
-    min-width: 20px;
-    text-align: center;
-}
-
-.date-input {
-    flex: 1.2;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-}
-
-/* 시간 선택 그룹 (시간 입력 + 오전/오후 버튼) */
-.time-picker-group {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 0.8;
-}
-
-.time-input {
+.datetime-block {
     flex: 1;
     min-width: 0;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.datetime-date-row {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    margin: 0;
+}
+
+.date-input-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 16px; /* iOS zoom 방지 */
+}
+
+.datetime-time-capsule {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
     font-family: inherit;
 }
 
-/* 오전/오후 선택 버튼 - 선택 시 빨강(오전)/파랑(오후) */
-.ampm-buttons {
+
+.datetime-time-capsule {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: #f1f3f4;
+    border-radius: 20px;
+    padding: 10px 14px;
+    transition: background 0.2s;
+}
+
+.datetime-time-capsule:hover {
+    background: #e8eaed;
+}
+
+.datetime-arrow {
+    flex-shrink: 0;
+    font-size: 18px;
+    color: var(--text-secondary);
+}
+
+/* 시간 휠 피커 (오전/오후, 시, 분 10분단위) */
+.time-wheel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.time-wheel-overlay.active {
     display: flex;
-    gap: 4px;
+}
+
+.time-wheel-sheet {
+    width: 100%;
+    max-width: 400px;
+    max-height: 70vh;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.time-wheel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.time-wheel-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.time-wheel-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--text-secondary);
+}
+
+.time-wheel-close:hover {
+    background: var(--hover-bg);
+}
+
+.time-wheel-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    min-height: 200px;
+}
+
+.time-wheel-column {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+}
+
+.time-wheel-column::before,
+.time-wheel-column::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 70px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.time-wheel-column::before {
+    top: 0;
+    background: linear-gradient(to bottom, #fff 40%, transparent);
+}
+
+.time-wheel-column::after {
+    bottom: 0;
+    background: linear-gradient(to top, #fff 40%, transparent);
+}
+
+.time-wheel-list {
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.time-wheel-list::-webkit-scrollbar {
+    display: none;
+}
+
+.time-wheel-item {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-secondary);
+    scroll-snap-align: center;
     flex-shrink: 0;
 }
 
-.ampm-btn {
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
-    background: #f5f5f5;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
+.time-wheel-item.selected {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
-.ampm-btn:hover {
-    background: #eeeeee;
+.time-wheel-sep {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    flex-shrink: 0;
 }
 
-.ampm-btn.am.active {
-    background: #ea4335;
-    border-color: #ea4335;
-    color: #ffffff;
+.time-wheel-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
 }
 
-.ampm-btn.pm.active {
-    background: #4285f4;
-    border-color: #4285f4;
-    color: #ffffff;
+.time-wheel-footer .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* 휠 중앙 선택 영역 시각적 강조 */
+.time-wheel-column {
+    border-radius: 8px;
+}
+
+.time-wheel-list {
+    padding: 72px 0;
+}
+
+.time-wheel-item {
+    user-select: none;
 }
 
 /* 기존 datetime-row (하위 호환) */
