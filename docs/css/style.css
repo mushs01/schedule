@@ -1642,6 +1642,11 @@ body {
     margin: 0;
 }
 
+.datetime-date-text {
+    font-size: 20px;
+    font-weight: 700;
+}
+
 .date-input-overlay {
     position: absolute;
     inset: 0;
