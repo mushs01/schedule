@@ -2242,9 +2242,12 @@ function showExerciseDetail(dateStr, activities) {
 function getStravaDebugInfo() {
     const isConnected = !!(window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected());
     if (isConnected) {
-        const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
-        const name = athlete ? ((athlete.firstname || '') + ' ' + (athlete.lastname || '')).trim() : '';
-        return { isConnected: true, msg: '✓ 연결됨: ' + (name || 'Strava') };
+        const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+        const names = accounts.map(acc => {
+            const a = acc.athlete || {};
+            return ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || 'Strava';
+        });
+        return { isConnected: true, msg: '✓ 연결됨: ' + (names.length ? names.join(', ') : 'Strava') };
     }
     const lastErr = window._stravaLastError;
     if (lastErr) {
@@ -2263,7 +2266,7 @@ function updateStravaUI() {
         const dataStatusEl = document.getElementById('stravaDataStatus');
         const notConnected = document.getElementById('stravaNotConnected');
         const connected = document.getElementById('stravaConnected');
-        const athleteName = document.getElementById('stravaAthleteName');
+        const accountListEl = document.getElementById('stravaAccountList');
         
         // 연동 상태 표시 업데이트
         if (connectionStatusEl) {
@@ -2277,9 +2280,12 @@ function updateStravaUI() {
             } else if (window.stravaModule.isConnected()) {
                 connectionStatusEl.classList.add('status-success');
                 if (iconEl) iconEl.textContent = 'check_circle';
-                const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
-                const name = athlete ? ((athlete.firstname || '') + ' ' + (athlete.lastname || '')).trim() : '사용자';
-                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + name + ')';
+                const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+                const names = accounts.map(acc => {
+                    const a = acc.athlete || {};
+                    return ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || '사용자';
+                });
+                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + (names.length ? names.join(', ') : '사용자') + ')';
             } else {
                 connectionStatusEl.classList.add('status-pending');
                 if (iconEl) iconEl.textContent = 'link_off';
@@ -2313,9 +2319,18 @@ function updateStravaUI() {
         if (window.stravaModule && typeof window.stravaModule.isConnected === 'function' && window.stravaModule.isConnected()) {
             notConnected.style.display = 'none';
             connected.style.display = 'block';
-            const athlete = window.stravaModule.getAthlete && window.stravaModule.getAthlete();
-            if (athleteName && athlete) {
-                athleteName.textContent = (athlete.firstname || '') + ' ' + (athlete.lastname || '');
+            const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+            if (accountListEl) {
+                const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                accountListEl.innerHTML = accounts.map((acc, idx) => {
+                    const a = acc.athlete || {};
+                    const name = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || ('계정 ' + (idx + 1));
+                    const id = acc.athleteId != null ? String(acc.athleteId) : '';
+                    return '<li class="strava-account-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">' +
+                        '<span>' + esc(name) + '</span>' +
+                        '<button type="button" class="btn-secondary strava-disconnect-one" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px;" title="이 계정만 연동 해제"><span class="material-icons" style="font-size: 16px;">link_off</span> 연동 해제</button>' +
+                        '</li>';
+                }).join('') || '<li style="color: var(--text-secondary);">계정 목록 없음</li>';
             }
         } else {
             notConnected.style.display = 'block';
@@ -2366,49 +2381,59 @@ async function handleStravaFetch(silent) {
         }
         
         const activities = await window.stravaModule.fetchActivities(200, 1);
-        
-        const formatted = (activities || []).map(a => ({
-            id: a.id,
-            name: a.name,
-            type: a.type,
-            sport_type: a.sport_type,
-            start_date: a.start_date,
-            start_date_local: a.start_date_local,
-            elapsed_time: a.elapsed_time,
-            moving_time: a.moving_time,
-            distance: a.distance,
-            total_elevation_gain: a.total_elevation_gain,
-            average_speed: a.average_speed,
-            max_speed: a.max_speed,
-            average_cadence: a.average_cadence,
-            average_watts: a.average_watts,
-            max_watts: a.max_watts,
-            kilojoules: a.kilojoules,
-            calories: a.calories,
-            trainer: a.trainer,
-            commute: a.commute,
-            manual: a.manual,
-            private: a.private,
-            achievement_count: a.achievement_count,
-            kudos_count: a.kudos_count,
-            comment_count: a.comment_count,
-            workout_type: a.workout_type,
-            description: a.description,
-            device_name: a.device_name,
-            map: a.map,
-            location_city: a.location_city,
-            location_state: a.location_state,
-            location_country: a.location_country,
-            start_latlng: a.start_latlng
-        }));
-        
+        const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+        const athleteIdToPerson = {};
+        EXERCISE_FAMILY_ORDER.forEach((p, i) => {
+            if (accounts[i]) athleteIdToPerson[String(accounts[i].athleteId)] = p;
+        });
+        const defaultPerson = EXERCISE_FAMILY_ORDER[0] || 'dad';
+
+        const formatted = (activities || []).map(a => {
+            const athlete = a._athlete;
+            const person = athlete && athleteIdToPerson[String(athlete.id)] ? athleteIdToPerson[String(athlete.id)] : defaultPerson;
+            return {
+                id: a.id,
+                name: a.name,
+                type: a.type,
+                sport_type: a.sport_type,
+                start_date: a.start_date,
+                start_date_local: a.start_date_local,
+                elapsed_time: a.elapsed_time,
+                moving_time: a.moving_time,
+                distance: a.distance,
+                total_elevation_gain: a.total_elevation_gain,
+                average_speed: a.average_speed,
+                max_speed: a.max_speed,
+                average_cadence: a.average_cadence,
+                average_watts: a.average_watts,
+                max_watts: a.max_watts,
+                kilojoules: a.kilojoules,
+                calories: a.calories,
+                trainer: a.trainer,
+                commute: a.commute,
+                manual: a.manual,
+                private: a.private,
+                achievement_count: a.achievement_count,
+                kudos_count: a.kudos_count,
+                comment_count: a.comment_count,
+                workout_type: a.workout_type,
+                description: a.description,
+                device_name: a.device_name,
+                map: a.map,
+                location_city: a.location_city,
+                location_state: a.location_state,
+                location_country: a.location_country,
+                start_latlng: a.start_latlng,
+                person
+            };
+        });
+
         window._stravaActivitiesByDate = {};
         (formatted || []).forEach(a => {
             const d = (a.start_date_local || a.start_date || '').split('T')[0];
             if (d) {
-                const act = { ...a, person: 'dad' };
                 if (!window._stravaActivitiesByDate[d]) window._stravaActivitiesByDate[d] = [];
-                window._stravaActivitiesByDate[d].push(act);
+                window._stravaActivitiesByDate[d].push(a);
             }
         });
         

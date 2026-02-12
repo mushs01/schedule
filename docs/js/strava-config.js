@@ -17,3 +17,10 @@ window.STRAVA_CONFIG = window.STRAVA_CONFIG || {};
 window.STRAVA_CONFIG.clientId = '200870';
 window.STRAVA_CONFIG.redirectUri = window.location.origin + '/';
 window.STRAVA_CONFIG.scope = 'read,activity:read_all';
+
+/**
+ * 앱 실행 시 자동 연동할 계정 (하드코딩). 1번 = 아빠, 2번 = 엄마.
+ * 토큰: 앱에서 한 번 연동 후 콘솔에서 localStorage.getItem('strava_accounts') 로 확인 가능.
+ * preloadedAccounts: [ { accessToken, refreshToken, expiresAt, athlete: { id, firstname, lastname } }, ... ]
+ */
+window.STRAVA_CONFIG.preloadedAccounts = window.STRAVA_CONFIG.preloadedAccounts || [];

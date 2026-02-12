@@ -34,5 +34,21 @@ function _getStravaRedirectUri() {
 window.STRAVA_CONFIG = {
     clientId: '200870',
     redirectUri: _getStravaRedirectUri(),
-    scope: 'read,activity:read_all'
+    scope: 'read,activity:read_all',
+
+    /**
+     * 앱 실행 시 자동 연동할 계정 (하드코딩).
+     * 1번 = 아빠, 2번 = 엄마 순서로 표시됩니다.
+     *
+     * 토큰 얻는 방법: 앱에서 "Strava 연결"로 한 번 연동한 뒤,
+     * 개발자 도구 콘솔에서 다음 실행하여 복사:
+     *   JSON.parse(localStorage.getItem('strava_accounts'))
+     *
+     * 각 항목: accessToken, refreshToken, expiresAt(초 단위 Unix), athlete({ id, firstname, lastname 등 })
+     * 비우면([]) 자동 연동하지 않음.
+     */
+    preloadedAccounts: [
+        // { accessToken: '...', refreshToken: '...', expiresAt: 1234567890, athlete: { id: 12345, firstname: '아빠', lastname: '이름' } },
+        // { accessToken: '...', refreshToken: '...', expiresAt: 1234567890, athlete: { id: 67890, firstname: '엄마', lastname: '이름' } },
+    ]
 };

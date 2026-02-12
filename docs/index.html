@@ -521,19 +521,20 @@
                         <div id="stravaConnected" style="display: none;">
                             <p class="settings-description" style="margin-bottom: 8px;">
                                 <span class="material-icons" style="color: #0f9d58; vertical-align: middle;">check_circle</span>
-                                <strong id="stravaAthleteName"></strong> 님과 연결됨
+                                연결된 Strava 계정
                             </p>
+                            <ul id="stravaAccountList" class="strava-account-list" style="margin: 0 0 12px 0; padding-left: 20px;"></ul>
                             <p class="settings-description" style="margin-bottom: 12px; font-size: 12px; color: var(--text-secondary);">
-                                아래 "운동 기록 가져오기" 버튼을 눌러 데이터를 불러오세요.
+                                아래 "운동 기록 가져오기" 버튼을 눌러 데이터를 불러오세요. (여러 계정은 가족 순서대로 표시됩니다)
                             </p>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <button class="btn-primary" id="stravaFetchBtn">
                                     <span class="material-icons">refresh</span>
                                     운동 기록 가져오기
                                 </button>
-                                <button class="btn-secondary" id="stravaDisconnectBtn">
-                                    <span class="material-icons">link_off</span>
-                                    연동 해제
+                                <button class="btn-secondary" id="stravaAddAccountBtn" title="Strava 계정 하나 더 연결">
+                                    <span class="material-icons">person_add</span>
+                                    Strava 계정 추가
                                 </button>
                                 <button class="btn-secondary" id="stravaRefreshStatusBtn" title="연결 상태 다시 확인">
                                     <span class="material-icons">sync</span>
