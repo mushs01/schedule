@@ -2955,6 +2955,30 @@ function getWheelSelection() {
 
 let currentTimeWheelSide = 'start';
 
+const WHEEL_ITEM_H = 36;
+const WHEEL_PADDING = 72;
+
+function getWheelCenterIndex(el) {
+    if (!el || !el.children.length) return 0;
+    const viewportCenter = el.scrollTop + el.clientHeight / 2;
+    const index = Math.round((viewportCenter - WHEEL_PADDING - WHEEL_ITEM_H / 2) / WHEEL_ITEM_H);
+    return Math.max(0, Math.min(index, el.children.length - 1));
+}
+
+function updateWheelSelectionUI(listEl) {
+    if (!listEl) return;
+    const idx = getWheelCenterIndex(listEl);
+    Array.from(listEl.children).forEach((child, i) => {
+        child.classList.toggle('selected', i === idx);
+    });
+}
+
+function updateAllWheelSelectionUI() {
+    updateWheelSelectionUI(document.getElementById('wheelAmpm'));
+    updateWheelSelectionUI(document.getElementById('wheelHour'));
+    updateWheelSelectionUI(document.getElementById('wheelMinute'));
+}
+
 function initDateTimeWheel() {
     const overlay = document.getElementById('timeWheelOverlay');
     const startCapsule = document.getElementById('startTimeCapsule');
@@ -2979,13 +3003,21 @@ function initDateTimeWheel() {
         `<div class="time-wheel-item" data-value="${v}">${v}</div>`
     ).join('');
 
+    [ampmList, hourList, minuteList].forEach((list) => {
+        list.addEventListener('scroll', updateAllWheelSelectionUI);
+        list.addEventListener('touchmove', updateAllWheelSelectionUI);
+    });
+
     function openWheel(side) {
         currentTimeWheelSide = side;
         const timeInput = document.getElementById(side === 'start' ? 'eventStartTime' : 'eventEndTime');
         if (titleEl) titleEl.textContent = side === 'start' ? '시작 시간' : '종료 시간';
         if (overlay) overlay.classList.add('active');
         const timeStr = timeInput ? timeInput.value : '12:00';
-        requestAnimationFrame(() => setWheelToTime(timeStr));
+        requestAnimationFrame(() => {
+            setWheelToTime(timeStr);
+            updateAllWheelSelectionUI();
+        });
     }
 
     function closeWheel() {
