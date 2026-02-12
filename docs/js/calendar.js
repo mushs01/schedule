@@ -1041,6 +1041,7 @@ async function fetchHolidays(year) {
 
 /**
  * Get basic Korean holidays (without API)
+ * 고정 공휴일 + 해당 연도 음력 공휴일(설날·추석·부처님오신날 등)
  */
 function getBasicHolidays(year) {
     const basicHolidays = {};
@@ -1055,16 +1056,20 @@ function getBasicHolidays(year) {
     basicHolidays[`${year}-10-09`] = '한글날';
     basicHolidays[`${year}-12-25`] = '크리스마스';
     
-    // 2025년 음력 공휴일 (대체공휴일 포함)
-    if (year === 2025) {
-        basicHolidays['2025-01-28'] = '설날 연휴';
-        basicHolidays['2025-01-29'] = '설날';
-        basicHolidays['2025-01-30'] = '설날 연휴';
-        basicHolidays['2025-05-05'] = '부처님오신날';
-        basicHolidays['2025-10-05'] = '추석 연휴';
-        basicHolidays['2025-10-06'] = '추석';
-        basicHolidays['2025-10-07'] = '추석 연휴';
-        basicHolidays['2025-10-08'] = '대체공휴일';
+    // 음력 공휴일 (연도별 양력 날짜)
+    const lunarByYear = {
+        2024: { 설: ['2024-02-09', '2024-02-10', '2024-02-11'], 부처: ['2024-05-15'], 추석: ['2024-09-16', '2024-09-17', '2024-09-18'] },
+        2025: { 설: ['2025-01-28', '2025-01-29', '2025-01-30'], 부처: ['2025-05-05'], 추석: ['2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08'] },
+        2026: { 설: ['2026-02-16', '2026-02-17', '2026-02-18'], 부처: ['2026-05-24'], 추석: ['2026-09-24', '2026-09-25', '2026-09-26'] },
+        2027: { 설: ['2027-02-06', '2027-02-07', '2027-02-08'], 부처: ['2027-05-13'], 추석: ['2027-10-04', '2027-10-05', '2027-10-06'] }
+    };
+    const y = lunarByYear[year];
+    if (y) {
+        (y['설'] || []).forEach((d, i) => { basicHolidays[d] = ['설날 연휴', '설날', '설날 연휴'][i] || '설날'; });
+        (y['부처'] || []).forEach(d => { basicHolidays[d] = '부처님오신날'; });
+        (y['추석'] || []).forEach((d, i) => {
+            basicHolidays[d] = (i === 1) ? '추석' : (i === 3 ? '대체공휴일' : '추석 연휴');
+        });
     }
     
     return basicHolidays;
@@ -1080,17 +1085,19 @@ function markHolidays() {
     const year = currentDate.getFullYear();
     
     fetchHolidays(year).then(yearHolidays => {
-        // 모든 날짜 셀에서 holiday 클래스 제거
         document.querySelectorAll('.fc-day.holiday').forEach(el => {
             el.classList.remove('holiday');
+            el.removeAttribute('title');
         });
         
-        // 공휴일 표시
-        Object.keys(yearHolidays).forEach(dateStr => {
-            const dayEl = document.querySelector(`[data-date="${dateStr}"]`);
-            if (dayEl) {
-                dayEl.classList.add('holiday');
-                dayEl.setAttribute('title', yearHolidays[dateStr]);
+        document.querySelectorAll('.fc-daygrid-day, .fc-day').forEach(cell => {
+            const dateAttr = cell.getAttribute('data-date');
+            if (!dateAttr) return;
+            const dateStr = dateAttr.split('T')[0];
+            const name = yearHolidays[dateStr];
+            if (name) {
+                cell.classList.add('holiday');
+                cell.setAttribute('title', name);
             }
         });
     });
