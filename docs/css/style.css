@@ -2292,6 +2292,11 @@ body {
     background: #e8eaed;
 }
 
+#stravaAddAccountBtn {
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
 /* Search Modal */
 .search-input-container {
     display: flex;

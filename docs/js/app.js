@@ -613,20 +613,39 @@ function setupEventListeners() {
             }
         });
     }
-    const stravaAddAccountBtn = document.getElementById('stravaAddAccountBtn');
-    if (stravaAddAccountBtn) {
-        stravaAddAccountBtn.addEventListener('click', () => {
-            try {
-                if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
-                    window.stravaModule.connect();
-                } else {
-                    if (window.showToast) window.showToast('Strava 연동 모듈을 불러올 수 없습니다.', 'error');
-                }
-            } catch (e) {
-                console.warn('Strava 계정 추가 중 오류 (무시됨):', e);
-                if (window.showToast) window.showToast('Strava 계정 추가 중 오류가 발생했습니다.', 'error');
+    var _stravaAddAccountLastRun = 0;
+    function handleStravaAddAccount() {
+        var now = Date.now();
+        if (now - _stravaAddAccountLastRun < 800) return;
+        _stravaAddAccountLastRun = now;
+        try {
+            if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
+                window.stravaModule.connect();
+            } else {
+                if (window.showToast) window.showToast('Strava 연동 모듈을 불러올 수 없습니다.', 'error');
+            }
+        } catch (e) {
+            console.warn('Strava 계정 추가 중 오류 (무시됨):', e);
+            if (window.showToast) window.showToast('Strava 계정 추가 중 오류가 발생했습니다.', 'error');
+        }
+    }
+    // Strava 계정 추가: 이벤트 위임 + touchend (모바일에서 버튼 click만으로는 반응 없는 경우 대응)
+    const stravaConnectSection = document.getElementById('stravaConnectSection');
+    if (stravaConnectSection) {
+        stravaConnectSection.addEventListener('click', (e) => {
+            if (e.target.closest && e.target.closest('#stravaAddAccountBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleStravaAddAccount();
             }
         });
+        stravaConnectSection.addEventListener('touchend', (e) => {
+            if (e.target.closest && e.target.closest('#stravaAddAccountBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleStravaAddAccount();
+            }
+        }, { passive: false });
     }
     if (stravaFetchBtn) {
         stravaFetchBtn.addEventListener('click', () => {
