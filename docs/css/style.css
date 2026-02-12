@@ -1629,13 +1629,58 @@ body {
     font-family: inherit;
 }
 
-.time-input {
+/* 시간 선택 그룹 (시간 입력 + 오전/오후 버튼) */
+.time-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex: 0.8;
+}
+
+.time-input {
+    flex: 1;
+    min-width: 0;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
+}
+
+/* 오전/오후 선택 버튼 - 선택 시 빨강(오전)/파랑(오후) */
+.ampm-buttons {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.ampm-btn {
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #f5f5f5;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.ampm-btn:hover {
+    background: #eeeeee;
+}
+
+.ampm-btn.am.active {
+    background: #ea4335;
+    border-color: #ea4335;
+    color: #ffffff;
+}
+
+.ampm-btn.pm.active {
+    background: #4285f4;
+    border-color: #4285f4;
+    color: #ffffff;
 }
 
 /* 기존 datetime-row (하위 호환) */
@@ -2342,10 +2387,20 @@ body {
         font-size: 13px;
     }
     
+    .time-picker-group {
+        flex: 0.9;
+    }
+    
     .time-input {
-        flex: 0.7;
+        flex: 1;
+        min-width: 0;
         padding: 8px;
         font-size: 13px;
+    }
+    
+    .ampm-btn {
+        padding: 8px 10px;
+        font-size: 12px;
     }
 }
 

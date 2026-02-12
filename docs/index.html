@@ -197,12 +197,24 @@
                         <div class="datetime-row-with-day">
                             <input type="date" id="eventStartDate" required class="date-input">
                             <span class="day-of-week" id="startDayOfWeek"></span>
-                            <input type="time" id="eventStartTime" required class="time-input">
+                            <div class="time-picker-group">
+                                <input type="time" id="eventStartTime" required class="time-input">
+                                <div class="ampm-buttons">
+                                    <button type="button" class="ampm-btn am" data-time-id="eventStartTime" data-period="am">오전</button>
+                                    <button type="button" class="ampm-btn pm" data-time-id="eventStartTime" data-period="pm">오후</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="datetime-row-with-day">
                             <input type="date" id="eventEndDate" required class="date-input">
                             <span class="day-of-week" id="endDayOfWeek"></span>
-                            <input type="time" id="eventEndTime" required class="time-input">
+                            <div class="time-picker-group">
+                                <input type="time" id="eventEndTime" required class="time-input">
+                                <div class="ampm-buttons">
+                                    <button type="button" class="ampm-btn am" data-time-id="eventEndTime" data-period="am">오전</button>
+                                    <button type="button" class="ampm-btn pm" data-time-id="eventEndTime" data-period="pm">오후</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

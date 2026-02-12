@@ -375,6 +375,9 @@ function setupEventListeners() {
     if (eventForm) {
         eventForm.addEventListener('submit', handleEventFormSubmit);
     }
+
+    // 오전/오후 버튼 초기화
+    initAmpmButtons();
     
     // Event detail actions
     const editEventBtn = document.getElementById('editEventBtn');
@@ -1087,6 +1090,10 @@ function openEventModal(dateInfo = null, event = null) {
     }
     
     console.log('Opening modal...');
+
+    // 오전/오후 버튼 상태 동기화
+    updateAmpmButtonState('eventStartTime');
+    updateAmpmButtonState('eventEndTime');
     
     // 약간의 딜레이를 주어 캘린더 클릭 이벤트가 모달 내부로 전파되지 않도록 함
     setTimeout(() => {
@@ -2864,6 +2871,51 @@ function formatTimeInput(date) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+/**
+ * 오전/오후 버튼 상태를 시간 입력값에 맞게 업데이트
+ */
+function updateAmpmButtonState(timeInputId) {
+    const timeInput = document.getElementById(timeInputId);
+    if (!timeInput) return;
+    const btns = document.querySelectorAll(`.ampm-btn[data-time-id="${timeInputId}"]`);
+    btns.forEach(btn => btn.classList.remove('active'));
+    const val = timeInput.value;
+    if (val && val.includes(':')) {
+        const [h, m] = val.split(':').map(Number);
+        const hour = h || 0;
+        const period = hour < 12 ? 'am' : 'pm';
+        const active = document.querySelector(`.ampm-btn[data-time-id="${timeInputId}"][data-period="${period}"]`);
+        if (active) active.classList.add('active');
+    }
+}
+
+/**
+ * 오전/오후 버튼 클릭 시 시간 토글
+ */
+function initAmpmButtons() {
+    document.querySelectorAll('.ampm-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const timeInputId = btn.dataset.timeId;
+            const period = btn.dataset.period;
+            const timeInput = document.getElementById(timeInputId);
+            if (!timeInput) return;
+            let [h, m] = (timeInput.value || '00:00').split(':').map(Number);
+            h = h || 0;
+            m = m || 0;
+            if (period === 'am') {
+                if (h >= 12) h -= 12;
+            } else {
+                if (h < 12) h += 12;
+            }
+            timeInput.value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            updateAmpmButtonState(timeInputId);
+        });
+    });
+    document.getElementById('eventStartTime')?.addEventListener('input', () => updateAmpmButtonState('eventStartTime'));
+    document.getElementById('eventEndTime')?.addEventListener('input', () => updateAmpmButtonState('eventEndTime'));
 }
 
 /**
