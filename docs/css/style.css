@@ -480,15 +480,21 @@ body {
     border-top: none !important; /* 시간 레이블 영역 가로선 제거 */
 }
 
-/* 시간 축 (왼쪽 레이블) - 모든 경계선 제거 */
+/* 시간 축 (왼쪽 레이블) - 모든 경계선 제거, 배경 투명 */
 .fc .fc-timegrid-axis {
     border: none !important;
     position: relative !important;
+    background: transparent !important;
 }
 
-/* 시간 레이블이 있는 열 전체 경계선 제거 */
+/* 시간 레이블이 있는 열 전체 경계선 제거, 배경 투명 */
 .fc .fc-timegrid-axis-frame {
     border: none !important;
+    background: transparent !important;
+}
+
+.fc .fc-timegrid-axis-chunk {
+    background: transparent !important;
 }
 
 /* 시간 슬롯 열의 왼쪽 경계선 제거 */
@@ -529,7 +535,7 @@ body {
     border: none !important;
 }
 
-/* 시간 표시 레이블 - 선 위에 위치하도록 */
+/* 시간 표시 레이블 - 배경 없음 (세로 구분선이 가려지지 않도록) */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
     padding-right: 8px !important;
@@ -537,9 +543,13 @@ body {
     vertical-align: top !important;
     padding-top: 0 !important;
     position: relative !important;
-    top: -8px !important; /* 시간 텍스트를 위로 올려서 선과 교차하도록 */
-    background: #ffffff !important; /* 선 위에 텍스트가 선명하게 보이도록 */
+    top: -8px !important;
+    background: transparent !important;
     display: inline-block !important;
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+    background: transparent !important;
 }
 
 /* 06:00 시간 라벨만 숨기기 */
