@@ -2236,20 +2236,29 @@ function showExerciseDetail(dateStr, activities) {
             const map = L.map(mapEl, { attributionControl: false }).setView(coords[0], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
             L.polyline(coords, { color: '#f4511e', weight: 2, opacity: 0.9 }).addTo(map);
+            let start = coords[0];
+            let end = coords[coords.length - 1];
+            const dist = Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]);
+            if (dist < 0.0002) {
+                const lat = (start[0] + end[0]) / 2;
+                const lon = (start[1] + end[1]) / 2;
+                start = [lat, lon - 0.00012];
+                end = [lat, lon + 0.00012];
+            }
             const startIcon = L.divIcon({
                 className: 'exercise-map-marker',
-                html: '<span class="exercise-marker-label">출발</span>',
-                iconSize: [36, 20],
-                iconAnchor: [18, 10]
+                html: '<span class="exercise-marker-dot exercise-marker-start" title="출발"></span>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
             });
             const endIcon = L.divIcon({
                 className: 'exercise-map-marker',
-                html: '<span class="exercise-marker-label">도착</span>',
-                iconSize: [36, 20],
-                iconAnchor: [18, 10]
+                html: '<span class="exercise-marker-dot exercise-marker-end" title="도착"></span>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
             });
-            L.marker(coords[0], { icon: startIcon }).addTo(map);
-            L.marker(coords[coords.length - 1], { icon: endIcon }).addTo(map);
+            L.marker(start, { icon: startIcon }).addTo(map);
+            L.marker(end, { icon: endIcon }).addTo(map);
             map.fitBounds(coords, { padding: [20, 20] });
             _exerciseDetailMaps.push(map);
         });
