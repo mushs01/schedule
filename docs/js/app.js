@@ -1961,7 +1961,13 @@ function renderExerciseCalendar() {
     }
     // 가족 모두 표시, 기록 없으면 아이콘 비활성화
     const personList = EXERCISE_FAMILY_ORDER.slice();
-    const keepActive = (p) => prevSelection.length === 0 || prevSelection.includes(p);
+    // 새로 기록이 생긴 사람(prevSelection에 없던)이 있으면 모두 표시로 전환
+    const hasNewPersonsWithRecords = Array.from(personsInMonth).some(p => !prevSelection.includes(p));
+    const keepActive = (p) => {
+        if (!personsInMonth.has(p)) return false;
+        if (prevSelection.length === 0 || hasNewPersonsWithRecords) return true;
+        return prevSelection.includes(p);
+    };
     const filterHtml = personList.map(p => {
         const cfg = EXERCISE_PERSON_CONFIG[p] || { img: 'images/all.png', color: '#1a73e8' };
         const hasRecord = personsInMonth.has(p);
