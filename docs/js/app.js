@@ -633,17 +633,37 @@ function setupEventListeners() {
     const stravaConnectSection = document.getElementById('stravaConnectSection');
     if (stravaConnectSection) {
         stravaConnectSection.addEventListener('click', (e) => {
-            if (e.target.closest && e.target.closest('#stravaAddAccountBtn')) {
+            var addBtn = e.target.closest && e.target.closest('#stravaAddAccountBtn');
+            var disconnectBtn = e.target.closest && e.target.closest('.strava-disconnect-one');
+            if (addBtn) {
                 e.preventDefault();
                 e.stopPropagation();
                 handleStravaAddAccount();
+            } else if (disconnectBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                var aid = disconnectBtn.getAttribute('data-athlete-id');
+                if (aid != null && window.stravaModule && typeof window.stravaModule.disconnectAccount === 'function') {
+                    window.stravaModule.disconnectAccount(aid);
+                    updateStravaUI();
+                }
             }
         });
         stravaConnectSection.addEventListener('touchend', (e) => {
-            if (e.target.closest && e.target.closest('#stravaAddAccountBtn')) {
+            var addBtn = e.target.closest && e.target.closest('#stravaAddAccountBtn');
+            var disconnectBtn = e.target.closest && e.target.closest('.strava-disconnect-one');
+            if (addBtn) {
                 e.preventDefault();
                 e.stopPropagation();
                 handleStravaAddAccount();
+            } else if (disconnectBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                var aid = disconnectBtn.getAttribute('data-athlete-id');
+                if (aid != null && window.stravaModule && typeof window.stravaModule.disconnectAccount === 'function') {
+                    window.stravaModule.disconnectAccount(aid);
+                    updateStravaUI();
+                }
             }
         }, { passive: false });
     }
