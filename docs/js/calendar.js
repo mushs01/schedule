@@ -593,6 +593,8 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                     person: person,
                     persons: schedule.persons,
                     isPast: isPast,
+                    notification_start: schedule.notification_start === true,
+                    notification_end: schedule.notification_end === true,
                     kakao_notification_start: schedule.kakao_notification_start || false,
                     kakao_notification_end: schedule.kakao_notification_end || false,
                     repeat_type: schedule.repeat_type || 'none',

@@ -980,7 +980,7 @@ function openEventModal(dateInfo = null, event = null) {
                         console.log('  - notification_start:', originalSchedule.notification_start);
                         console.log('  - notification_end:', originalSchedule.notification_end);
                         
-                        notificationStartField.checked = originalSchedule.notification_start !== false;
+                        notificationStartField.checked = originalSchedule.notification_start === true;
                         notificationEndField.checked = originalSchedule.notification_end === true;
                         
                         console.log('  - ✅ 체크박스 설정 완료');
@@ -988,13 +988,13 @@ function openEventModal(dateInfo = null, event = null) {
                         console.log('    - End:', notificationEndField.checked);
                     } else {
                         console.warn('  - ⚠️ 원본 일정을 찾을 수 없음, 현재 값 사용');
-                        notificationStartField.checked = event.extendedProps.notification_start !== false;
+                        notificationStartField.checked = event.extendedProps.notification_start === true;
                         notificationEndField.checked = event.extendedProps.notification_end === true;
                     }
                 }).catch(error => {
                     console.error('  - ❌ 원본 일정 로드 실패:', error);
                     // 오류 시 현재 인스턴스의 값 사용
-                    notificationStartField.checked = event.extendedProps.notification_start !== false;
+                    notificationStartField.checked = event.extendedProps.notification_start === true;
                     notificationEndField.checked = event.extendedProps.notification_end === true;
                 });
             } else {
@@ -1007,8 +1007,8 @@ function openEventModal(dateInfo = null, event = null) {
                 console.log('  - Raw notification_start:', notifStart, '(type:', typeof notifStart, ')');
                 console.log('  - Raw notification_end:', notifEnd, '(type:', typeof notifEnd, ')');
                 
-                // 명시적 처리: undefined는 true(시작), false는 false
-                notificationStartField.checked = notifStart !== false;
+                // 명시적 처리: true일 때만 체크 (둘 다 선택형)
+                notificationStartField.checked = notifStart === true;
                 notificationEndField.checked = notifEnd === true;
                 
                 console.log('  - ✅ 체크박스 설정 완료');
@@ -1072,11 +1072,11 @@ function openEventModal(dateInfo = null, event = null) {
         const notificationEndField = document.getElementById('eventNotificationEnd');
         
         if (notificationStartField) {
-            // 시작 알림: 기본 ON
-            notificationStartField.checked = true;
+            // 시작 알림: 기본 OFF (선택형)
+            notificationStartField.checked = false;
         }
         if (notificationEndField) {
-            // 종료 알림: 기본 OFF
+            // 종료 알림: 기본 OFF (선택형)
             notificationEndField.checked = false;
         }
         
@@ -2705,7 +2705,7 @@ async function handleSearch(e) {
                             description: schedule.description,
                             person: schedule.person,
                             persons: schedule.persons,
-                            notification_start: schedule.notification_start !== false,
+                            notification_start: schedule.notification_start === true,
                             notification_end: schedule.notification_end === true,
                             repeat_type: schedule.repeat_type || 'none',
                             repeat_end_date: schedule.repeat_end_date || null,

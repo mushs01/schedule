@@ -74,9 +74,9 @@ const api = {
                         persons: data.persons,
                         color: data.color,
                         isPast: data.is_past || false,
-                        // 푸시 알림 설정
-                        notification_start: data.notification_start !== false, // 기본값 true
-                        notification_end: data.notification_end === true, // 기본값 false
+                        // 푸시 알림 설정 (둘 다 선택형)
+                        notification_start: data.notification_start === true,
+                        notification_end: data.notification_end === true,
                         repeat_type: data.repeat_type || 'none',
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: data.repeat_weekdays || [],
@@ -165,7 +165,7 @@ const api = {
                     persons: data.persons || [data.person],
                     color: data.color,
                     isPast: data.is_past || false,
-                    notification_start: data.notification_start !== false,
+                    notification_start: data.notification_start === true,
                     notification_end: data.notification_end === true,
                     repeat_type: data.repeat_type || 'none',
                     repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
@@ -202,9 +202,9 @@ const api = {
                 persons: scheduleData.persons || [scheduleData.person],
                 color: color,
                 is_past: isPast,
-                // 푸시 알림 설정
-                notification_start: scheduleData.notification_start !== false, // 기본값 true
-                notification_end: scheduleData.notification_end === true, // 기본값 false
+                // 푸시 알림 설정 (둘 다 선택형)
+                notification_start: scheduleData.notification_start === true,
+                notification_end: scheduleData.notification_end === true,
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
