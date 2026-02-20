@@ -1208,6 +1208,11 @@ async function handleEventFormSubmit(e) {
     const notificationStart = notificationStartCheckbox ? notificationStartCheckbox.checked : false;
     const notificationEnd = notificationEndCheckbox ? notificationEndCheckbox.checked : false;
     
+    // 알림 설정한 사용자 (아빠/엄마) - 설정에서 선택한 사용자
+    const notificationSetBy = (notificationStart || notificationEnd) && window.fcmNotification
+        ? window.fcmNotification.getCurrentUser()
+        : null; // 'mom' | 'dad' | null
+    
     console.log('📤 Saving notification settings:');
     console.log('  - Start notification:', notificationStart);
     console.log('  - End notification:', notificationEnd);
@@ -1344,6 +1349,7 @@ async function handleEventFormSubmit(e) {
                     description: description || null,
                     notification_start: notificationStart,
                     notification_end: notificationEnd,
+                    notification_set_by: notificationSetBy,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1378,6 +1384,7 @@ async function handleEventFormSubmit(e) {
                         description: description || null,
                         notification_start: notificationStart,
                         notification_end: notificationEnd,
+                        notification_set_by: notificationSetBy,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1413,6 +1420,7 @@ async function handleEventFormSubmit(e) {
                     description: description || null,
                     notification_start: notificationStart,
                     notification_end: notificationEnd,
+                    notification_set_by: notificationSetBy,
                     repeat_type: repeatType,
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
@@ -1434,6 +1442,7 @@ async function handleEventFormSubmit(e) {
                         description: description || null,
                         notification_start: notificationStart,
                         notification_end: notificationEnd,
+                        notification_set_by: notificationSetBy,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,

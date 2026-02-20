@@ -106,6 +106,7 @@ async function initFCM() {
 
     } catch (error) {
         console.error('❌ FCM 초기화 실패:', error);
+        updateNotificationUI(); // 실패 시에도 UI 업데이트 (알림 상태 확인 중... 해제)
         return false;
     }
 }
@@ -159,6 +160,7 @@ async function requestNotificationPermission() {
     } catch (error) {
         console.error('❌ 알림 권한 요청 실패:', error);
         showToast('알림 설정 중 오류가 발생했습니다.', 'error');
+        updateNotificationUI(); // 오류 시에도 UI 갱신
         return false;
     }
 }
@@ -307,6 +309,12 @@ function updateNotificationUI() {
         } else if (hasPermission && hasToken && !isEnabled) {
             statusElement.textContent = '🔕 알림 비활성화됨';
             statusElement.className = 'status-disabled';
+        } else if (Notification.permission === 'denied') {
+            statusElement.textContent = '❌ 알림 권한 차단됨 (브라우저 설정에서 허용 필요)';
+            statusElement.className = 'status-none';
+        } else if (Notification.permission === 'default') {
+            statusElement.textContent = '⚙️ 알림 활성화 버튼을 눌러 권한을 허용해주세요';
+            statusElement.className = 'status-none';
         } else {
             statusElement.textContent = '❌ 알림 권한 없음';
             statusElement.className = 'status-none';
@@ -441,9 +449,10 @@ function updateUserUI() {
     }
 }
 
-// 페이지 로드 시 자동 초기화 - Strava OAuth 복귀 후에 실행 (FCM 오류가 Strava 연동 실패로 표시되는 것 방지)
+// 페이지 로드 시 - 즉시 UI 상태 반영, FCM 초기화는 2초 후
 document.addEventListener('DOMContentLoaded', () => {
     updateUserUI();
+    updateNotificationUI(); // 즉시 상태 표시 (알림 상태 확인 중... 해제)
     setTimeout(() => initFCM(), 2000);
 });
 

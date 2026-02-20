@@ -202,9 +202,10 @@ const api = {
                 persons: scheduleData.persons || [scheduleData.person],
                 color: color,
                 is_past: isPast,
-                // 푸시 알림 설정 (둘 다 선택형)
+                // 푸시 알림 설정 (둘 다 선택형) + 알림 설정한 사용자
                 notification_start: scheduleData.notification_start === true,
                 notification_end: scheduleData.notification_end === true,
+                notification_set_by: scheduleData.notification_set_by || null,
                 repeat_type: scheduleData.repeat_type || 'none',
                 repeat_end_date: scheduleData.repeat_end_date ? firebase.firestore.Timestamp.fromDate(new Date(scheduleData.repeat_end_date)) : null,
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
@@ -270,6 +271,9 @@ const api = {
             }
             if (scheduleData.notification_end !== undefined) {
                 updateData.notification_end = scheduleData.notification_end;
+            }
+            if (scheduleData.notification_set_by !== undefined) {
+                updateData.notification_set_by = scheduleData.notification_set_by || null;
             }
             if (scheduleData.repeat_type !== undefined) {
                 updateData.repeat_type = scheduleData.repeat_type;
