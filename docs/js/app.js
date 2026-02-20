@@ -2450,8 +2450,8 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                             <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(128,128,128,0.15)" stroke="none"/>
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
                             ${avgPaceLine}
-                            <text x="${padL - 24}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
-                            <text x="${padL + chartW + 24}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="middle">/km</text>
+                            <text x="${padL - 8}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
+                            <text x="${w - 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="end" dominant-baseline="middle">/km</text>
                             <text x="${padL + chartW / 2}" y="${h - 2}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
                             ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
                             ${(function(){
@@ -2460,10 +2460,10 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             const y = Math.max(padT + 6, Math.min(padT + chartH - 6, padT + chartH - ((v - altMin) / (altRange || 1)) * chartH));
             if (Math.abs(y - lastY) < 12 && lastY > -999) return '';
             lastY = y;
-            return `<text x="${padL - 14}" y="${y}" class="pace-axis-tick pace-axis-left" text-anchor="end" dominant-baseline="middle" font-size="8">${v}</text>`;
+            return `<text x="${padL - 6}" y="${y}" class="pace-axis-tick pace-axis-left" text-anchor="end" dominant-baseline="middle" font-size="8">${v}</text>`;
         }).join('');
     })()}
-                            ${rightPaces.map((t, i) => `<text x="${w - padR + 22}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick pace-axis-right" text-anchor="start" font-size="8">${t}</text>`).join('')}
+                            ${rightPaces.map((t, i) => `<text x="${padL + chartW + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick pace-axis-right" text-anchor="start" font-size="8">${t}</text>`).join('')}
                         </svg>
                     </div>
                     <div class="exercise-pace-metrics">
