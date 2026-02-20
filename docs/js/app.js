@@ -2244,7 +2244,7 @@ async function handleExerciseMoreClick(e) {
     btn.disabled = true;
     btn.innerHTML = '<span class="loading-spinner"></span> 로딩 중...';
     try {
-        const athleteId = (a.athlete && a.athlete.id) || (a._athlete && a._athlete.id);
+        const athleteId = a._athleteId || (a.athlete && a.athlete.id) || (a._athlete && a._athlete.id);
         const [detail, streamsRaw] = await Promise.all([
             window.stravaModule.getActivityDetail(a.id, athleteId),
             window.stravaModule.getActivityStreams(a.id, athleteId).catch(() => null)

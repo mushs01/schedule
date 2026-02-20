@@ -284,7 +284,8 @@
     /** 활동 상세 조회 (splits_metric 등) */
     async function getActivityDetail(activityId, athleteId) {
         const accounts = getStoredAccounts();
-        const acc = accounts.find(a => String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        let acc = accounts.find(a => athleteId && String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        if (!acc && accounts.length > 0) acc = accounts[0];
         if (!acc) throw new Error('해당 운동의 계정을 찾을 수 없습니다.');
         await ensureValidTokenForAccount(acc);
         const current = getStoredAccounts().find(a => String(a.athleteId) === String(acc.athleteId));
@@ -300,7 +301,8 @@
     /** 활동 스트림 (거리/고도/속도 시계열) */
     async function getActivityStreams(activityId, athleteId, keys = ['distance', 'altitude', 'velocity_smooth']) {
         const accounts = getStoredAccounts();
-        const acc = accounts.find(a => String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        let acc = accounts.find(a => athleteId && String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        if (!acc && accounts.length > 0) acc = accounts[0];
         if (!acc) throw new Error('해당 운동의 계정을 찾을 수 없습니다.');
         await ensureValidTokenForAccount(acc);
         const current = getStoredAccounts().find(a => String(a.athleteId) === String(acc.athleteId));
