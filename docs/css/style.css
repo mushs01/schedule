@@ -2889,18 +2889,38 @@ body {
 }
 .exercise-splits-header {
     display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-columns: 40px 1fr minmax(80px, 1.5fr) 60px;
     padding: 8px 12px;
     background: var(--hover-bg);
     font-weight: 600;
     color: var(--text-secondary);
+    gap: 8px;
 }
+.exercise-splits-header .splits-pace-bar-col { min-width: 0; }
 .exercise-splits-row {
     display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-columns: 40px 1fr minmax(80px, 1.5fr) 60px;
     padding: 6px 12px;
     border-top: 1px solid var(--border-color);
     color: var(--text-primary);
+    gap: 8px;
+    align-items: center;
+}
+.splits-pace-bar-cell {
+    min-width: 0;
+    height: 12px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.splits-pace-bar {
+    display: block;
+    height: 100%;
+    min-width: 4px;
+    margin-left: auto;
+    background: #42a5f5;
+    border-radius: 6px;
+    transition: width 0.2s ease;
 }
 .exercise-pace-graph {
     margin-bottom: 12px;

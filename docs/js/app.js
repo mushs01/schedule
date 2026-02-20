@@ -2293,23 +2293,34 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
 
     let splitsHtml = '';
     if (splits.length) {
-        splitsHtml = '<div class="exercise-splits-section"><h4>Splits</h4><div class="exercise-splits-table"><div class="exercise-splits-header"><span>Km</span><span>Pace</span><span>Elev</span></div>';
+        const paceValues = splits.map(s => {
+            const d = (s.distance || 0) / 1000;
+            const t = s.moving_time || s.elapsed_time || 0;
+            return (d > 0 && t > 0) ? (t / 60) / d : null;
+        }).filter(v => v != null);
+        const minPace = paceValues.length ? Math.min(...paceValues) : 4;
+        const maxPace = paceValues.length ? Math.max(...paceValues) : 8;
+        const paceRange = maxPace - minPace || 1;
+
+        splitsHtml = '<div class="exercise-splits-section"><h4>Splits</h4><div class="exercise-splits-table"><div class="exercise-splits-header"><span>Km</span><span>Pace</span><span class="splits-pace-bar-col"></span><span>Elev</span></div>';
         let cumDist = 0;
         splits.forEach((s, i) => {
             const d = (s.distance || 0) / 1000;
             cumDist += d;
             const t = s.moving_time || s.elapsed_time || 0;
             let paceStr = '-';
+            let paceMin = null;
             if (d > 0 && t > 0) {
-                const p = (t / 60) / d;
-                const pm = Math.floor(p);
-                const ps = Math.round((p % 1) * 60);
+                paceMin = (t / 60) / d;
+                const pm = Math.floor(paceMin);
+                const ps = Math.round((paceMin % 1) * 60);
                 paceStr = pm + ':' + String(ps).padStart(2, '0');
             }
+            const barWidth = paceMin != null ? Math.round(((maxPace - paceMin) / paceRange) * 100) : 0;
             const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference + ' m' : '-';
             const kmLabel = d >= 0.95 ? Math.round(cumDist) : cumDist.toFixed(1);
             const paceWithUnit = paceStr !== '-' ? paceStr + ' /km' : '-';
-            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceWithUnit}</span><span>${elev}</span></div>`;
+            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceWithUnit}</span><span class="splits-pace-bar-cell"><span class="splits-pace-bar" style="width:${barWidth}%"></span></span><span>${elev}</span></div>`;
         });
         splitsHtml += '</div></div>';
     }
