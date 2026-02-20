@@ -132,6 +132,20 @@
         window.location.href = url;
     }
 
+    /** 두 번째 계정 추가: Strava 로그아웃 후 OAuth로 이동 (로그인 화면이 나오도록) */
+    function connectForAddAccount() {
+        const url = getStravaAuthUrl();
+        if (!url) {
+            if (window.showToast) window.showToast('Strava 설정을 확인해주세요.', 'error');
+            return;
+        }
+        window.open('https://www.strava.com/logout', '_blank', 'noopener');
+        if (window.showToast) window.showToast('Strava 로그아웃 페이지가 열렸습니다. 잠시 후 로그인 화면으로 이동합니다.', 'info');
+        setTimeout(function() {
+            window.location.href = url;
+        }, 1500);
+    }
+
     function disconnectStrava() {
         clearAllTokens();
         if (window.showToast) window.showToast('Strava 연동이 모두 해제되었습니다.', 'info');
@@ -284,6 +298,7 @@
 
     window.stravaModule = {
         connect: connectStrava,
+        connectForAddAccount,
         disconnect: disconnectStrava,
         disconnectAccount,
         fetchActivities,

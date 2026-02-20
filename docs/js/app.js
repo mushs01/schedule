@@ -619,7 +619,11 @@ function setupEventListeners() {
         if (now - _stravaAddAccountLastRun < 800) return;
         _stravaAddAccountLastRun = now;
         try {
-            if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
+            var accounts = (window.stravaModule && window.stravaModule.getStoredAccounts) ? window.stravaModule.getStoredAccounts() : [];
+            var useLogoutFirst = accounts.length >= 1;
+            if (useLogoutFirst && typeof window.stravaModule.connectForAddAccount === 'function') {
+                window.stravaModule.connectForAddAccount();
+            } else if (window.stravaModule && typeof window.stravaModule.connect === 'function') {
                 window.stravaModule.connect();
             } else {
                 if (window.showToast) window.showToast('Strava 연동 모듈을 불러올 수 없습니다.', 'error');
