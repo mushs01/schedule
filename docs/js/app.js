@@ -2046,13 +2046,13 @@ function renderExerciseCalendar() {
     const filterPersons = getExerciseFilterPersons().filter(p => personsInMonth.has(p));
     const today = new Date();
     const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
+    let html = '';
     // 활성 아이콘에 해당하는 기록만 표시 (비활성화 시 해당 사람 기록 숨김)
     const filterActs = (arr) => filterPersons.length === 0 ? [] : arr.filter(a => filterPersons.includes(a.person));
     const totalDistKm = (acts) => acts.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
     const circleSize = (km) => Math.min(38, Math.max(14, 10 + Math.min(km, 25) * 1.1));
     const formatDist = (km) => km >= 1 ? Math.round(km) : (km >= 0.1 ? km.toFixed(1) : Math.round(km * 10) / 10);
-    const renderDay = (dayNum, ds, acts, otherMonth) => {
+    const renderDay = (dayNum, ds, acts, otherMonth, dayOfWeek) => {
         const persons = [...new Set(acts.map(a => a.person))];
         const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
         const distKm = totalDistKm(acts);
@@ -2060,25 +2060,27 @@ function renderExerciseCalendar() {
         const size = circleSize(distKm);
         const distLabel = formatDist(distKm);
         const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${primaryColor}">${distLabel}</span>` : '';
-        const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : ''].filter(Boolean).join(' ');
-        return `<div class="${cls}" data-date="${ds}">${dayNum}${badge}</div>`;
+        const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
+        const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : '', sunSat].filter(Boolean).join(' ');
+        return `<div class="${cls}" data-date="${ds}">${badge}<span class="day-num">${dayNum}</span></div>`;
     };
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
         const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        html += renderDay(d.getDate(), ds, acts, true);
+        html += renderDay(d.getDate(), ds, acts, true, d.getDay());
     }
     for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d - 1);
         const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        html += renderDay(d, ds, acts, false);
+        html += renderDay(d, ds, acts, false, dateObj.getDay());
     }
     for (let i = 0; i < extra; i++) {
         const nd = new Date(year, month + 1, i + 1);
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        html += renderDay(nd.getDate(), ds, acts, true);
+        html += renderDay(nd.getDate(), ds, acts, true, nd.getDay());
     }
     grid.innerHTML = html;
     grid.querySelectorAll('.exercise-calendar-day').forEach(cell => {

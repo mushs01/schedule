@@ -2644,38 +2644,38 @@ body {
     max-width: 400px;
     margin: 0 auto;
 }
-.exercise-calendar-weekday {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    padding: 4px 0;
-}
 .exercise-calendar-day {
     aspect-ratio: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
     position: relative;
     min-height: 44px;
+    padding: 4px 0;
+}
+.exercise-calendar-day .day-num {
+    flex-shrink: 0;
+}
+.exercise-calendar-day .exercise-badge {
+    margin-bottom: 2px;
 }
 .exercise-calendar-day.other-month {
     color: #b0b0b0;
 }
+.exercise-calendar-day.other-month.day-sun { color: #e53935; }
+.exercise-calendar-day.other-month.day-sat { color: #1e88e5; }
+.exercise-calendar-day.day-sun .day-num { color: #e53935 !important; }
+.exercise-calendar-day.day-sat .day-num { color: #1e88e5 !important; }
 .exercise-calendar-day.today {
     background: var(--hover-bg);
     font-weight: 600;
 }
 .exercise-calendar-day.has-exercise {
     background: rgba(15, 157, 88, 0.15);
-}
-.exercise-calendar-day.has-exercise {
-    flex-direction: column;
-    gap: 2px;
-    padding-top: 2px;
 }
 .exercise-calendar-day .exercise-badge {
     display: inline-flex;
