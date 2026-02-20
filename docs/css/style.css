@@ -2830,6 +2830,121 @@ body {
     text-decoration: underline;
 }
 
+/* 운동 상세 - 더보기 (Splits, Pace) */
+.exercise-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.exercise-more-btn:hover:not(:disabled) {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+.exercise-more-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.exercise-more-btn.expanded .material-icons {
+    transform: rotate(180deg);
+}
+.exercise-more-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.exercise-more-content.expanded {
+    max-height: 2000px;
+}
+.exercise-more-inner {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+.exercise-splits-section,
+.exercise-pace-section {
+    margin-bottom: 20px;
+}
+.exercise-splits-section h4,
+.exercise-pace-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    color: var(--text-primary);
+}
+.exercise-splits-table {
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.exercise-splits-header {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    padding: 8px 12px;
+    background: var(--hover-bg);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.exercise-splits-row {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+.exercise-pace-graph {
+    margin-bottom: 12px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 6px;
+}
+.exercise-pace-graph svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.pace-graph-alt { stroke-width: 0.5; }
+.pace-graph-pace { stroke-linecap: round; stroke-linejoin: round; }
+.exercise-pace-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.pace-metric {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+.pace-metric span:first-child { color: var(--text-secondary); }
+.exercise-more-error {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+.loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-color);
+    border-top-color: #f4511e;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* 한 달 운동 요약 (달력 아래) */
 .exercise-monthly-summary {
     margin-top: 24px;

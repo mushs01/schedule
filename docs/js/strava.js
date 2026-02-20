@@ -11,6 +11,8 @@
         disconnect: function() {},
         disconnectAccount: function() {},
         fetchActivities: async function() { throw new Error('Strava 모듈을 불러올 수 없습니다.'); },
+        getActivityDetail: async function() { throw new Error('Strava 모듈을 불러올 수 없습니다.'); },
+        getActivityStreams: async function() { throw new Error('Strava 모듈을 불러올 수 없습니다.'); },
         handleOAuthCallback: async function() { return false; },
         isConnected: function() { return false; },
         getAthlete: function() { return null; },
@@ -279,6 +281,38 @@
         }
     }
 
+    /** 활동 상세 조회 (splits_metric 등) */
+    async function getActivityDetail(activityId, athleteId) {
+        const accounts = getStoredAccounts();
+        const acc = accounts.find(a => String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        if (!acc) throw new Error('해당 운동의 계정을 찾을 수 없습니다.');
+        await ensureValidTokenForAccount(acc);
+        const current = getStoredAccounts().find(a => String(a.athleteId) === String(acc.athleteId));
+        const token = (current || acc).accessToken;
+        const url = `https://www.strava.com/api/v3/activities/${activityId}`;
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('활동 상세 조회 실패');
+        return response.json();
+    }
+
+    /** 활동 스트림 (거리/고도/속도 시계열) */
+    async function getActivityStreams(activityId, athleteId, keys = ['distance', 'altitude', 'velocity_smooth']) {
+        const accounts = getStoredAccounts();
+        const acc = accounts.find(a => String(a.athleteId || (a.athlete && a.athlete.id) || '') === String(athleteId));
+        if (!acc) throw new Error('해당 운동의 계정을 찾을 수 없습니다.');
+        await ensureValidTokenForAccount(acc);
+        const current = getStoredAccounts().find(a => String(a.athleteId) === String(acc.athleteId));
+        const token = (current || acc).accessToken;
+        const url = `https://www.strava.com/api/v3/activities/${activityId}/streams?keys=${keys.join(',')}&key_by_type=true`;
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('스트림 조회 실패');
+        return response.json();
+    }
+
     /** 소스에 하드코딩된 연동 정보(STRAVA_CONFIG.preloadedAccounts)를 저장소에 반영해 앱 실행 시 자동 연동 */
     function applyPreloadedAccounts() {
         if (window._stravaPreloadedApplied) return;
@@ -302,6 +336,8 @@
         disconnect: disconnectStrava,
         disconnectAccount,
         fetchActivities,
+        getActivityDetail,
+        getActivityStreams,
         handleOAuthCallback,
         isConnected,
         getAthlete,

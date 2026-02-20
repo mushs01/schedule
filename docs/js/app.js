@@ -597,6 +597,7 @@ function setupEventListeners() {
     if (exerciseDetailModal) {
         exerciseDetailModal.addEventListener('click', (e) => {
             if (e.target === exerciseDetailModal) closeExerciseDetailModal();
+            if (e.target.closest('.exercise-more-btn')) handleExerciseMoreClick(e);
         });
     }
     if (stravaConnectBtn) {
@@ -2223,6 +2224,171 @@ function formatTimeShort(timeSec) {
 }
 
 let _exerciseDetailMaps = [];
+let _exerciseDetailActivities = [];
+
+async function handleExerciseMoreClick(e) {
+    const btn = e.target.closest('.exercise-more-btn');
+    if (!btn) return;
+    const index = parseInt(btn.dataset.activityIndex, 10);
+    const activities = _exerciseDetailActivities;
+    const a = activities && activities[index];
+    if (!a || !window.stravaModule) return;
+    const container = document.getElementById(`exerciseMore_${index}`);
+    if (!container) return;
+    if (container.dataset.loaded === '1') {
+        const isExp = container.classList.toggle('expanded');
+        btn.classList.toggle('expanded', isExp);
+        btn.innerHTML = isExp ? '<span class="material-icons">expand_less</span> 접기' : '<span class="material-icons">expand_more</span> 더보기';
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span> 로딩 중...';
+    try {
+        const athleteId = (a.athlete && a.athlete.id) || (a._athlete && a._athlete.id);
+        const [detail, streamsRaw] = await Promise.all([
+            window.stravaModule.getActivityDetail(a.id, athleteId),
+            window.stravaModule.getActivityStreams(a.id, athleteId).catch(() => null)
+        ]);
+        const streams = streamsRaw && !Array.isArray(streamsRaw) ? streamsRaw : null;
+        container.innerHTML = renderExerciseSplitsAndPace(detail, streams, a);
+        container.dataset.loaded = '1';
+        container.classList.add('expanded');
+        btn.classList.add('expanded');
+        btn.innerHTML = '<span class="material-icons">expand_less</span> 접기';
+    } catch (err) {
+        console.error('운동 상세 로드 실패:', err);
+        container.innerHTML = '<p class="exercise-more-error">데이터를 불러올 수 없습니다.</p>';
+        if (window.showToast) window.showToast('상세 데이터 로드 실패', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons">expand_more</span> 다시 시도';
+    }
+}
+
+function renderExerciseSplitsAndPace(detail, streams, activity) {
+    const splits = detail.splits_metric || detail.splits_standard || [];
+    const distKm = (activity.distance || 0) / 1000;
+    const movingTime = activity.moving_time || activity.elapsed_time || 0;
+    const elapsedTime = activity.elapsed_time || 0;
+    const avgPace = formatPace(activity);
+    const movingStr = formatTimeShort(movingTime);
+    const elapsedStr = formatTimeShort(elapsedTime);
+
+    let fastestPace = null;
+    let fastestPaceStr = '-';
+    if (splits.length) {
+        splits.forEach(s => {
+            const d = (s.distance || 0) / 1000;
+            const t = s.moving_time || s.elapsed_time || 0;
+            if (d > 0 && t > 0) {
+                const p = (t / 60) / d;
+                if (!fastestPace || p < fastestPace) fastestPace = p;
+            }
+        });
+        if (fastestPace != null) {
+            const m = Math.floor(fastestPace);
+            const s = Math.round((fastestPace % 1) * 60);
+            fastestPaceStr = m + ':' + String(s).padStart(2, '0') + ' /km';
+        }
+    }
+
+    let splitsHtml = '';
+    if (splits.length) {
+        splitsHtml = '<div class="exercise-splits-section"><h4>Splits</h4><div class="exercise-splits-table"><div class="exercise-splits-header"><span>Km</span><span>Pace</span><span>Elev</span></div>';
+        let cumDist = 0;
+        splits.forEach((s, i) => {
+            const d = (s.distance || 0) / 1000;
+            cumDist += d;
+            const t = s.moving_time || s.elapsed_time || 0;
+            let paceStr = '-';
+            if (d > 0 && t > 0) {
+                const p = (t / 60) / d;
+                const pm = Math.floor(p);
+                const ps = Math.round((p % 1) * 60);
+                paceStr = pm + ':' + String(ps).padStart(2, '0');
+            }
+            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference : '-';
+            const kmLabel = d >= 0.95 ? Math.round(cumDist) : cumDist.toFixed(1);
+            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceStr}</span><span>${elev}</span></div>`;
+        });
+        splitsHtml += '</div></div>';
+    }
+
+    const avgElapsedPace = distKm > 0 && elapsedTime > 0 ? (function() {
+        const p = (elapsedTime / 60) / distKm;
+        const m = Math.floor(p);
+        const s = Math.round((p % 1) * 60);
+        return m + ':' + String(s).padStart(2, '0') + ' /km';
+    })() : '-';
+
+    let paceGraphHtml = '';
+    const distStream = streams && (streams.distance || (Array.isArray(streams) && streams.find(s => s.type === 'distance')));
+    const altStream = streams && (streams.altitude || (Array.isArray(streams) && streams.find(s => s.type === 'altitude')));
+    const velStream = streams && (streams.velocity_smooth || (Array.isArray(streams) && streams.find(s => s.type === 'velocity_smooth')));
+    const dist = distStream && (distStream.data || distStream);
+    const alt = altStream && (altStream.data || altStream);
+    const vel = velStream && (velStream.data || velStream);
+    if (streams && dist && dist.length && vel && vel.length) {
+        const alt = streams.altitude.data;
+        const vel = streams.velocity_smooth.data;
+        if (dist && dist.length && vel && vel.length) {
+            const maxDist = Math.max(...dist) / 1000;
+            const minPace = 2, maxPace = 10;
+            const altArr = alt && Array.isArray(alt) ? alt : [];
+            const altMin = altArr.length ? Math.min(...altArr) : 0;
+            const altMax = altArr.length ? Math.max(...altArr) : 0;
+            const altRange = altMax - altMin || 1;
+            const altData = altArr;
+            const samples = Math.min(80, dist.length);
+            const step = Math.max(1, Math.floor(dist.length / samples));
+            let pacePath = '';
+            let altPath = '';
+            for (let i = 0; i < dist.length; i += step) {
+                const d = dist[i] / 1000;
+                const v = vel[i] || 0.001;
+                const paceMin = 1000 / (60 * v);
+                const y = 100 - ((paceMin - minPace) / (maxPace - minPace)) * 80;
+                const x = (d / maxDist) * 100;
+                pacePath += (i === 0 ? 'M' : 'L') + x + ',' + Math.max(5, Math.min(95, y));
+                const ah = altData && altData[i] != null ? ((altData[i] - altMin) / altRange) * 40 + 55 : 70;
+                altPath += (i === 0 ? 'M' : 'L') + x + ',' + Math.max(50, Math.min(95, ah));
+            }
+            paceGraphHtml = `
+                <div class="exercise-pace-section">
+                    <h4>Pace</h4>
+                    <div class="exercise-pace-graph" style="height:120px">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path class="pace-graph-alt" d="${altPath}" fill="rgba(128,128,128,0.2)" stroke="rgba(128,128,128,0.5)"/>
+                            <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="exercise-pace-metrics">
+                        <div class="pace-metric"><span>Avg Pace</span><span>${avgPace || '-'}</span></div>
+                        <div class="pace-metric"><span>Moving Time</span><span>${movingStr || '-'}</span></div>
+                        <div class="pace-metric"><span>Avg Elapsed Pace</span><span>${avgElapsedPace}</span></div>
+                        <div class="pace-metric"><span>Elapsed Time</span><span>${elapsedStr || '-'}</span></div>
+                        <div class="pace-metric"><span>Fastest Split</span><span>${fastestPaceStr}</span></div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    if (!paceGraphHtml) {
+        paceGraphHtml = `
+            <div class="exercise-pace-section">
+                <h4>Pace</h4>
+                <div class="exercise-pace-metrics">
+                    <div class="pace-metric"><span>Avg Pace</span><span>${avgPace || '-'}</span></div>
+                    <div class="pace-metric"><span>Moving Time</span><span>${movingStr || '-'}</span></div>
+                    <div class="pace-metric"><span>Avg Elapsed Pace</span><span>${avgElapsedPace}</span></div>
+                    <div class="pace-metric"><span>Elapsed Time</span><span>${elapsedStr || '-'}</span></div>
+                    <div class="pace-metric"><span>Fastest Split</span><span>${fastestPaceStr}</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    return '<div class="exercise-more-inner">' + splitsHtml + paceGraphHtml + '</div>';
+}
 
 function showExerciseDetail(dateStr, activities) {
     const modal = document.getElementById('exerciseDetailModal');
@@ -2232,6 +2398,7 @@ function showExerciseDetail(dateStr, activities) {
 
     _exerciseDetailMaps.forEach(m => { try { m.remove(); } catch (_) {} });
     _exerciseDetailMaps = [];
+    _exerciseDetailActivities = activities || [];
 
     const [y, m, d] = dateStr.split('-');
     const dateText = `${y}년 ${m}월 ${d}일`;
@@ -2282,6 +2449,10 @@ function showExerciseDetail(dateStr, activities) {
                     ${a.calories ? `<span class="exercise-extra-item"><span class="material-icons">local_fire_department</span> ${a.calories} kcal</span>` : ''}
                     ${a.average_speed && !pace ? `<span class="exercise-extra-item"><span class="material-icons">speed</span> ${(a.average_speed * 3.6).toFixed(1)} km/h</span>` : ''}
                 </div>
+                <button type="button" class="exercise-more-btn" data-activity-index="${index}">
+                    <span class="material-icons">expand_more</span> 더보기
+                </button>
+                <div class="exercise-more-content" id="exerciseMore_${index}" data-loaded="0"></div>
             </div>
         `;
     });
