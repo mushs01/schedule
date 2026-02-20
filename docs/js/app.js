@@ -645,6 +645,7 @@ function setupEventListeners() {
                 var aid = disconnectBtn.getAttribute('data-athlete-id');
                 if (aid != null && window.stravaModule && typeof window.stravaModule.disconnectAccount === 'function') {
                     window.stravaModule.disconnectAccount(aid);
+                    setStravaPersonMapping(aid, null);
                     updateStravaUI();
                 }
             }
@@ -662,10 +663,24 @@ function setupEventListeners() {
                 var aid = disconnectBtn.getAttribute('data-athlete-id');
                 if (aid != null && window.stravaModule && typeof window.stravaModule.disconnectAccount === 'function') {
                     window.stravaModule.disconnectAccount(aid);
+                    setStravaPersonMapping(aid, null);
                     updateStravaUI();
                 }
             }
         }, { passive: false });
+        stravaConnectSection.addEventListener('change', (e) => {
+            var sel = e.target.closest && e.target.closest('.strava-person-select');
+            if (sel) {
+                var aid = sel.getAttribute('data-athlete-id');
+                var person = sel.value;
+                if (aid != null && person) {
+                    setStravaPersonMapping(aid, person);
+                    if (reapplyStravaPersonMapping() && window.renderExerciseCalendar) window.renderExerciseCalendar();
+                    updateStravaUI();
+                    if (window.showToast) window.showToast('표시가 ' + ((window.PERSON_NAMES && window.PERSON_NAMES[person]) || person) + '로 변경되었습니다.', 'info');
+                }
+            }
+        });
     }
     if (stravaFetchBtn) {
         stravaFetchBtn.addEventListener('click', () => {
@@ -2295,6 +2310,37 @@ function showExerciseDetail(dateStr, activities) {
     });
 }
 
+const STRAVA_PERSON_MAPPING_KEY = 'strava_person_mapping';
+
+function getStravaPersonMapping() {
+    try {
+        const raw = localStorage.getItem(STRAVA_PERSON_MAPPING_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch (_) { return {}; }
+}
+
+function setStravaPersonMapping(athleteId, person) {
+    const m = getStravaPersonMapping();
+    if (person) m[String(athleteId)] = person;
+    else delete m[String(athleteId)];
+    localStorage.setItem(STRAVA_PERSON_MAPPING_KEY, JSON.stringify(m));
+}
+
+function reapplyStravaPersonMapping() {
+    const mapping = getStravaPersonMapping();
+    const byDate = window._stravaActivitiesByDate || {};
+    var changed = false;
+    Object.keys(byDate).forEach(d => {
+        (byDate[d] || []).forEach(a => {
+            var aid = a._athleteId;
+            if (aid && mapping[aid] && EXERCISE_FAMILY_ORDER.includes(mapping[aid])) {
+                if (a.person !== mapping[aid]) { a.person = mapping[aid]; changed = true; }
+            }
+        });
+    });
+    return changed;
+}
+
 /**
  * Strava 디버그 정보 (연동 실패 원인 파악용)
  * 모바일 WebView vs 브라우저 localStorage 분리 시 토큰이 안 보일 수 있음
@@ -2380,14 +2426,24 @@ function updateStravaUI() {
             notConnected.style.display = 'none';
             connected.style.display = 'block';
             const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+            const mapping = getStravaPersonMapping();
             if (accountListEl) {
                 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                 accountListEl.innerHTML = accounts.map((acc, idx) => {
                     const a = acc.athlete || {};
                     const name = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || ('계정 ' + (idx + 1));
                     const id = acc.athleteId != null ? String(acc.athleteId) : '';
-                    return '<li class="strava-account-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">' +
-                        '<span>' + esc(name) + '</span>' +
+                    var currentPerson = mapping[id];
+                    if (!currentPerson || !EXERCISE_FAMILY_ORDER.includes(currentPerson)) {
+                        currentPerson = EXERCISE_FAMILY_ORDER[idx] || EXERCISE_FAMILY_ORDER[0];
+                    }
+                    var opts = EXERCISE_FAMILY_ORDER.slice(0, 2).map(p => {
+                        var label = (window.PERSON_NAMES && window.PERSON_NAMES[p]) || p;
+                        return '<option value="' + esc(p) + '"' + (currentPerson === p ? ' selected' : '') + '>' + esc(label) + '</option>';
+                    }).join('');
+                    return '<li class="strava-account-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">' +
+                        '<span style="min-width: 80px;">' + esc(name) + '</span>' +
+                        '<select class="strava-person-select" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px; min-width: 70px;">' + opts + '</select>' +
                         '<button type="button" class="btn-secondary strava-disconnect-one" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px;" title="이 계정만 연동 해제"><span class="material-icons" style="font-size: 16px;">link_off</span> 연동 해제</button>' +
                         '</li>';
                 }).join('') || '<li style="color: var(--text-secondary);">계정 목록 없음</li>';
@@ -2442,16 +2498,24 @@ async function handleStravaFetch(silent) {
         
         const activities = await window.stravaModule.fetchActivities(200, 1);
         const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+        const mapping = getStravaPersonMapping();
         const athleteIdToPerson = {};
-        EXERCISE_FAMILY_ORDER.forEach((p, i) => {
-            if (accounts[i]) athleteIdToPerson[String(accounts[i].athleteId)] = p;
+        accounts.forEach((acc, i) => {
+            var id = String(acc.athleteId);
+            if (mapping[id] && EXERCISE_FAMILY_ORDER.includes(mapping[id])) {
+                athleteIdToPerson[id] = mapping[id];
+            } else {
+                athleteIdToPerson[id] = EXERCISE_FAMILY_ORDER[i] || EXERCISE_FAMILY_ORDER[0];
+            }
         });
         const defaultPerson = EXERCISE_FAMILY_ORDER[0] || 'dad';
 
         const formatted = (activities || []).map(a => {
             const athlete = a._athlete;
-            const person = athlete && athleteIdToPerson[String(athlete.id)] ? athleteIdToPerson[String(athlete.id)] : defaultPerson;
+            const athleteId = athlete ? String(athlete.id) : '';
+            const person = athlete && athleteIdToPerson[athleteId] ? athleteIdToPerson[athleteId] : defaultPerson;
             return {
+                _athleteId: athleteId,
                 id: a.id,
                 name: a.name,
                 type: a.type,
