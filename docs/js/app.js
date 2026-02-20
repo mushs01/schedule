@@ -2302,7 +2302,12 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const maxPace = paceValues.length ? Math.max(...paceValues) : 8;
         const paceRange = maxPace - minPace || 1;
 
-        splitsHtml = '<div class="exercise-splits-section"><h4>Splits</h4><div class="exercise-splits-table"><div class="exercise-splits-header"><span>Km</span><span>Pace</span><span class="splits-pace-bar-col"></span><span>Elev</span></div>';
+        const speeds = paceValues.map(p => 1 / p);
+        const minSpeed = Math.min(...speeds);
+        const maxSpeed = Math.max(...speeds);
+        const speedRange = maxSpeed - minSpeed || 0.001;
+
+               splitsHtml = '<div class="exercise-splits-section"><h4>Splits</h4><div class="exercise-splits-table"><div class="exercise-splits-header"><span>Km</span><span>Pace(/km)</span><span class="splits-pace-bar-col"></span><span class="splits-elev-cell">Elev(m)</span></div>';
         let cumDist = 0;
         splits.forEach((s, i) => {
             const d = (s.distance || 0) / 1000;
@@ -2316,11 +2321,11 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                 const ps = Math.round((paceMin % 1) * 60);
                 paceStr = pm + ':' + String(ps).padStart(2, '0');
             }
-            const barWidth = paceMin != null ? Math.round(((maxPace - paceMin) / paceRange) * 100) : 0;
-            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference + ' m' : '-';
+            const speed = paceMin != null ? 1 / paceMin : 0;
+            const barWidth = paceMin != null ? Math.round(((speed - minSpeed) / speedRange) * 100) : 0;
+            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference : '-';
             const kmLabel = d >= 0.95 ? Math.round(cumDist) : cumDist.toFixed(1);
-            const paceWithUnit = paceStr !== '-' ? paceStr + ' /km' : '-';
-            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceWithUnit}</span><span class="splits-pace-bar-cell"><span class="splits-pace-bar" style="width:${barWidth}%"></span></span><span>${elev}</span></div>`;
+            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceStr}</span><span class="splits-pace-bar-cell"><span class="splits-pace-bar" style="width:${barWidth}%"></span></span><span class="splits-elev-cell">${elev}</span></div>`;
         });
         splitsHtml += '</div></div>';
     }

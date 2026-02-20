@@ -2916,11 +2916,13 @@ body {
 .splits-pace-bar {
     display: block;
     height: 100%;
-    min-width: 4px;
-    margin-left: auto;
+    min-width: 2px;
     background: #42a5f5;
     border-radius: 6px;
     transition: width 0.2s ease;
+}
+.splits-elev-cell {
+    text-align: left;
 }
 .exercise-pace-graph {
     margin-bottom: 12px;
