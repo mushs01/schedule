@@ -2460,7 +2460,6 @@ function updateStravaUI() {
             var browserHintEl = document.getElementById('stravaOpenInBrowserHint');
             if (hintEl) hintEl.style.display = accounts.length === 1 ? 'block' : 'none';
             if (browserHintEl) {
-                var isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
                 browserHintEl.style.display = (accounts.length === 1 && isStandalone) ? 'block' : 'none';
             }
         } else {
