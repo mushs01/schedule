@@ -2666,8 +2666,8 @@ body {
 .exercise-calendar-day.other-month {
     color: #b0b0b0;
 }
-.exercise-calendar-day.other-month.day-sun { color: #e53935; }
-.exercise-calendar-day.other-month.day-sat { color: #1e88e5; }
+.exercise-calendar-day.other-month.day-sun .day-num { color: #e53935 !important; }
+.exercise-calendar-day.other-month.day-sat .day-num { color: #1e88e5 !important; }
 .exercise-calendar-day.day-sun .day-num { color: #e53935 !important; }
 .exercise-calendar-day.day-sat .day-num { color: #1e88e5 !important; }
 .exercise-calendar-day.today {
