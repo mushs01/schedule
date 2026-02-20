@@ -893,6 +893,12 @@ function openEventModal(dateInfo = null, event = null) {
     // Reset form
     eventForm.reset();
     
+    // 새 일정 추가 시 알림 기본값 OFF (reset 직후 적용)
+    const notificationStartField = document.getElementById('eventNotificationStart');
+    const notificationEndField = document.getElementById('eventNotificationEnd');
+    if (!event && notificationStartField) notificationStartField.checked = false;
+    if (!event && notificationEndField) notificationEndField.checked = false;
+    
     if (event) {
         // Editing mode - 기존 일정 수정
         console.log('✏️ Edit mode - event:', event);
@@ -1065,21 +1071,7 @@ function openEventModal(dateInfo = null, event = null) {
         console.log('Create mode - dateInfo:', dateInfo);
         document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
         
-        // 카카오톡 알림 체크박스 초기화 (사용자별 디폴트)
-        // 로그인 상태일 때만 체크박스가 존재함
-        // 새 일정 생성 시 알림 기본값 설정
-        const notificationStartField = document.getElementById('eventNotificationStart');
-        const notificationEndField = document.getElementById('eventNotificationEnd');
-        
-        if (notificationStartField) {
-            // 시작 알림: 기본 OFF (선택형)
-            notificationStartField.checked = false;
-        }
-        if (notificationEndField) {
-            // 종료 알림: 기본 OFF (선택형)
-            notificationEndField.checked = false;
-        }
-        
+        // (알림 기본값 OFF는 reset 직후 상단에서 이미 적용됨)
         if (dateInfo) {
             // dateInfo는 FullCalendar의 select 콜백에서 전달된 객체
             // dateInfo.start, dateInfo.end를 사용
