@@ -2394,7 +2394,6 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                     </div>
                 </div>
             `;
-        }
     }
     if (!paceGraphHtml) {
         paceGraphHtml = `
