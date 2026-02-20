@@ -2912,8 +2912,14 @@ body {
     height: 100%;
     display: block;
 }
-.pace-graph-alt { stroke-width: 0.5; }
+.pace-graph-alt { stroke: none; }
 .pace-graph-pace { stroke-linecap: round; stroke-linejoin: round; }
+.pace-chart-svg { width: 100%; height: 100%; }
+.pace-axis-label { font-size: 10px; fill: var(--text-secondary); }
+.pace-axis-tick { fill: var(--text-secondary); }
+.pace-axis-left { font-size: 9px; }
+.pace-axis-right { font-size: 9px; }
+.pace-axis-bottom { font-size: 9px; }
 .exercise-pace-metrics {
     display: flex;
     flex-direction: column;

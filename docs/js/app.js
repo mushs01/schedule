@@ -2306,9 +2306,10 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                 const ps = Math.round((p % 1) * 60);
                 paceStr = pm + ':' + String(ps).padStart(2, '0');
             }
-            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference : '-';
+            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference + ' m' : '-';
             const kmLabel = d >= 0.95 ? Math.round(cumDist) : cumDist.toFixed(1);
-            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceStr}</span><span>${elev}</span></div>`;
+            const paceWithUnit = paceStr !== '-' ? paceStr + ' /km' : '-';
+            splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceWithUnit}</span><span>${elev}</span></div>`;
         });
         splitsHtml += '</div></div>';
     }
@@ -2325,40 +2326,52 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
     const altStream = streams && (streams.altitude || (Array.isArray(streams) && streams.find(s => s.type === 'altitude')));
     const velStream = streams && (streams.velocity_smooth || (Array.isArray(streams) && streams.find(s => s.type === 'velocity_smooth')));
     const dist = distStream && (distStream.data || distStream);
-    const alt = altStream && (altStream.data || altStream);
+    const altData = altStream && (altStream.data || altStream);
     const vel = velStream && (velStream.data || velStream);
     if (streams && dist && dist.length && vel && vel.length) {
-        const alt = streams.altitude.data;
-        const vel = streams.velocity_smooth.data;
-        if (dist && dist.length && vel && vel.length) {
-            const maxDist = Math.max(...dist) / 1000;
-            const minPace = 2, maxPace = 10;
-            const altArr = alt && Array.isArray(alt) ? alt : [];
-            const altMin = altArr.length ? Math.min(...altArr) : 0;
-            const altMax = altArr.length ? Math.max(...altArr) : 0;
-            const altRange = altMax - altMin || 1;
-            const altData = altArr;
-            const samples = Math.min(80, dist.length);
-            const step = Math.max(1, Math.floor(dist.length / samples));
-            let pacePath = '';
-            let altPath = '';
-            for (let i = 0; i < dist.length; i += step) {
-                const d = dist[i] / 1000;
-                const v = vel[i] || 0.001;
-                const paceMin = 1000 / (60 * v);
-                const y = 100 - ((paceMin - minPace) / (maxPace - minPace)) * 80;
-                const x = (d / maxDist) * 100;
-                pacePath += (i === 0 ? 'M' : 'L') + x + ',' + Math.max(5, Math.min(95, y));
-                const ah = altData && altData[i] != null ? ((altData[i] - altMin) / altRange) * 40 + 55 : 70;
-                altPath += (i === 0 ? 'M' : 'L') + x + ',' + Math.max(50, Math.min(95, ah));
-            }
-            paceGraphHtml = `
+        const maxDist = Math.max(0.1, Math.max(...dist) / 1000);
+        const paceValues = dist.map((_, i) => (vel[i] && vel[i] > 0) ? 1000 / (60 * vel[i]) : 0).filter(v => v > 0);
+        const minPace = paceValues.length ? Math.max(1.5, Math.min(...paceValues) - 0.5) : 2;
+        const maxPace = paceValues.length ? Math.min(12, Math.max(...paceValues) + 0.5) : 10;
+        const altArr = altData && Array.isArray(altData) ? altData : [];
+        const altMin = altArr.length ? Math.min(...altArr) : 0;
+        const altMax = altArr.length ? Math.max(...altArr) : 0;
+        const altRange = altMax - altMin || 1;
+        const padL = 36, padR = 38, padT = 8, padB = 22;
+        const w = 280, h = 120;
+        const chartW = w - padL - padR, chartH = h - padT - padB;
+        const step = Math.max(1, Math.floor(dist.length / 80));
+        let pacePath = '';
+        let altPath = '';
+        for (let i = 0; i < dist.length; i += step) {
+            const d = dist[i] / 1000;
+            const v = vel[i] || 0.001;
+            const paceMin = 1000 / (60 * v);
+            const yPace = padT + ((paceMin - minPace) / (maxPace - minPace)) * chartH;
+            const x = padL + (d / maxDist) * chartW;
+            pacePath += (pacePath ? ' L' : 'M') + x.toFixed(1) + ',' + Math.max(padT, Math.min(padT + chartH, yPace)).toFixed(1);
+            const ah = altArr[i] != null ? padT + chartH - ((altArr[i] - altMin) / altRange) * chartH * 0.4 : padT + chartH;
+            altPath += (altPath ? ' L' : 'M') + x.toFixed(1) + ',' + Math.max(padT, Math.min(padT + chartH, ah)).toFixed(1);
+        }
+        const fmtPace = (m) => Math.floor(m) + ':' + String(Math.round((m % 1) * 60)).padStart(2, '0');
+        const xLabels = [];
+        for (let k = 0; k <= maxDist; k += Math.max(1, Math.ceil(maxDist / 7))) xLabels.push(k);
+        if (xLabels[xLabels.length - 1] !== maxDist) xLabels.push(maxDist);
+        const leftLabels = [altMin, Math.round((altMin + altMax) / 2), altMax].map(v => v + ' m');
+        const rightPaces = [minPace, (minPace + maxPace) / 2, maxPace].map(fmtPace);
+        paceGraphHtml = `
                 <div class="exercise-pace-section">
                     <h4>Pace</h4>
-                    <div class="exercise-pace-graph" style="height:120px">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path class="pace-graph-alt" d="${altPath}" fill="rgba(128,128,128,0.2)" stroke="rgba(128,128,128,0.5)"/>
-                            <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1.5"/>
+                    <div class="exercise-pace-graph" style="height:${h}px">
+                        <svg class="pace-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+                            <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(128,128,128,0.15)" stroke="none"/>
+                            <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
+                            <text x="${padL - 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
+                            <text x="${padL + chartW + 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="middle">/km</text>
+                            <text x="${padL + chartW / 2}" y="${h - 4}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
+                            ${xLabels.slice(0, 8).map((v, i) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 6}" class="pace-axis-tick" text-anchor="middle" font-size="9">${v}</text>`).join('')}
+                            ${leftLabels.map((t, i) => `<text x="${padL - 6}" y="${padT + chartH - (i / (leftLabels.length - 1 || 1)) * chartH}" class="pace-axis-tick" text-anchor="end" font-size="9">${t.replace(' m','')}</text>`).join('')}
+                            ${rightPaces.map((t, i) => `<text x="${w - padR + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick" text-anchor="start" font-size="9">${t}</text>`).join('')}
                         </svg>
                     </div>
                     <div class="exercise-pace-metrics">
