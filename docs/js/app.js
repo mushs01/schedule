@@ -2254,6 +2254,7 @@ async function handleExerciseMoreClick(e) {
         container.dataset.loaded = '1';
         container.classList.add('expanded');
         btn.classList.add('expanded');
+        btn.disabled = false;
         btn.innerHTML = '<span class="material-icons">expand_less</span> 접기';
     } catch (err) {
         console.error('운동 상세 로드 실패:', err);
@@ -2323,7 +2324,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             }
             const speed = paceMin != null ? 1 / paceMin : 0;
             const barWidth = paceMin != null ? Math.round(((speed - minSpeed) / speedRange) * 100) : 0;
-            const elev = s.elevation_difference != null ? (s.elevation_difference > 0 ? '+' : '') + s.elevation_difference : '-';
+            const elev = s.elevation_difference != null ? String(Math.round(s.elevation_difference)) : '-';
             const kmLabel = d >= 0.95 ? Math.round(cumDist) : cumDist.toFixed(1);
             splitsHtml += `<div class="exercise-splits-row"><span>${kmLabel}</span><span>${paceStr}</span><span class="splits-pace-bar-cell"><span class="splits-pace-bar" style="width:${barWidth}%"></span></span><span class="splits-elev-cell">${elev}</span></div>`;
         });
