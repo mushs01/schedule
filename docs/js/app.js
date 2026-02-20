@@ -458,17 +458,20 @@ function setupEventListeners() {
         });
     }
     
-    // Person filter buttons (헤더)
+    // Person filter buttons (헤더) - 일정관리/운동일정 공통
     const personFilterBtns = document.querySelectorAll('.person-filter-btn');
     personFilterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const person = btn.dataset.person;
-            
-            // 버튼 활성화/비활성화 토글
+            const exerciseArea = document.getElementById('exerciseArea');
+            const isExerciseView = exerciseArea && exerciseArea.style.display !== 'none';
+            if (btn.closest('.exercise-person-filter')) return;
             btn.classList.toggle('active');
-            
-            // 필터 적용
-            updateCalendarFilterFromButtons();
+            if (isExerciseView) {
+                renderExerciseCalendar();
+            } else {
+                updateCalendarFilterFromButtons();
+            }
         });
     });
     
@@ -1924,11 +1927,13 @@ function showExerciseView() {
     if (scheduleArea) scheduleArea.style.display = 'none';
     if (importantEvents) importantEvents.style.display = 'none';
     if (todaySummary) todaySummary.style.display = 'none';
-    if (viewSelector) viewSelector.style.display = 'none';
+    if (viewSelector) viewSelector.style.display = 'block';
     if (fab) fab.style.display = 'none';
     if (gcalContent) gcalContent.classList.add('exercise-view');
     if (exerciseArea) {
         exerciseArea.style.display = 'block';
+        const exercisePersonFilter = document.getElementById('exercisePersonFilter');
+        if (exercisePersonFilter) exercisePersonFilter.style.display = 'none';
         if (window.calendarModule && window.calendarModule.gotoDate) {
             window.calendarModule.gotoDate(exerciseCalendarCurrentDate);
         }
@@ -1944,7 +1949,11 @@ function showScheduleView() {
     const fab = document.getElementById('addEventBtn');
     const gcalContent = document.querySelector('.gcal-content');
     if (scheduleArea) scheduleArea.style.display = 'block';
-    if (exerciseArea) exerciseArea.style.display = 'none';
+    if (exerciseArea) {
+        exerciseArea.style.display = 'none';
+        const exercisePersonFilter = document.getElementById('exercisePersonFilter');
+        if (exercisePersonFilter) exercisePersonFilter.style.display = '';
+    }
     if (importantEvents) importantEvents.style.display = '';
     if (todaySummary) todaySummary.style.display = '';
     const vs = document.querySelector('.view-selector');
@@ -1972,8 +1981,15 @@ const EXERCISE_PERSON_CONFIG = {
 const EXERCISE_FAMILY_ORDER = ['dad', 'mom', 'juhwan', 'taehwan'];
 
 function getExerciseFilterPersons() {
-    const btns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
-    return Array.from(btns).map(b => b.dataset.exercisePerson).filter(Boolean);
+    const exerciseBtns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
+    if (exerciseBtns.length > 0) {
+        return Array.from(exerciseBtns).map(b => b.dataset.exercisePerson).filter(Boolean);
+    }
+    const mainBtns = document.querySelectorAll('.person-filter-buttons .person-filter-btn.active');
+    const persons = Array.from(mainBtns).map(b => b.dataset.person).filter(Boolean);
+    const withoutAll = persons.filter(p => p !== 'all');
+    if (withoutAll.length === 0) return EXERCISE_FAMILY_ORDER.slice();
+    return withoutAll;
 }
 
 function renderExerciseCalendar() {
@@ -2031,34 +2047,36 @@ function renderExerciseCalendar() {
     let html = ['일','월','화','수','목','금','토'].map(d => `<div class="exercise-calendar-weekday">${d}</div>`).join('');
     // 활성 아이콘에 해당하는 기록만 표시 (비활성화 시 해당 사람 기록 숨김)
     const filterActs = (arr) => filterPersons.length === 0 ? [] : arr.filter(a => filterPersons.includes(a.person));
+    const totalDistKm = (acts) => acts.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
+    const circleSize = (km) => Math.min(38, Math.max(14, 10 + Math.min(km, 25) * 1.1));
+    const formatDist = (km) => km >= 1 ? Math.round(km) : (km >= 0.1 ? km.toFixed(1) : Math.round(km * 10) / 10);
+    const renderDay = (dayNum, ds, acts, otherMonth) => {
+        const persons = [...new Set(acts.map(a => a.person))];
+        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
+        const distKm = totalDistKm(acts);
+        const primaryColor = persons.length ? (EXERCISE_PERSON_CONFIG[persons[0]] || {}).color || '#0f9d58' : '#0f9d58';
+        const size = circleSize(distKm);
+        const distLabel = formatDist(distKm);
+        const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${primaryColor}">${distLabel}</span>` : '';
+        const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : ''].filter(Boolean).join(' ');
+        return `<div class="${cls}" data-date="${ds}">${dayNum}${badge}</div>`;
+    };
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
         const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        const persons = [...new Set(acts.map(a => a.person))];
-        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
-        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
-        html += `<div class="${cls}" data-date="${ds}">${d.getDate()}</div>`;
+        html += renderDay(d.getDate(), ds, acts, true);
     }
     for (let d = 1; d <= daysInMonth; d++) {
         const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        const persons = [...new Set(acts.map(a => a.person))];
-        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
-        const cls = ['exercise-calendar-day', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
-        html += `<div class="${cls}" data-date="${ds}">${d}</div>`;
+        html += renderDay(d, ds, acts, false);
     }
     for (let i = 0; i < extra; i++) {
         const nd = new Date(year, month + 1, i + 1);
         const ds = nd.getFullYear() + '-' + String(nd.getMonth() + 1).padStart(2, '0') + '-' + String(nd.getDate()).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
-        const persons = [...new Set(acts.map(a => a.person))];
-        const maxInt = acts.length ? Math.max(...acts.map(a => { const l = getIntensityLevel(a); return l === 'high' ? 3 : l === 'medium' ? 2 : 1; })) : 0;
-        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
-        const cls = ['exercise-calendar-day', 'other-month', acts.length ? 'has-exercise ' + personCls : '', maxInt === 3 ? 'intensity-high' : maxInt === 1 && acts.length ? 'intensity-low' : ''].filter(Boolean).join(' ');
-        html += `<div class="${cls}" data-date="${ds}">${nd.getDate()}</div>`;
+        html += renderDay(nd.getDate(), ds, acts, true);
     }
     grid.innerHTML = html;
     grid.querySelectorAll('.exercise-calendar-day').forEach(cell => {
@@ -2354,9 +2372,10 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
         const altRange = altMax - altMin || 1;
-        const padL = 44, padR = 48, padT = 14, padB = 26;
-        const w = 300, h = 130;
+        const padL = 50, padR = 56, padT = 14, padB = 30;
+        const w = 320, h = 140;
         const chartW = w - padL - padR, chartH = h - padT - padB;
+        const avgPaceMin = distKm > 0 && movingTime > 0 ? (movingTime / 60) / distKm : null;
         const step = Math.max(1, Math.floor(dist.length / 80));
         let pacePath = '';
         let altPath = '';
@@ -2385,27 +2404,41 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             if (leftLabels[leftLabels.length - 1] !== altTop) leftLabels.push(altTop);
         }
         const rightPaces = [minPace, (minPace + maxPace) / 2, maxPace].map(fmtPace);
+        const paceRange = maxPace - minPace || 1;
+        const yAvgPace = avgPaceMin != null && avgPaceMin >= minPace && avgPaceMin <= maxPace
+            ? padT + ((avgPaceMin - minPace) / paceRange) * chartH : null;
+        const avgPaceLine = yAvgPace != null ? `<line x1="${padL}" y1="${yAvgPace}" x2="${padL + chartW}" y2="${yAvgPace}" class="pace-avg-line" stroke="#5dade2" stroke-width="1" stroke-dasharray="4,3"/>` : '';
+        const gridH = [minPace, (minPace + maxPace) / 2, maxPace].map((p) => {
+            const y = padT + ((p - minPace) / paceRange) * chartH;
+            return `<line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" class="pace-grid-line"/>`;
+        }).join('');
+        const gridV = xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => {
+            const x = padL + (v / maxDist) * chartW;
+            return `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" class="pace-grid-line"/>`;
+        }).join('');
         paceGraphHtml = `
                 <div class="exercise-pace-section">
                     <h4>Pace</h4>
                     <div class="exercise-pace-graph" style="height:${h}px">
                         <svg class="pace-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+                            <g class="pace-grid">${gridV}${gridH}</g>
                             <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(128,128,128,0.15)" stroke="none"/>
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
-                            <text x="${padL - 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
-                            <text x="${padL + chartW + 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="middle">/km</text>
-                            <text x="${padL + chartW / 2}" y="${h - 4}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
-                            ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 6}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
+                            ${avgPaceLine}
+                            <text x="${padL - 18}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
+                            <text x="${padL + chartW + 18}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="middle">/km</text>
+                            <text x="${padL + chartW / 2}" y="${h - 2}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
+                            ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
                             ${(function(){
         let lastY = -999;
         return leftLabels.map((v) => {
             const y = Math.max(padT + 6, Math.min(padT + chartH - 6, padT + chartH - ((v - altMin) / (altRange || 1)) * chartH));
             if (Math.abs(y - lastY) < 12 && lastY > -999) return '';
             lastY = y;
-            return `<text x="${padL - 6}" y="${y}" class="pace-axis-tick pace-axis-left" text-anchor="end" dominant-baseline="middle" font-size="8">${v}</text>`;
+            return `<text x="${padL - 10}" y="${y}" class="pace-axis-tick pace-axis-left" text-anchor="end" dominant-baseline="middle" font-size="8">${v}</text>`;
         }).join('');
     })()}
-                            ${rightPaces.map((t, i) => `<text x="${w - padR + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick" text-anchor="start" font-size="9">${t}</text>`).join('')}
+                            ${rightPaces.map((t, i) => `<text x="${w - padR + 14}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick pace-axis-right" text-anchor="start" font-size="8">${t}</text>`).join('')}
                         </svg>
                     </div>
                     <div class="exercise-pace-metrics">
