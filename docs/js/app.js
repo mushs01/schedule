@@ -2353,8 +2353,8 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
         const altRange = altMax - altMin || 1;
-        const padL = 36, padR = 38, padT = 8, padB = 22;
-        const w = 280, h = 120;
+        const padL = 44, padR = 48, padT = 14, padB = 26;
+        const w = 300, h = 130;
         const chartW = w - padL - padR, chartH = h - padT - padB;
         const step = Math.max(1, Math.floor(dist.length / 80));
         let pacePath = '';
@@ -2371,9 +2371,18 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         }
         const fmtPace = (m) => Math.floor(m) + ':' + String(Math.round((m % 1) * 60)).padStart(2, '0');
         const xLabels = [];
-        for (let k = 0; k <= maxDist; k += Math.max(1, Math.ceil(maxDist / 7))) xLabels.push(k);
-        if (xLabels[xLabels.length - 1] !== maxDist) xLabels.push(maxDist);
-        const leftLabels = [altMin, Math.round((altMin + altMax) / 2), altMax].map(v => v + ' m');
+        for (let k = 0; k <= maxDist; k += 2) xLabels.push(k);
+        if (xLabels.length && xLabels[xLabels.length - 1] !== maxDist) xLabels.push(Math.round(maxDist * 10) / 10);
+        const altBase = Math.floor(altMin / 50) * 50;
+        const altTop = Math.ceil(altMax / 50) * 50;
+        const leftLabels = [];
+        for (let v = altBase; v <= altTop; v += 50) leftLabels.push(v);
+        if (leftLabels.length > 7) {
+            const step = Math.ceil(leftLabels.length / 6);
+            leftLabels.length = 0;
+            for (let v = altBase; v <= altTop; v += 50 * step) leftLabels.push(v);
+            if (leftLabels[leftLabels.length - 1] !== altTop) leftLabels.push(altTop);
+        }
         const rightPaces = [minPace, (minPace + maxPace) / 2, maxPace].map(fmtPace);
         paceGraphHtml = `
                 <div class="exercise-pace-section">
@@ -2385,8 +2394,16 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                             <text x="${padL - 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
                             <text x="${padL + chartW + 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="middle">/km</text>
                             <text x="${padL + chartW / 2}" y="${h - 4}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
-                            ${xLabels.slice(0, 8).map((v, i) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 6}" class="pace-axis-tick" text-anchor="middle" font-size="9">${v}</text>`).join('')}
-                            ${leftLabels.map((t, i) => `<text x="${padL - 6}" y="${padT + chartH - (i / (leftLabels.length - 1 || 1)) * chartH}" class="pace-axis-tick" text-anchor="end" font-size="9">${t.replace(' m','')}</text>`).join('')}
+                            ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 6}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
+                            ${(function(){
+        let lastY = -999;
+        return leftLabels.map((v) => {
+            const y = Math.max(padT + 6, Math.min(padT + chartH - 6, padT + chartH - ((v - altMin) / (altRange || 1)) * chartH));
+            if (Math.abs(y - lastY) < 12 && lastY > -999) return '';
+            lastY = y;
+            return `<text x="${padL - 6}" y="${y}" class="pace-axis-tick pace-axis-left" text-anchor="end" dominant-baseline="middle" font-size="8">${v}</text>`;
+        }).join('');
+    })()}
                             ${rightPaces.map((t, i) => `<text x="${w - padR + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick" text-anchor="start" font-size="9">${t}</text>`).join('')}
                         </svg>
                     </div>

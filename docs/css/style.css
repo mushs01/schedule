@@ -2926,8 +2926,9 @@ body {
 }
 .exercise-pace-graph {
     margin-bottom: 12px;
-    background: rgba(0,0,0,0.1);
+    background: #fff;
     border-radius: 6px;
+    border: 1px solid var(--border-color);
 }
 .exercise-pace-graph svg {
     width: 100%;
