@@ -449,6 +449,8 @@ const api = {
                 persons: data.persons || [data.person],
                 color: data.color,
                 isPast: data.is_past || false,
+                notification_start: data.notification_start === true,
+                notification_end: data.notification_end === true,
                 kakao_notification_start: data.kakao_notification_start === true,
                 kakao_notification_end: data.kakao_notification_end === true,
                 kakao_notifications: data.kakao_notifications || {},

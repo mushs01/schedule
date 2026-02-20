@@ -1004,22 +1004,28 @@ function openEventModal(dateInfo = null, event = null) {
                     notificationEndField.checked = event.extendedProps.notification_end === true;
                 });
             } else {
-                // 일반 일정 (반복 아님)
-                console.log('  - 📝 일반 일정, 직접 로드');
+                // 일반 일정 (반복 아님) - Firestore에서 최신 데이터 로드 (저장된 값 정확히 반영)
+                const scheduleId = event.extendedProps?.id || event.id;
+                console.log('  - 📝 일반 일정, Firestore 최신 데이터 로드, ID:', scheduleId);
                 
-                const notifStart = event.extendedProps.notification_start;
-                const notifEnd = event.extendedProps.notification_end;
-                
-                console.log('  - Raw notification_start:', notifStart, '(type:', typeof notifStart, ')');
-                console.log('  - Raw notification_end:', notifEnd, '(type:', typeof notifEnd, ')');
-                
-                // 명시적 처리: true일 때만 체크 (둘 다 선택형)
-                notificationStartField.checked = notifStart === true;
-                notificationEndField.checked = notifEnd === true;
-                
-                console.log('  - ✅ 체크박스 설정 완료');
-                console.log('    - Start:', notificationStartField.checked);
-                console.log('    - End:', notificationEndField.checked);
+                if (scheduleId && window.api && typeof window.api.getSchedule === 'function') {
+                    window.api.getSchedule(scheduleId).then(schedule => {
+                        if (schedule) {
+                            notificationStartField.checked = schedule.notification_start === true;
+                            notificationEndField.checked = schedule.notification_end === true;
+                            console.log('  - ✅ Firestore 최신 데이터 적용:', { notification_start: schedule.notification_start, notification_end: schedule.notification_end });
+                        } else {
+                            notificationStartField.checked = event.extendedProps.notification_start === true;
+                            notificationEndField.checked = event.extendedProps.notification_end === true;
+                        }
+                    }).catch(() => {
+                        notificationStartField.checked = event.extendedProps.notification_start === true;
+                        notificationEndField.checked = event.extendedProps.notification_end === true;
+                    });
+                } else {
+                    notificationStartField.checked = event.extendedProps.notification_start === true;
+                    notificationEndField.checked = event.extendedProps.notification_end === true;
+                }
             }
         } else {
             console.log('  - ⚠️ 알림 체크박스를 찾을 수 없음 (FCM 비활성화?)');
