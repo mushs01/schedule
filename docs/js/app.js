@@ -719,6 +719,14 @@ function setupEventListeners() {
             if (window.showToast) window.showToast('브라우저에서 열었습니다. Strava 연결을 진행해주세요.', 'info');
         });
     }
+    const stravaOpenInBrowserForAdd = document.getElementById('stravaOpenInBrowserForAdd');
+    if (stravaOpenInBrowserForAdd) {
+        stravaOpenInBrowserForAdd.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://mushs01.github.io/schedule/', '_blank', 'noopener');
+            if (window.showToast) window.showToast('브라우저에서 열었습니다. 베타테스트 → Strava 계정 추가를 진행해주세요.', 'info');
+        });
+    }
     
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
@@ -2447,6 +2455,13 @@ function updateStravaUI() {
                         '<button type="button" class="btn-secondary strava-disconnect-one" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px;" title="이 계정만 연동 해제"><span class="material-icons" style="font-size: 16px;">link_off</span> 연동 해제</button>' +
                         '</li>';
                 }).join('') || '<li style="color: var(--text-secondary);">계정 목록 없음</li>';
+            }
+            var hintEl = document.getElementById('stravaAddAccountHint');
+            var browserHintEl = document.getElementById('stravaOpenInBrowserHint');
+            if (hintEl) hintEl.style.display = accounts.length === 1 ? 'block' : 'none';
+            if (browserHintEl) {
+                var isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator.standalone === true);
+                browserHintEl.style.display = (accounts.length === 1 && isStandalone) ? 'block' : 'none';
             }
         } else {
             notConnected.style.display = 'block';
