@@ -293,17 +293,21 @@ function showBrowserNotification(title, body, data = {}) {
  * 알림 설정 UI 업데이트
  */
 function updateNotificationUI() {
-    const isEnabled = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_ENABLED) === 'true';
-    const hasToken = !!currentFCMToken;
-    const hasPermission = Notification.permission === 'granted';
+    try {
+        const isEnabled = localStorage.getItem(STORAGE_KEYS.NOTIFICATION_ENABLED) === 'true';
+        const hasToken = !!currentFCMToken;
+        const hasPermission = typeof Notification !== 'undefined' && Notification.permission === 'granted';
 
-    // 설정 화면 상태 업데이트
-    const statusElement = document.getElementById('notificationStatus');
+        // 설정 화면 상태 업데이트
+        const statusElement = document.getElementById('notificationStatus');
     const enableButton = document.getElementById('enableNotificationBtn');
     const disableButton = document.getElementById('disableNotificationBtn');
 
     if (statusElement) {
-        if (hasPermission && hasToken && isEnabled) {
+        if (typeof Notification === 'undefined') {
+            statusElement.textContent = '⚠️ 이 브라우저는 알림을 지원하지 않습니다';
+            statusElement.className = 'status-none';
+        } else if (hasPermission && hasToken && isEnabled) {
             statusElement.textContent = '✅ 알림 활성화됨';
             statusElement.className = 'status-enabled';
         } else if (hasPermission && hasToken && !isEnabled) {
@@ -332,6 +336,14 @@ function updateNotificationUI() {
     // 일정 모달의 알림 설정 섹션 업데이트
     if (window.app && window.app.updateNotificationUI) {
         window.app.updateNotificationUI(hasPermission && hasToken && isEnabled);
+    }
+    } catch (err) {
+        console.error('updateNotificationUI 오류:', err);
+        const statusElement = document.getElementById('notificationStatus');
+        if (statusElement) {
+            statusElement.textContent = '⚠️ 상태 확인 실패 (콘솔 확인)';
+            statusElement.className = 'status-none';
+        }
     }
 }
 
@@ -451,9 +463,9 @@ function updateUserUI() {
 
 // 페이지 로드 시 - 즉시 UI 상태 반영, FCM 초기화는 2초 후
 document.addEventListener('DOMContentLoaded', () => {
-    updateUserUI();
-    updateNotificationUI(); // 즉시 상태 표시 (알림 상태 확인 중... 해제)
-    setTimeout(() => initFCM(), 2000);
+    try { updateUserUI(); } catch (e) { console.warn('updateUserUI:', e); }
+    try { updateNotificationUI(); } catch (e) { console.warn('updateNotificationUI:', e); }
+    setTimeout(() => { try { initFCM(); } catch (e) { console.error('initFCM:', e); updateNotificationUI(); } }, 2000);
 });
 
 // 전역 함수 노출

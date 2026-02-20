@@ -762,9 +762,17 @@ function setupEventListeners() {
         }
     });
     
-    if (enableNotificationBtn) enableNotificationBtn.addEventListener('click', () => {
+    if (enableNotificationBtn) enableNotificationBtn.addEventListener('click', async () => {
         if (window.fcmNotification) {
-            window.fcmNotification.requestPermission();
+            try {
+                await window.fcmNotification.requestPermission();
+            } catch (e) {
+                console.error('알림 활성화 실패:', e);
+                if (typeof showToast === 'function') showToast('알림 설정 중 오류가 발생했습니다.', 'error');
+                if (window.fcmNotification.updateUI) window.fcmNotification.updateUI();
+            }
+        } else {
+            if (typeof showToast === 'function') showToast('알림 모듈을 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'warning');
         }
     });
     
@@ -1864,6 +1872,12 @@ function openSettingsModal() {
         return;
     }
     settingsModal.classList.add('active');
+    // 설정 모달 열릴 때 알림 상태 UI 갱신 (DOM 렌더 후 실행)
+    requestAnimationFrame(() => {
+        if (window.fcmNotification && typeof window.fcmNotification.updateUI === 'function') {
+            window.fcmNotification.updateUI();
+        }
+    });
     console.log('✅ Settings modal opened');
 }
 
