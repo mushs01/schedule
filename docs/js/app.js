@@ -1986,12 +1986,14 @@ function getExerciseFilterPersons() {
     if (useMain) {
         const mainBtns = document.querySelectorAll('.person-filter-buttons .person-filter-btn.active');
         const persons = Array.from(mainBtns).map(b => b.dataset.person).filter(Boolean);
+        if (persons.length === 0) return [];
         const withoutAll = persons.filter(p => p !== 'all');
         if (withoutAll.length === 0) return EXERCISE_FAMILY_ORDER.slice();
         return withoutAll;
     }
     const exerciseBtns = document.querySelectorAll('.exercise-person-filter .person-filter-btn.active');
-    return Array.from(exerciseBtns).map(b => b.dataset.exercisePerson).filter(Boolean);
+    const persons = Array.from(exerciseBtns).map(b => b.dataset.exercisePerson).filter(Boolean);
+    return persons;
 }
 
 function renderExerciseCalendar() {
@@ -2052,17 +2054,36 @@ function renderExerciseCalendar() {
     const totalDistKm = (acts) => acts.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
     const circleSize = (km) => Math.min(38, Math.max(14, 10 + Math.min(km, 25) * 1.1));
     const formatDist = (km) => km >= 1 ? Math.round(km) : (km >= 0.1 ? km.toFixed(1) : Math.round(km * 10) / 10);
+    const hexToRgb = (hex) => {
+        const m = hex.replace('#','').match(/.{2}/g);
+        return m ? m.map(x => parseInt(x, 16)) : [0,0,0];
+    };
+    const mixColors = (hexArr) => {
+        if (hexArr.length === 0) return '#8d6e63';
+        const sum = hexArr.reduce((s, h) => {
+            const [r,g,b] = hexToRgb(h);
+            return [s[0]+r, s[1]+g, s[2]+b];
+        }, [0,0,0]);
+        const n = hexArr.length;
+        return '#' + sum.map(v => Math.round(v/n).toString(16).padStart(2,'0')).join('');
+    };
     const renderDay = (dayNum, ds, acts, otherMonth, dayOfWeek) => {
         const persons = [...new Set(acts.map(a => a.person))];
-        const personCls = persons.map(p => 'has-exercise-' + p).join(' ');
         const distKm = totalDistKm(acts);
-        const primaryColor = persons.length ? (EXERCISE_PERSON_CONFIG[persons[0]] || {}).color || '#0f9d58' : '#0f9d58';
+        let circleColor = '#0f9d58';
+        if (persons.length >= 2) {
+            const colors = persons.map(p => (EXERCISE_PERSON_CONFIG[p] || {}).color || '#0f9d58');
+            circleColor = mixColors(colors);
+        } else if (persons.length === 1) {
+            circleColor = (EXERCISE_PERSON_CONFIG[persons[0]] || {}).color || '#0f9d58';
+        }
         const size = circleSize(distKm);
         const distLabel = formatDist(distKm);
-        const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${primaryColor}">${distLabel}</span>` : '';
+        const countBadge = acts.length >= 2 ? `<span class="exercise-count-badge">${acts.length}</span>` : '';
+        const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}</span>` : '';
         const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
-        const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise ' + personCls : '', sunSat].filter(Boolean).join(' ');
-        return `<div class="${cls}" data-date="${ds}">${badge}<span class="day-num">${dayNum}</span></div>`;
+        const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', sunSat].filter(Boolean).join(' ');
+        return `<div class="${cls}" data-date="${ds}">${countBadge}${badge}<span class="day-num">${dayNum}</span></div>`;
     };
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
@@ -2071,7 +2092,7 @@ function renderExerciseCalendar() {
         html += renderDay(d.getDate(), ds, acts, true, d.getDay());
     }
     for (let d = 1; d <= daysInMonth; d++) {
-        const dateObj = new Date(year, month, d - 1);
+        const dateObj = new Date(year, month, d);
         const ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
         const acts = filterActs(byDate[ds] || []);
         html += renderDay(d, ds, acts, false, dateObj.getDay());
