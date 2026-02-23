@@ -587,6 +587,12 @@ body {
     border-radius: 4px;
 }
 
+/* 주일정: 일정 블록에서 시간 숨기고 제목만 표시 */
+.fc .fc-timegrid-event .fc-event-time,
+.fc-timegrid-event .fc-event-time {
+    display: none !important;
+}
+
 /* 월 일정 표시 스타일 개선 */
 .fc .fc-daygrid-event,
 .fc-daygrid-event {
