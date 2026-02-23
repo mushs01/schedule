@@ -2619,6 +2619,20 @@ body {
     width: 100%;
     justify-content: flex-start;
 }
+
+/* 베타테스트 모달 - 스크롤 */
+#betaTestModal .modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#betaTestModal .modal-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 /* 자연어 일정관리 - 음성 버튼 녹음 중 */
 #nlScheduleMicBtn.recording {
     background: #d32f2f !important;

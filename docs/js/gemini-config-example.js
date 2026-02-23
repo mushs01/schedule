@@ -5,5 +5,6 @@
  * https://aistudio.google.com/apikey
  */
 window.GEMINI_CONFIG = {
-    apiKey: 'AIzaSyDqsaq6KtL5Jtu9U2_SYJ-psrmkht7xAOA'  // 예: 'AIzaSy...' - 비우면 자연어 일정 추출 비활성화
+    apiKey: 'AIzaSyDqsaq6KtL5Jtu9U2_SYJ-psrmkht7xAOA',  // 예: 'AIzaSy...' - 비우면 자연어 일정 추출 비활성화
+    model: 'gemini-2.0-flash'  // 옵션: gemini-2.0-flash, gemini-1.5-flash-latest 등
 };

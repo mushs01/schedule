@@ -27,7 +27,8 @@ endTime은 startTime에서 1시간 후 기본값.
             throw new Error('Gemini API 키가 설정되지 않았습니다. gemini-config.js에서 apiKey를 설정하세요.');
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const model = cfg.model || 'gemini-2.0-flash';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const body = {
             contents: [{
                 parts: [
