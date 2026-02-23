@@ -2668,6 +2668,7 @@ body {
     flex-shrink: 0;
 }
 .exercise-calendar-day .exercise-badge {
+    position: relative;
     flex-shrink: 1;
     min-width: 0;
     max-width: 100%;
@@ -2700,8 +2701,8 @@ body {
 }
 .exercise-calendar-day .exercise-count-badge {
     position: absolute;
-    top: -4px;
-    right: -4px;
+    top: -5px;
+    right: -5px;
     min-width: 14px;
     height: 14px;
     padding: 0 3px;

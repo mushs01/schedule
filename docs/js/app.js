@@ -2089,7 +2089,7 @@ function renderExerciseCalendar() {
         const size = circleSize(distKm);
         const distLabel = formatDist(distKm);
         const countBadge = acts.length >= 2 ? `<span class="exercise-count-badge">${acts.length}</span>` : '';
-        const badge = acts.length ? `<span class="exercise-badge-wrap">${countBadge}<span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}</span></span>` : '';
+        const badge = acts.length ? `<span class="exercise-badge-wrap"><span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}${countBadge}</span></span>` : '';
         const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
         const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', sunSat].filter(Boolean).join(' ');
         return `<div class="${cls}" data-date="${ds}"><span class="day-num">${dayNum}</span>${badge}</div>`;
@@ -2406,8 +2406,8 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
         const altRange = altMax - altMin || 1;
-        const padL = 54, padR = 64, padT = 14, padB = 30;
-        const w = 320, h = 140;
+        const padL = 54, padR = 72, padT = 14, padB = 30;
+        const w = 360, h = 200;
         const chartW = w - padL - padR, chartH = h - padT - padB;
         const avgPaceMin = distKm > 0 && movingTime > 0 ? (movingTime / 60) / distKm : null;
         const step = Math.max(1, Math.floor(dist.length / 80));
@@ -2460,7 +2460,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
                             ${avgPaceLine}
                             <text x="${padL - 8}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
-                            <text x="${w - 4}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-right" text-anchor="end" dominant-baseline="middle">/km</text>
+                            <text x="${padL + chartW + 8}" y="${padT - 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="auto">/km</text>
                             <text x="${padL + chartW / 2}" y="${h - 2}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
                             ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
                             ${(function(){
