@@ -2471,7 +2471,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         }).join('');
         paceGraphHtml = `
                 <div class="exercise-pace-section">
-                    <h4>Pace</h4>
+                    <h4>Pace / Elevation</h4>
                     <div class="exercise-pace-graph" style="height:${h}px">
                         <svg class="pace-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
                             <g class="pace-grid">${gridV}${gridH}</g>
@@ -2507,7 +2507,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
     if (!paceGraphHtml) {
         paceGraphHtml = `
             <div class="exercise-pace-section">
-                <h4>Pace</h4>
+                <h4>Pace / Elevation</h4>
                 <div class="exercise-pace-metrics">
                     <div class="pace-metric"><span>Avg Pace</span><span>${avgPace || '-'}</span></div>
                     <div class="pace-metric"><span>Moving Time</span><span>${movingStr || '-'}</span></div>
