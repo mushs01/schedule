@@ -2445,8 +2445,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         }
         const fmtPace = (m) => Math.floor(m) + ':' + String(Math.round((m % 1) * 60)).padStart(2, '0');
         const xLabels = [];
-        for (let k = 0; k <= maxDist; k += 2) xLabels.push(k);
-        if (xLabels.length && xLabels[xLabels.length - 1] !== maxDist) xLabels.push(Math.round(maxDist * 10) / 10);
+        for (let k = 0; k < maxDist; k += 5) xLabels.push(k);
         const altBase = Math.floor(altMin / 50) * 50;
         const altTop = Math.ceil(altMax / 50) * 50;
         const leftLabels = [];
@@ -2466,7 +2465,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             const y = padT + ((p - minPace) / paceRange) * chartH;
             return `<line x1="${padL}" y1="${y}" x2="${padL + chartW}" y2="${y}" class="pace-grid-line"/>`;
         }).join('');
-        const gridV = xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => {
+        const gridV = xLabels.map((v) => {
             const x = padL + (v / maxDist) * chartW;
             return `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + chartH}" class="pace-grid-line"/>`;
         }).join('');
@@ -2476,13 +2475,13 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                     <div class="exercise-pace-graph" style="height:${h}px">
                         <svg class="pace-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
                             <g class="pace-grid">${gridV}${gridH}</g>
-                            <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(128,128,128,0.15)" stroke="none"/>
+                            <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(96,96,96,0.28)" stroke="none"/>
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
                             ${avgPaceLine}
                             <text x="${padL - 8}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
                             <text x="${padL + chartW + 6}" y="${padT + 14}" class="pace-axis-label pace-axis-right" text-anchor="start">/km</text>
                             <text x="${padL + chartW / 2}" y="${h - 2}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
-                            ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
+                            ${xLabels.map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${v}</text>`).join('')}
                             ${(function(){
         let lastY = -999;
         return leftLabels.map((v) => {
