@@ -2540,24 +2540,33 @@ function showExerciseDetail(dateStr, activities) {
         const metaResult = formatExerciseMetaSync(a);
         const metaText = metaResult.text;
         const needsGeocode = metaResult.needsGeocode;
-        const metaId = needsGeocode ? `exercise-meta-${index}` : '';
+        const locText = getLocationFromActivity(a) || '-';
+        const locationId = needsGeocode ? `exercise-location-${index}` : '';
+        const dateTimePart = metaText.includes(' · ') ? metaText.split(' · ')[0] : metaText;
         const sep = index > 0 ? ' exercise-detail-sep' : '';
         bodyHTML += `
             <div class="exercise-detail-card${sep}" data-activity-index="${index}">
+                <div class="exercise-detail-top">
+                    <div class="exercise-detail-map-wrap">
+                        ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : '<div class="exercise-detail-map-placeholder"></div>'}
+                    </div>
+                    <div class="exercise-detail-side-info">
+                        <div class="exercise-detail-type">
+                            <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
+                            <span>${sportType}</span>
+                        </div>
+                        <div class="exercise-detail-location" id="${locationId}">${locText}</div>
+                    </div>
+                </div>
                 <div class="exercise-detail-header-row">
                     <img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">
-                    <span class="exercise-detail-meta" id="${metaId}">${metaText}</span>
-                </div>
-                <div class="exercise-detail-type">
-                    <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
-                    <span>${sportType}</span>
+                    <span class="exercise-detail-meta">${dateTimePart}</span>
                 </div>
                 <div class="exercise-detail-metrics">
                     ${distKm ? `<div class="exercise-detail-metric"><span class="metric-label">거리</span><span class="metric-value">${distKm} km</span></div>` : ''}
                     ${pace ? `<div class="exercise-detail-metric"><span class="metric-label">페이스</span><span class="metric-value">${pace}</span></div>` : ''}
                     ${timeStr ? `<div class="exercise-detail-metric"><span class="metric-label">시간</span><span class="metric-value">${timeStr}</span></div>` : ''}
                 </div>
-                ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : ''}
                 <div class="exercise-detail-extra">
                     ${a.calories ? `<span class="exercise-extra-item"><span class="material-icons">local_fire_department</span> ${a.calories} kcal</span>` : ''}
                     ${a.average_speed && !pace ? `<span class="exercise-extra-item"><span class="material-icons">speed</span> ${(a.average_speed * 3.6).toFixed(1)} km/h</span>` : ''}
@@ -2575,17 +2584,15 @@ function showExerciseDetail(dateStr, activities) {
     modal.classList.add('active');
 
     activities.forEach(async (a, index) => {
-        const metaEl = document.getElementById(`exercise-meta-${index}`);
-        if (!metaEl || !a.start_latlng || a.start_latlng.length < 2) return;
+        const locationEl = document.getElementById(`exercise-location-${index}`);
+        if (!locationEl || !a.start_latlng || a.start_latlng.length < 2) return;
         const loc = getLocationFromActivity(a);
         if (loc) return;
         await new Promise(r => setTimeout(r, index * 1100));
         const [lat, lng] = a.start_latlng;
         const locationName = await reverseGeocode(lat, lng);
-        if (!locationName || !metaEl.parentNode) return;
-        const metaResult = formatExerciseMetaSync(a);
-        const dateTimePart = metaResult.text.replace(/ · $/, '').trim();
-        metaEl.textContent = dateTimePart ? `${dateTimePart} · ${locationName}` : locationName;
+        if (!locationName || !locationEl.parentNode) return;
+        locationEl.textContent = locationName;
     });
 
     requestAnimationFrame(() => {
