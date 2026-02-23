@@ -9,16 +9,28 @@
         '전체': 'all', 'all': 'all', '가족': 'all'
     };
 
-    const PROMPT = `당신은 한국어 일정 문장을 분석하는 도구입니다.
-사용자 입력에서 다음 필드를 추출해 JSON으로만 응답하세요. 다른 설명은 절대 넣지 마세요.
+    const PROMPT = `당신은 한국어 일정 문장을 분석하는 도구입니다. 사용자 입력에서 필수 요소(일정 제목, 담당자, 날짜, 시간)를 추출합니다.
 
-JSON 형식 (반드시 이 키만 사용):
+[응답 형식 - 둘 중 하나만 사용]
+
+1) 모든 필드를 추출할 수 있을 때:
 {"person":"담당자코드","title":"일정 제목","date":"YYYY-MM-DD","startTime":"HH:mm","endTime":"HH:mm"}
 
-담당자코드: dad(아빠), mom(엄마), juhwan(주환), taehwan(태환), all(전체/미명시)
-날짜 없으면 오늘 날짜 사용. 시간 없으면 startTime "09:00", endTime "10:00" 사용.
-endTime은 startTime에서 1시간 후 기본값.
-오늘, 내일, 모레, 다음주 월요일 등 자연어 해석.`;
+2) 누락·애매해서 사용자에게 다시 요청해야 할 때:
+{"needClarification":true,"field":"필드명","message":"사용자에게 보여줄 한글 메시지"}
+
+[필수 요소와 검증 규칙]
+- 일정 제목(title): 구체적인 제목이 있어야 함. "일정", "넣어줘" 등만 있으면 추출 불가.
+- 담당자(person): 반드시 다음 중 하나여야 함. dad(아빠), mom(엄마), juhwan(주환), taehwan(태환), all(가족/전체). 그 외 이름·애매한 표현은 불가.
+- 날짜(date): YYYY-MM-DD. 오늘/내일/다음주 월요일 등 자연어 해석 가능.
+- 시간(startTime): HH:mm 24시간 형식. 오후 2시, 14시 등 해석 가능.
+
+[needClarification 사용 기준]
+- 제목이 없거나 "일정 넣어줘" 등 구체적 내용 없음 → field:"title", message:"일정 제목을 다시 알려주세요."
+- 담당자가 없거나 가족/아빠/엄마/주환/태환 외의 인물/애매함 → field:"person", message:"일정 담당자를 다시 알려주세요. (가족, 아빠, 엄마, 주환, 태환 중 하나)"
+- 날짜나 시간이 없거나 애매함 → field:"date", message:"일정 날짜와 시간을 다시 알려주세요."
+
+[중요] 확실히 추출 가능할 때만 1번 형식으로 응답. 의심스러우면 2번(needClarification)으로 응답. 추측하지 마세요. JSON만 출력하세요.`;
 
     function getApiKey() {
         const cfg = window.GEMINI_CONFIG || {};
@@ -67,6 +79,9 @@ endTime은 startTime에서 1시간 후 기본값.
         const jsonMatch = raw.match(/\{[\s\S]*\}/);
         if (jsonMatch) raw = jsonMatch[0];
         const parsed = JSON.parse(raw);
+        if (parsed.needClarification && parsed.message) {
+            throw new Error(parsed.message);
+        }
         const person = (parsed.person || 'all').toLowerCase();
         const normalizedPerson = PERSON_MAP[person] || PERSON_MAP[person.charAt(0).toUpperCase() + person.slice(1)] || 'all';
         return {
