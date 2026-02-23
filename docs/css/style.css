@@ -2662,6 +2662,11 @@ body {
     line-height: 1.2;
     margin-bottom: 2px;
 }
+.exercise-calendar-day .exercise-badge-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+}
 .exercise-calendar-day .exercise-badge {
     flex-shrink: 1;
     min-width: 0;
@@ -2695,19 +2700,19 @@ body {
 }
 .exercise-calendar-day .exercise-count-badge {
     position: absolute;
-    top: 2px;
-    right: 4px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
+    top: -4px;
+    right: -4px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background: #8d6e63;
     color: #fff;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
-    border-radius: 8px;
+    border-radius: 7px;
     line-height: 1;
 }
 .exercise-person-filter {

@@ -2089,10 +2089,10 @@ function renderExerciseCalendar() {
         const size = circleSize(distKm);
         const distLabel = formatDist(distKm);
         const countBadge = acts.length >= 2 ? `<span class="exercise-count-badge">${acts.length}</span>` : '';
-        const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}</span>` : '';
+        const badge = acts.length ? `<span class="exercise-badge-wrap">${countBadge}<span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}</span></span>` : '';
         const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
         const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', sunSat].filter(Boolean).join(' ');
-        return `<div class="${cls}" data-date="${ds}">${countBadge}<span class="day-num">${dayNum}</span>${badge}</div>`;
+        return `<div class="${cls}" data-date="${ds}"><span class="day-num">${dayNum}</span>${badge}</div>`;
     };
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
