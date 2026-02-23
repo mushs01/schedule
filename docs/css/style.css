@@ -2613,6 +2613,12 @@ body {
     width: 100%;
     justify-content: flex-start;
 }
+/* 자연어 일정관리 - 음성 버튼 녹음 중 */
+#nlScheduleMicBtn.recording {
+    background: #d32f2f !important;
+    color: #fff !important;
+}
+#nlScheduleMicBtn.recording .material-icons { color: #fff !important; }
 
 /* 운동기록 캘린더 - 세로 스크롤 비활성화, 수평 스와이프로 월 변경 */
 .gcal-content.exercise-view {

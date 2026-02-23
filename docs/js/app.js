@@ -764,7 +764,139 @@ function setupEventListeners() {
             if (window.showToast) window.showToast('브라우저에서 열었습니다. 베타테스트 → Strava 계정 추가를 진행해주세요.', 'info');
         });
     }
-    
+
+    // 자연어 일정관리 (베타) - 음성 입력
+    let _nlExtractedData = null;
+    const nlInput = document.getElementById('nlScheduleInput');
+    const nlExtractBtn = document.getElementById('nlScheduleExtractBtn');
+    const nlMicBtn = document.getElementById('nlScheduleMicBtn');
+    const nlMicIcon = document.getElementById('nlScheduleMicIcon');
+    const nlResult = document.getElementById('nlScheduleResult');
+    const nlResultContent = document.getElementById('nlScheduleResultContent');
+    const nlAddBtn = document.getElementById('nlScheduleAddBtn');
+    const nlError = document.getElementById('nlScheduleError');
+    if (nlMicBtn && nlInput) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'ko-KR';
+            recognition.onresult = (e) => {
+                const transcript = (e.results[0][0].transcript || '').trim();
+                if (transcript) {
+                    nlInput.value = transcript;
+                    nlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    if (nlError) nlError.style.display = 'none';
+                    if (window.showToast) window.showToast('음성 인식 완료. 필드 추출을 눌러주세요.', 'success');
+                }
+            };
+            recognition.onerror = (e) => {
+                if (e.error !== 'aborted' && window.showToast) {
+                    window.showToast(e.error === 'no-speech' ? '음성이 감지되지 않았습니다.' : '음성 인식 오류', 'error');
+                }
+            };
+            recognition.onend = () => {
+                if (nlMicIcon) nlMicIcon.textContent = 'mic';
+                nlMicBtn?.classList.remove('recording');
+            };
+        }
+        nlMicBtn.addEventListener('click', () => {
+            if (!recognition) {
+                if (window.showToast) window.showToast('이 브라우저는 음성 인식을 지원하지 않습니다.', 'error');
+                return;
+            }
+            if (nlMicBtn.classList.contains('recording')) {
+                recognition.stop();
+                return;
+            }
+            try {
+                recognition.start();
+                if (nlMicIcon) nlMicIcon.textContent = 'mic';
+                nlMicBtn.classList.add('recording');
+                if (window.showToast) window.showToast('말씀해 주세요...', 'info');
+            } catch (e) {
+                if (window.showToast) window.showToast('음성 인식 시작 실패', 'error');
+            }
+        });
+    }
+
+    if (nlExtractBtn && nlInput) {
+        nlExtractBtn.addEventListener('click', async () => {
+            const text = (nlInput.value || '').trim();
+            if (!text) {
+                if (window.showToast) window.showToast('일정을 자연어로 입력해주세요.', 'warning');
+                return;
+            }
+            if (!window.naturalLanguageSchedule || !window.naturalLanguageSchedule.isConfigured()) {
+                if (nlError) {
+                    nlError.textContent = 'Gemini API 키를 설정해주세요. gemini-config.js에서 GEMINI_CONFIG.apiKey를 입력하세요.';
+                    nlError.style.display = 'block';
+                }
+                return;
+            }
+            if (nlError) nlError.style.display = 'none';
+            nlExtractBtn.disabled = true;
+            nlExtractBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span> 추출 중...';
+            try {
+                const data = await window.naturalLanguageSchedule.extract(text);
+                _nlExtractedData = data;
+                const names = window.PERSON_NAMES || {};
+                nlResultContent.innerHTML = `
+                    <div><strong>담당자:</strong> ${names[data.person] || data.person}</div>
+                    <div><strong>제목:</strong> ${data.title}</div>
+                    <div><strong>날짜:</strong> ${data.date}</div>
+                    <div><strong>시작:</strong> ${data.startTime}</div>
+                    <div><strong>종료:</strong> ${data.endTime}</div>
+                `;
+                nlResult.style.display = 'block';
+                if (nlAddBtn) nlAddBtn.style.display = 'inline-flex';
+                if (window.showToast) window.showToast('필드 추출 완료', 'success');
+            } catch (e) {
+                console.error('자연어 추출 실패:', e);
+                if (nlError) {
+                    nlError.textContent = e.message || '추출 실패';
+                    nlError.style.display = 'block';
+                }
+                if (window.showToast) window.showToast(e.message || '추출 실패', 'error');
+            } finally {
+                nlExtractBtn.disabled = false;
+                nlExtractBtn.innerHTML = '<span class="material-icons">auto_awesome</span> 필드 추출';
+            }
+        });
+    }
+    if (nlAddBtn) {
+        nlAddBtn.addEventListener('click', async () => {
+            if (!_nlExtractedData) return;
+            const d = _nlExtractedData;
+            const startDateTime = new Date(`${d.date}T${d.startTime}`);
+            const endDateTime = new Date(`${d.date}T${d.endTime}`);
+            const scheduleData = {
+                title: d.title,
+                person: d.person,
+                persons: [d.person],
+                start_datetime: startDateTime.toISOString(),
+                end_datetime: endDateTime.toISOString(),
+                repeat_type: 'none',
+                notification_start: false,
+                notification_end: false
+            };
+            try {
+                showLoading(true);
+                await window.api.createSchedule(scheduleData);
+                if (window.showToast) window.showToast('일정이 추가되었습니다.', 'success');
+                closeBetaTestModal();
+                if (window.calendarModule && window.calendarModule.refetchEvents) window.calendarModule.refetchEvents();
+            } catch (e) {
+                console.error('일정 추가 실패:', e);
+                if (window.showToast) window.showToast('일정 추가 실패: ' + (e.message || '오류'), 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+    }
+
     // Settings functionality
     const settingsBtn = document.getElementById('settingsBtn');
     const closeSettingsBtn = document.getElementById('closeSettingsBtn');

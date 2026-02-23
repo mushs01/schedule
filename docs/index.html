@@ -557,6 +557,36 @@
                         <pre id="stravaDataDisplay" style="display: none;"></pre>
                     </div>
                 </div>
+                <!-- 자연어 일정관리 (베타) -->
+                <div class="settings-section">
+                    <h3>자연어 일정관리</h3>
+                    <p class="settings-description" style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
+                        예: "오늘 주환이 수영장 가기 오후 2시에 넣어줘"
+                    </p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <div style="flex: 1; min-width: 200px; display: flex; gap: 4px;">
+                            <input type="text" id="nlScheduleInput" placeholder="자연어로 일정 입력 또는 음성으로 말하기..." class="input-large" style="flex: 1;">
+                            <button type="button" class="btn-secondary" id="nlScheduleMicBtn" title="음성 입력">
+                                <span class="material-icons" id="nlScheduleMicIcon">mic</span>
+                            </button>
+                        </div>
+                        <button type="button" class="btn-primary" id="nlScheduleExtractBtn">
+                            <span class="material-icons">auto_awesome</span>
+                            필드 추출
+                        </button>
+                    </div>
+                    <div id="nlScheduleResult" class="nl-schedule-result" style="display: none; margin-top: 12px; padding: 12px; background: var(--hover-bg); border-radius: 8px; font-size: 13px;">
+                        <div id="nlScheduleResultContent"></div>
+                        <button type="button" class="btn-primary" id="nlScheduleAddBtn" style="margin-top: 12px; display: none;">
+                            <span class="material-icons">add</span>
+                            일정 추가
+                        </button>
+                    </div>
+                    <p id="nlScheduleError" style="display: none; margin-top: 8px; color: #d32f2f; font-size: 12px;"></p>
+                    <p id="nlScheduleConfigHint" style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">
+                        API 키 설정: <code>js/gemini-config-example.js</code>에서 <code>GEMINI_CONFIG.apiKey</code> 입력 (Google AI Studio <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">무료 발급</a>)
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -687,6 +717,9 @@
     <!-- Strava Config (베타) - strava-config-example.js에 clientId 설정됨 -->
     <script src="js/strava-config-example.js?v=4"></script>
     <script src="js/strava.js?v=1"></script>
+    <!-- 자연어 일정관리 (베타) -->
+    <script src="js/gemini-config-example.js?v=1"></script>
+    <script src="js/natural-language-schedule.js?v=1"></script>
 
     <!-- Custom JS -->
     <script src="js/fcm-notification.js?v=331"></script>
