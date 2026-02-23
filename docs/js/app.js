@@ -2406,8 +2406,8 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
         const altRange = altMax - altMin || 1;
-        const padL = 54, padR = 72, padT = 14, padB = 30;
-        const w = 360, h = 200;
+        const padL = 48, padR = 60, padT = 10, padB = 24;
+        const w = 400, h = 240;
         const chartW = w - padL - padR, chartH = h - padT - padB;
         const avgPaceMin = distKm > 0 && movingTime > 0 ? (movingTime / 60) / distKm : null;
         const step = Math.max(1, Math.floor(dist.length / 80));
@@ -2460,7 +2460,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
                             ${avgPaceLine}
                             <text x="${padL - 8}" y="${padT + chartH / 2}" class="pace-axis-label pace-axis-left" text-anchor="end" dominant-baseline="middle">m</text>
-                            <text x="${padL + chartW + 8}" y="${padT - 2}" class="pace-axis-label pace-axis-right" text-anchor="start" dominant-baseline="auto">/km</text>
+                            <text x="${padL + chartW + 6}" y="${padT + chartH + 14}" class="pace-axis-label pace-axis-right" text-anchor="start">/km</text>
                             <text x="${padL + chartW / 2}" y="${h - 2}" class="pace-axis-label pace-axis-bottom" text-anchor="middle">km</text>
                             ${xLabels.filter((_, i) => xLabels.length <= 12 || i % 2 === 0 || i === xLabels.length - 1).map((v) => `<text x="${padL + (v / maxDist) * chartW}" y="${h - 12}" class="pace-axis-tick pace-axis-bottom" text-anchor="middle" font-size="8">${Number.isInteger(v) ? v : v.toFixed(1)}</text>`).join('')}
                             ${(function(){
