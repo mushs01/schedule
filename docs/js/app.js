@@ -317,11 +317,13 @@ function setupPersonCheckboxListeners() {
 }
 
 /**
- * Setup date change listeners for day of week display
+ * Setup date change listeners for day of week display and start→end sync
  */
 function setupDateChangeListeners() {
     const startDateInput = document.getElementById('eventStartDate');
     const endDateInput = document.getElementById('eventEndDate');
+    const startTimeInput = document.getElementById('eventStartTime');
+    const endTimeInput = document.getElementById('eventEndTime');
     const startDaySpan = document.getElementById('startDayOfWeek');
     const endDaySpan = document.getElementById('endDayOfWeek');
     
@@ -337,6 +339,11 @@ function setupDateChangeListeners() {
     if (startDateInput && startDaySpan) {
         startDateInput.addEventListener('change', function() {
             updateDayOfWeek(startDateInput, startDaySpan);
+            if (endDateInput && startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+                updateDayOfWeek(endDateInput, endDaySpan);
+                if (typeof updateDateTimeDisplays === 'function') updateDateTimeDisplays();
+            }
         });
     }
     
@@ -344,6 +351,17 @@ function setupDateChangeListeners() {
         endDateInput.addEventListener('change', function() {
             updateDayOfWeek(endDateInput, endDaySpan);
         });
+    }
+    
+    if (startTimeInput && endTimeInput) {
+        function syncEndTimeFromStart() {
+            if (startTimeInput.value) {
+                endTimeInput.value = startTimeInput.value;
+                if (typeof updateDateTimeDisplays === 'function') updateDateTimeDisplays();
+            }
+        }
+        startTimeInput.addEventListener('change', syncEndTimeFromStart);
+        startTimeInput.addEventListener('input', syncEndTimeFromStart);
     }
 }
 
@@ -1216,9 +1234,9 @@ async function handleEventFormSubmit(e) {
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
     
-    // 종료 시간이 시작 시간보다 빠른지 확인
-    if (endDateTime <= startDateTime) {
-        showToast('종료 시간은 시작 시간보다 늦어야 합니다.', 'error');
+    // 종료 시간이 시작 시간보다 빠른지 확인 (동일 시각은 허용)
+    if (endDateTime < startDateTime) {
+        showToast('종료 시간은 시작 시간보다 늦거나 같아야 합니다.', 'error');
         return;
     }
     
@@ -3511,6 +3529,13 @@ function initDateTimeWheel() {
         const capsule = currentTimeWheelSide === 'start' ? startCapsule : endCapsule;
         if (timeInput) timeInput.value = timeStr;
         if (capsule) capsule.textContent = formatTimeCapsule(timeStr);
+        if (currentTimeWheelSide === 'start') {
+            const endTimeInput = document.getElementById('eventEndTime');
+            if (endTimeInput) {
+                endTimeInput.value = timeStr;
+                if (endCapsule) endCapsule.textContent = formatTimeCapsule(timeStr);
+            }
+        }
         closeWheel();
     }
 
