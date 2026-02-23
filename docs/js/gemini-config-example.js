@@ -4,5 +4,5 @@
  * 발급: https://aistudio.google.com/apikey
  */
 window.GEMINI_CONFIG = {
-    model: 'gemini-2.0-flash'
+    model: 'gemini-2.5-flash-lite'
 };
