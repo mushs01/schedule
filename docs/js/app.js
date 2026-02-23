@@ -262,6 +262,7 @@ function setupPersonCheckboxListeners() {
     const repeatSelect = document.getElementById('eventRepeat');
     const weeklyOptions = document.getElementById('weeklyOptions');
     const monthlyOptions = document.getElementById('monthlyOptions');
+    const repeatEndOptions = document.getElementById('repeatEndOptions');
     
     if (repeatSelect) {
         repeatSelect.addEventListener('change', function() {
@@ -279,6 +280,11 @@ function setupPersonCheckboxListeners() {
                 console.log('  - monthlyOptions 숨김');
             }
             
+            // 반복 종료일: 반복 안함일 때만 숨김
+            if (repeatEndOptions) {
+                repeatEndOptions.style.display = repeatValue === 'none' ? 'none' : 'flex';
+            }
+            
             // 선택에 따라 옵션 표시
             if (repeatValue === 'weekly') {
                 if (weeklyOptions) {
@@ -294,6 +300,9 @@ function setupPersonCheckboxListeners() {
                 updateMonthlyLabels();
             }
         });
+        
+        // 초기 상태 적용 (반복 안함 디폴트일 때 반복 종료일 숨김)
+        repeatSelect.dispatchEvent(new Event('change'));
         
         console.log('✅ 반복 설정 이벤트 리스너 등록 완료');
     } else {
@@ -2052,7 +2061,7 @@ function renderExerciseCalendar() {
     // 활성 아이콘에 해당하는 기록만 표시 (비활성화 시 해당 사람 기록 숨김)
     const filterActs = (arr) => filterPersons.length === 0 ? [] : arr.filter(a => filterPersons.includes(a.person));
     const totalDistKm = (acts) => acts.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
-    const circleSize = (km) => Math.min(38, Math.max(14, 10 + Math.min(km, 25) * 1.1));
+    const circleSize = (km) => Math.min(26, Math.max(14, 12 + Math.min(km, 25) * 0.45));
     const formatDist = (km) => km >= 1 ? Math.round(km) : (km >= 0.1 ? km.toFixed(1) : Math.round(km * 10) / 10);
     const hexToRgb = (hex) => {
         const m = hex.replace('#','').match(/.{2}/g);
@@ -2083,7 +2092,7 @@ function renderExerciseCalendar() {
         const badge = acts.length ? `<span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}</span>` : '';
         const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
         const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', sunSat].filter(Boolean).join(' ');
-        return `<div class="${cls}" data-date="${ds}">${countBadge}${badge}<span class="day-num">${dayNum}</span></div>`;
+        return `<div class="${cls}" data-date="${ds}">${countBadge}<span class="day-num">${dayNum}</span>${badge}</div>`;
     };
     for (let i = 0; i < startPad; i++) {
         const d = new Date(year, month, -startPad + i + 1);
