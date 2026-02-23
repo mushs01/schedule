@@ -2755,6 +2755,13 @@ body {
 
 /* 운동 세부 화면 - Strava 스타일 (운동타입, 거리, 페이스, 시간, 지도) */
 .exercise-detail-modal .event-detail { padding: 0 20px 20px; }
+.exercise-detail-modal .event-detail-header {
+    align-items: center;
+}
+.exercise-detail-modal .event-detail-header .exercise-detail-header-top {
+    margin-bottom: 0;
+    padding: 0;
+}
 .exercise-detail-card { padding-bottom: 20px; }
 .exercise-detail-sep {
     margin-top: 20px;

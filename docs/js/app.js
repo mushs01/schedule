@@ -2541,6 +2541,23 @@ function showExerciseDetail(dateStr, activities) {
         return;
     }
 
+    const first = activities[0];
+    const firstCfg = EXERCISE_PERSON_CONFIG[first.person || 'all'] || EXERCISE_PERSON_CONFIG.all;
+    const firstPersonName = window.PERSON_NAMES ? (window.PERSON_NAMES[first.person || 'all'] || first.person || 'all') : (first.person || 'all');
+    const firstMeta = formatExerciseMetaSync(first);
+    const firstDateTime = firstMeta.text.includes(' · ') ? firstMeta.text.split(' · ')[0] : firstMeta.text;
+    const firstLoc = getLocationFromActivity(first) || '-';
+    const firstLocId = (!getLocationFromActivity(first) && first.start_latlng && first.start_latlng.length >= 2) ? 'exercise-location-0' : '';
+    headerEl.innerHTML = `
+        <div class="exercise-detail-header-top">
+            <img src="${firstCfg.img}" alt="${firstPersonName}" class="exercise-detail-avatar-top">
+            <div class="exercise-detail-header-info">
+                <div class="exercise-detail-datetime">${firstDateTime}</div>
+                <div class="exercise-detail-location" id="${firstLocId}">${firstLoc}</div>
+            </div>
+        </div>
+    `;
+
     let bodyHTML = '';
     activities.forEach((a, index) => {
         const person = a.person || 'all';
@@ -2559,11 +2576,10 @@ function showExerciseDetail(dateStr, activities) {
         const metaText = metaResult.text;
         const needsGeocode = metaResult.needsGeocode;
         const locText = getLocationFromActivity(a) || '-';
-        const locationId = needsGeocode ? `exercise-location-${index}` : '';
+        const locationId = (index === 0 && firstLocId) ? '' : (needsGeocode ? `exercise-location-${index}` : '');
         const dateTimePart = metaText.includes(' · ') ? metaText.split(' · ')[0] : metaText;
         const sep = index > 0 ? ' exercise-detail-sep' : '';
-        bodyHTML += `
-            <div class="exercise-detail-card${sep}" data-activity-index="${index}">
+        const headerTopHtml = index > 0 ? `
                 <div class="exercise-detail-header-top">
                     <img src="${cfg.img}" alt="${personName}" class="exercise-detail-avatar-top">
                     <div class="exercise-detail-header-info">
@@ -2571,6 +2587,10 @@ function showExerciseDetail(dateStr, activities) {
                         <div class="exercise-detail-location" id="${locationId}">${locText}</div>
                     </div>
                 </div>
+        ` : '';
+        bodyHTML += `
+            <div class="exercise-detail-card${sep}" data-activity-index="${index}">
+                ${headerTopHtml}
                 <div class="exercise-detail-type">
                     <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
                     <span>${sportType}</span>
@@ -2593,7 +2613,6 @@ function showExerciseDetail(dateStr, activities) {
         `;
     });
 
-    headerEl.innerHTML = '';
     bodyEl.innerHTML = bodyHTML + '<p class="exercise-detail-strava-footer">From <a href="https://www.strava.com" target="_blank" rel="noopener">Strava App</a></p>';
     modal.classList.add('active');
 
