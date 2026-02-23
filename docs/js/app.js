@@ -336,15 +336,17 @@ function setupDateChangeListeners() {
         daySpan.textContent = dayOfWeek;
     }
     
-    if (startDateInput && startDaySpan) {
-        startDateInput.addEventListener('change', function() {
-            updateDayOfWeek(startDateInput, startDaySpan);
+    if (startDateInput) {
+        function syncEndDateFromStart() {
+            if (startDaySpan) updateDayOfWeek(startDateInput, startDaySpan);
             if (endDateInput && startDateInput.value) {
                 endDateInput.value = startDateInput.value;
-                updateDayOfWeek(endDateInput, endDaySpan);
+                if (endDaySpan) updateDayOfWeek(endDateInput, endDaySpan);
                 if (typeof updateDateTimeDisplays === 'function') updateDateTimeDisplays();
             }
-        });
+        }
+        startDateInput.addEventListener('change', syncEndDateFromStart);
+        startDateInput.addEventListener('input', syncEndDateFromStart);
     }
     
     if (endDateInput && endDaySpan) {
