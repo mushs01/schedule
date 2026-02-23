@@ -5,5 +5,5 @@
  * https://aistudio.google.com/apikey
  */
 window.GEMINI_CONFIG = {
-    apiKey: 'AIzaSyASpKC4eQZN5M4OnapwuzZ55aW6VMMVy2A'  // 예: 'AIzaSy...' - 비우면 자연어 일정 추출 비활성화
+    apiKey: 'AIzaSyDqsaq6KtL5Jtu9U2_SYJ-psrmkht7xAOA'  // 예: 'AIzaSy...' - 비우면 자연어 일정 추출 비활성화
 };
