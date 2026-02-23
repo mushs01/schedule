@@ -2426,7 +2426,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
         const altRange = altMax - altMin || 1;
-        const padL = 36, padR = 44, padT = 10, padB = 24;
+        const padL = 44, padR = 54, padT = 10, padB = 24;
         const w = 400, h = 240;
         const chartW = w - padL - padR, chartH = h - padT - padB;
         const avgPaceMin = distKm > 0 && movingTime > 0 ? (movingTime / 60) / distKm : null;
