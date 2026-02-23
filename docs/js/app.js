@@ -919,6 +919,27 @@ function setupEventListeners() {
                 notification_end: false
             };
             try {
+                // 해당 사람의 해당 날짜 일정과 겹치는지 확인
+                const existing = await window.api.getSchedules({
+                    person: d.person,
+                    startDate: d.date,
+                    endDate: d.date
+                });
+                const newStart = startDateTime.getTime();
+                const newEnd = endDateTime.getTime();
+                const overlaps = existing.filter(s => {
+                    if (s.repeat_type && s.repeat_type !== 'none') return false; // 반복 일정은 단순 비교 생략
+                    const sStart = new Date(s.start).getTime();
+                    const sEnd = s.end ? new Date(s.end).getTime() : sStart + 60 * 60 * 1000; // end 없으면 1시간
+                    return newStart < sEnd && sStart < newEnd;
+                });
+                if (overlaps.length > 0) {
+                    const names = window.PERSON_NAMES || {};
+                    const personName = names[d.person] || d.person;
+                    const list = overlaps.map(o => `"${o.title}" (${o.start ? new Date(o.start).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : ''})`).join(', ');
+                    const msg = `${personName}의 해당 시간에 이미 일정이 있습니다:\n${list}\n\n그래도 추가하시겠습니까?`;
+                    if (!confirm(msg)) return;
+                }
                 showLoading(true);
                 await window.api.createSchedule(scheduleData);
                 if (window.showToast) window.showToast('일정이 추가되었습니다.', 'success');
