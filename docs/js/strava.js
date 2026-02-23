@@ -167,7 +167,8 @@
     function isTokenExpired(expiresAt) {
         if (!expiresAt) return true;
         const now = Math.floor(Date.now() / 1000);
-        return expiresAt - 3600 <= now;
+        /* 토큰 만료 2시간 전부터 갱신 (Strava access_token 6시간 유효) */
+        return expiresAt - 7200 <= now;
     }
 
     async function refreshAccessTokenForAccount(account) {
@@ -185,8 +186,14 @@
         try {
             await refreshAccessTokenForAccount(account);
         } catch (e) {
-            removeAccount(account.athleteId);
-            throw new Error('연동이 만료되었습니다. 다시 연결해주세요.');
+            /* 일시적 오류 가능성 있어 1회 재시도 후에만 제거 */
+            try {
+                await new Promise(r => setTimeout(r, 1500));
+                await refreshAccessTokenForAccount(account);
+            } catch (e2) {
+                removeAccount(account.athleteId);
+                throw new Error('연동이 만료되었습니다. 다시 연결해주세요.');
+            }
         }
     }
 
@@ -275,10 +282,35 @@
                 try {
                     await refreshAccessTokenForAccount(acc);
                 } catch (e) {
-                    console.warn('Strava 토큰 갱신 실패:', acc.athleteId, e);
+                    /* 1회 재시도 (네트워크 일시 오류 대응) */
+                    try {
+                        await new Promise(r => setTimeout(r, 1500));
+                        await refreshAccessTokenForAccount(acc);
+                    } catch (e2) {
+                        console.warn('Strava 토큰 갱신 실패 (계정 유지):', acc.athleteId, e2);
+                    }
                 }
             }
         }
+    }
+
+    /** 앱 포커스/탭 복귀 시 토큰 사전 갱신 - 연결 유지 */
+    function setupBackgroundRefresh() {
+        if (typeof document.hidden === 'undefined') return;
+        var lastRun = 0;
+        var MIN_INTERVAL_MS = 10 * 60 * 1000; /* 10분 이상 간격 */
+        function run() {
+            var now = Date.now();
+            if (now - lastRun < MIN_INTERVAL_MS) return;
+            lastRun = now;
+            if (window.stravaModule && window.stravaModule.ensureConnectionAtStartup) {
+                window.stravaModule.ensureConnectionAtStartup().catch(function() {});
+            }
+        }
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') run();
+        });
+        setInterval(run, 30 * 60 * 1000); /* 30분마다 실행 */
     }
 
     /** 활동 상세 조회 (splits_metric 등) */
@@ -349,6 +381,8 @@
         ensureConnectionAtStartup,
         onDisconnect: null
     };
+
+    setupBackgroundRefresh();
 
     } catch (e) {
         console.warn('Strava 모듈 로드 실패:', e);
