@@ -561,6 +561,17 @@
                     <p class="settings-description" style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
                         예: "오늘 주환이 수영장 가기 오후 2시에 넣어줘"
                     </p>
+                    <p class="settings-description" style="margin-bottom: 8px; font-size: 12px;">
+                        API 키 발급: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color: var(--primary-blue); text-decoration: underline;">Google AI Studio에서 무료 발급 (바로가기)</a>
+                    </p>
+                    <div class="gemini-api-key-row" style="margin-bottom: 8px;">
+                        <input type="password" id="geminiApiKeyInput" placeholder="API 키를 붙여넣기 한 뒤 저장을 누르세요" class="input-large" style="flex: 1; min-width: 0;" autocomplete="off">
+                        <button type="button" class="btn-secondary" id="geminiApiKeySaveBtn">
+                            <span class="material-icons">save</span>
+                            저장
+                        </button>
+                    </div>
+                    <p id="geminiApiKeyStatus" class="settings-description" style="font-size: 12px; margin: -4px 0 12px 0; color: var(--text-secondary);"></p>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                         <div style="flex: 1; min-width: 200px; display: flex; gap: 4px;">
                             <input type="text" id="nlScheduleInput" placeholder="자연어로 일정 입력 또는 음성으로 말하기..." class="input-large" style="flex: 1;">
@@ -581,9 +592,6 @@
                         </button>
                     </div>
                     <p id="nlScheduleError" style="display: none; margin-top: 8px; color: #d32f2f; font-size: 12px;"></p>
-                    <p id="nlScheduleConfigHint" style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">
-                        API 키 설정: <code>js/gemini-config-example.js</code>에서 <code>GEMINI_CONFIG.apiKey</code> 입력 (Google AI Studio <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">무료 발급</a>)
-                    </p>
                 </div>
             </div>
         </div>

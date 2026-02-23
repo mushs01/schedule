@@ -1,10 +1,8 @@
 /**
  * Gemini API Configuration (베타 - 자연어 일정관리)
- *
- * Google AI Studio에서 API 키를 무료로 발급받아 설정하세요.
- * https://aistudio.google.com/apikey
+ * API 키는 앱 내 입력창에서 입력 후 저장 (localStorage에 보관, 저장소에 올리지 않음)
+ * 발급: https://aistudio.google.com/apikey
  */
 window.GEMINI_CONFIG = {
-    apiKey: 'AIzaSyDqsaq6KtL5Jtu9U2_SYJ-psrmkht7xAOA',  // 예: 'AIzaSy...' - 비우면 자연어 일정 추출 비활성화
-    model: 'gemini-2.0-flash'  // 옵션: gemini-2.0-flash, gemini-1.5-flash-latest 등
+    model: 'gemini-2.0-flash'
 };

@@ -2633,6 +2633,14 @@ body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
+/* 자연어 일정관리 - API 키 입력 행 */
+.gemini-api-key-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.gemini-api-key-row .input-large { flex: 1; min-width: 0; }
+
 /* 자연어 일정관리 - 음성 버튼 녹음 중 */
 #nlScheduleMicBtn.recording {
     background: #d32f2f !important;

@@ -20,13 +20,18 @@ JSON 형식 (반드시 이 키만 사용):
 endTime은 startTime에서 1시간 후 기본값.
 오늘, 내일, 모레, 다음주 월요일 등 자연어 해석.`;
 
-    async function extractFromGemini(text) {
+    function getApiKey() {
         const cfg = window.GEMINI_CONFIG || {};
-        const apiKey = cfg.apiKey || '';
+        return (cfg.apiKey || (typeof localStorage !== 'undefined' ? localStorage.getItem('gemini_api_key') : null) || '').trim();
+    }
+
+    async function extractFromGemini(text) {
+        const apiKey = getApiKey();
         if (!apiKey) {
-            throw new Error('Gemini API 키가 설정되지 않았습니다. gemini-config.js에서 apiKey를 설정하세요.');
+            throw new Error('Gemini API 키를 입력하고 저장해주세요. 아래 링크에서 무료 발급 후 입력란에 붙여넣기 하세요.');
         }
 
+        const cfg = window.GEMINI_CONFIG || {};
         const model = cfg.model || 'gemini-2.0-flash';
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         const body = {
@@ -90,8 +95,6 @@ endTime은 startTime에서 1시간 후 기본값.
 
     window.naturalLanguageSchedule = {
         extract: extractFromGemini,
-        isConfigured: function() {
-            return !!(window.GEMINI_CONFIG && window.GEMINI_CONFIG.apiKey);
-        }
+        isConfigured: function() { return !!getApiKey(); }
     };
 })();

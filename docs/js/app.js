@@ -765,6 +765,42 @@ function setupEventListeners() {
         });
     }
 
+    // 자연어 일정관리 (베타) - API 키 저장/로드
+    const geminiApiKeyInput = document.getElementById('geminiApiKeyInput');
+    const geminiApiKeySaveBtn = document.getElementById('geminiApiKeySaveBtn');
+    const geminiApiKeyStatus = document.getElementById('geminiApiKeyStatus');
+    function updateGeminiApiKeyUI() {
+        if (!geminiApiKeyStatus) return;
+        const key = typeof localStorage !== 'undefined' ? localStorage.getItem('gemini_api_key') : null;
+        geminiApiKeyStatus.textContent = key ? '✓ API 키가 저장되어 있습니다 (이 기기에서만 사용)' : 'API 키를 입력하고 저장 버튼을 누르세요.';
+        if (geminiApiKeyInput && !geminiApiKeyInput.value) geminiApiKeyInput.placeholder = key ? '새 키로 변경하려면 입력 후 저장' : 'API 키를 붙여넣기 한 뒤 저장을 누르세요';
+    }
+    if (geminiApiKeySaveBtn && geminiApiKeyInput) {
+        geminiApiKeySaveBtn.addEventListener('click', () => {
+            const val = (geminiApiKeyInput.value || '').trim();
+            if (val) {
+                try {
+                    localStorage.setItem('gemini_api_key', val);
+                    window.GEMINI_CONFIG = window.GEMINI_CONFIG || {};
+                    window.GEMINI_CONFIG.apiKey = val;
+                    geminiApiKeyInput.value = '';
+                    updateGeminiApiKeyUI();
+                    if (window.showToast) window.showToast('API 키가 저장되었습니다.', 'success');
+                } catch (e) {
+                    if (window.showToast) window.showToast('저장 실패 (localStorage 접근 불가)', 'error');
+                }
+            } else {
+                try {
+                    localStorage.removeItem('gemini_api_key');
+                    if (window.GEMINI_CONFIG) delete window.GEMINI_CONFIG.apiKey;
+                    updateGeminiApiKeyUI();
+                    if (window.showToast) window.showToast('API 키를 삭제했습니다.', 'info');
+                } catch (e) {}
+            }
+        });
+    }
+    if (typeof updateGeminiApiKeyUI === 'function') window.updateGeminiApiKeyUI = updateGeminiApiKeyUI;
+
     // 자연어 일정관리 (베타) - 음성 입력
     let _nlExtractedData = null;
     const nlInput = document.getElementById('nlScheduleInput');
@@ -831,7 +867,7 @@ function setupEventListeners() {
             }
             if (!window.naturalLanguageSchedule || !window.naturalLanguageSchedule.isConfigured()) {
                 if (nlError) {
-                    nlError.textContent = 'Gemini API 키를 설정해주세요. gemini-config.js에서 GEMINI_CONFIG.apiKey를 입력하세요.';
+                    nlError.textContent = 'Gemini API 키를 입력하고 저장해주세요. 위 링크에서 무료 발급 후 입력란에 붙여넣기 하세요.';
                     nlError.style.display = 'block';
                 }
                 return;
@@ -2063,6 +2099,7 @@ function openBetaTestModal() {
     try {
         if (!betaTestModal) return;
         updateStravaUI();
+        if (typeof window.updateGeminiApiKeyUI === 'function') window.updateGeminiApiKeyUI();
         betaTestModal.classList.add('active');
         // OAuth 복귀 직후 등 타이밍 이슈 대비 - 잠시 후 한 번 더 UI 갱신
         setTimeout(updateStravaUI, 500);
