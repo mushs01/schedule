@@ -2186,6 +2186,12 @@ body {
     padding-bottom: 0;
 }
 
+.beta-modal-divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 16px 0;
+}
+
 .settings-section h3 {
     font-size: 16px;
     font-weight: 500;
