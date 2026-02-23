@@ -2564,27 +2564,23 @@ function showExerciseDetail(dateStr, activities) {
         const sep = index > 0 ? ' exercise-detail-sep' : '';
         bodyHTML += `
             <div class="exercise-detail-card${sep}" data-activity-index="${index}">
-                <div class="exercise-detail-top">
-                    <div class="exercise-detail-map-wrap">
-                        ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : '<div class="exercise-detail-map-placeholder"></div>'}
-                    </div>
-                    <div class="exercise-detail-side-info">
-                        <div class="exercise-detail-type">
-                            <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
-                            <span>${sportType}</span>
-                        </div>
+                <div class="exercise-detail-header-top">
+                    <img src="${cfg.img}" alt="${personName}" class="exercise-detail-avatar-top">
+                    <div class="exercise-detail-header-info">
+                        <div class="exercise-detail-datetime">${dateTimePart}</div>
                         <div class="exercise-detail-location" id="${locationId}">${locText}</div>
                     </div>
                 </div>
-                <div class="exercise-detail-header-row">
-                    <img src="${cfg.img}" alt="${personName}" class="event-detail-avatar">
-                    <span class="exercise-detail-meta">${dateTimePart}</span>
+                <div class="exercise-detail-type">
+                    <span class="material-icons exercise-detail-sport-icon">${sportIcon}</span>
+                    <span>${sportType}</span>
                 </div>
                 <div class="exercise-detail-metrics">
                     ${distKm ? `<div class="exercise-detail-metric"><span class="metric-label">거리</span><span class="metric-value">${distKm} km</span></div>` : ''}
                     ${pace ? `<div class="exercise-detail-metric"><span class="metric-label">페이스</span><span class="metric-value">${pace}</span></div>` : ''}
                     ${timeStr ? `<div class="exercise-detail-metric"><span class="metric-label">시간</span><span class="metric-value">${timeStr}</span></div>` : ''}
                 </div>
+                ${hasMap ? `<div class="exercise-detail-map" id="exerciseMap_${index}"></div>` : ''}
                 <div class="exercise-detail-extra">
                     ${a.calories ? `<span class="exercise-extra-item"><span class="material-icons">local_fire_department</span> ${a.calories} kcal</span>` : ''}
                     ${a.average_speed && !pace ? `<span class="exercise-extra-item"><span class="material-icons">speed</span> ${(a.average_speed * 3.6).toFixed(1)} km/h</span>` : ''}
