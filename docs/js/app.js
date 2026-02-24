@@ -1475,9 +1475,15 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
         if (aiPrefill.title) document.getElementById('eventTitle').value = aiPrefill.title;
         if (aiPrefill.person) {
             document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
-            const checkboxId = `person${aiPrefill.person.charAt(0).toUpperCase() + aiPrefill.person.slice(1)}`;
-            const checkbox = document.getElementById(checkboxId);
-            if (checkbox) checkbox.checked = true;
+            const p = String(aiPrefill.person).toLowerCase();
+            const checkboxId = 'person' + (p.charAt(0).toUpperCase() + p.slice(1));
+            let checkbox = document.getElementById(checkboxId);
+            if (!checkbox) {
+                const byValue = document.querySelector(`input[name="eventPerson"][value="${p}"]`);
+                if (byValue) byValue.checked = true;
+            } else {
+                checkbox.checked = true;
+            }
         }
     }
     
@@ -1510,6 +1516,12 @@ function closeEventModal() {
  */
 async function handleEventFormSubmit(e) {
     e.preventDefault();
+    
+    const api = window.api;
+    if (!api || typeof api.createSchedule !== 'function') {
+        showToast('일정 API를 불러올 수 없습니다. 새로고침 후 다시 시도해주세요.', 'error');
+        return;
+    }
     
     const title = document.getElementById('eventTitle').value;
     const startDate = document.getElementById('eventStartDate').value;
@@ -1747,6 +1759,7 @@ async function handleEventFormSubmit(e) {
             // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
             console.log('➕ Creating new event(s)');
             console.log('📋 Selected persons:', selectedPersons);
+            console.log('📋 Form data - title:', title, 'start:', startDateTime.toISOString(), 'end:', endDateTime.toISOString());
             
             // '전체' 선택 시 하나의 일정만 생성
             if (selectedPersons.includes('all')) {
@@ -1799,7 +1812,9 @@ async function handleEventFormSubmit(e) {
         }
         
         // Refresh calendar, AI summary, important events, and today's summary
-        calendarModule.refresh();
+        if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
+            window.calendarModule.refresh();
+        }
         loadAISummary();
         loadImportantEvents();
         loadTodaySummary();
