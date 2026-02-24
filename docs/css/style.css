@@ -1991,11 +1991,15 @@ body {
     color: var(--text-primary);
 }
 
-/* AI FAB 말풍선 툴팁 (버튼 위쪽) */
+/* AI FAB 말풍선 툴팁 (AI 버튼 위쪽에 달림) */
+.fab-ai {
+    position: relative;
+}
 .ai-fab-tooltip {
     position: absolute;
-    right: 0;
+    left: 50%;
     bottom: 100%;
+    transform: translateX(-50%);
     margin-bottom: 12px;
     padding: 10px 14px;
     width: max-content;
@@ -2012,7 +2016,8 @@ body {
 .ai-fab-tooltip::after {
     content: '';
     position: absolute;
-    right: 20px;
+    left: 50%;
+    margin-left: -8px;
     bottom: -8px;
     width: 0;
     height: 0;
