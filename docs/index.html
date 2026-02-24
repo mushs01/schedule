@@ -169,11 +169,17 @@
                 </div>
             </div>
             
-            <!-- Floating Action Button -->
-            <button class="fab" id="addEventBtn" title="담당자 선택 (길게 누르면 일정 추가)" data-person="all">
-                <div class="fab-person-image"></div>
-                <span class="fab-add-icon material-icons">add</span>
-            </button>
+            <!-- Floating Action Buttons -->
+            <div class="fab-group" id="fabGroup">
+                <button class="fab fab-ai" id="aiAddEventBtn" title="AI 일정 추가 (음성으로 말하기)">
+                    <span class="fab-ai-icon material-icons">auto_awesome</span>
+                    <span class="fab-ai-mic material-icons" style="display:none">mic</span>
+                </button>
+                <button class="fab" id="addEventBtn" title="담당자 선택 (길게 누르면 일정 추가)" data-person="all">
+                    <div class="fab-person-image"></div>
+                    <span class="fab-add-icon material-icons">add</span>
+                </button>
+            </div>
         </main>
     </div>
 

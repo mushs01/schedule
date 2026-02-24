@@ -376,6 +376,82 @@ function setupEventListeners() {
     if (addEventBtn) {
         setupFloatingButton(addEventBtn);
     }
+    // AI 일정 추가 FAB
+    const aiAddEventBtn = document.getElementById('aiAddEventBtn');
+    if (aiAddEventBtn) {
+        const aiFabIcon = aiAddEventBtn.querySelector('.fab-ai-icon');
+        const aiFabMic = aiAddEventBtn.querySelector('.fab-ai-mic');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'ko-KR';
+        }
+        aiAddEventBtn.addEventListener('click', async () => {
+            if (!window.naturalLanguageSchedule || !window.naturalLanguageSchedule.isConfigured()) {
+                if (window.showToast) window.showToast('Gemini API 키를 설정해주세요. 베타테스트에서 API 키를 입력하고 저장하세요.', 'warning');
+                return;
+            }
+            if (!recognition) {
+                if (window.showToast) window.showToast('이 브라우저는 음성 인식을 지원하지 않습니다.', 'error');
+                return;
+            }
+            if (aiAddEventBtn.classList.contains('recording') || aiAddEventBtn.classList.contains('loading')) return;
+            aiAddEventBtn.classList.add('recording');
+            if (aiFabIcon) aiFabIcon.style.display = 'none';
+            if (aiFabMic) aiFabMic.style.display = '';
+            if (window.showToast) window.showToast('말씀해 주세요...', 'info');
+            recognition.onresult = async (e) => {
+                const transcript = (e.results[0][0].transcript || '').trim();
+                if (!transcript) {
+                    aiAddEventBtn.classList.remove('recording');
+                    if (aiFabIcon) aiFabIcon.style.display = '';
+                    if (aiFabMic) aiFabMic.style.display = 'none';
+                    if (window.showToast) window.showToast('음성이 인식되지 않았습니다.', 'warning');
+                    return;
+                }
+                aiAddEventBtn.classList.remove('recording');
+                aiAddEventBtn.classList.add('loading');
+                if (aiFabIcon) aiFabIcon.style.display = '';
+                if (aiFabMic) aiFabMic.style.display = 'none';
+                if (window.showToast) window.showToast('일정 추출 중...', 'info');
+                try {
+                    const data = await window.naturalLanguageSchedule.extract(transcript);
+                    const startDate = new Date(`${data.date}T${data.startTime}`);
+                    const endDate = new Date(`${data.date}T${data.endTime}`);
+                    openEventModal({ start: startDate, end: endDate }, null, { title: data.title, person: data.person });
+                    if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
+                } catch (err) {
+                    if (window.showToast) window.showToast(err.message || '추출 실패', 'error');
+                } finally {
+                    aiAddEventBtn.classList.remove('loading');
+                }
+            };
+            recognition.onerror = (e) => {
+                aiAddEventBtn.classList.remove('recording', 'loading');
+                if (aiFabIcon) aiFabIcon.style.display = '';
+                if (aiFabMic) aiFabMic.style.display = 'none';
+                if (e.error !== 'aborted' && window.showToast) {
+                    window.showToast(e.error === 'no-speech' ? '음성이 감지되지 않았습니다.' : '음성 인식 오류', 'error');
+                }
+            };
+            recognition.onend = () => {
+                if (!aiAddEventBtn.classList.contains('loading')) {
+                    aiAddEventBtn.classList.remove('recording');
+                    if (aiFabIcon) aiFabIcon.style.display = '';
+                    if (aiFabMic) aiFabMic.style.display = 'none';
+                }
+            };
+            try { recognition.start(); } catch (ex) {
+                aiAddEventBtn.classList.remove('recording');
+                if (aiFabIcon) aiFabIcon.style.display = '';
+                if (aiFabMic) aiFabMic.style.display = 'none';
+                if (window.showToast) window.showToast('음성 인식 시작 실패', 'error');
+            }
+        });
+    }
     
     // Modal close buttons
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -2157,7 +2233,9 @@ function showExerciseView() {
     if (importantEvents) importantEvents.style.display = 'none';
     if (todaySummary) todaySummary.style.display = 'none';
     if (viewSelector) viewSelector.style.display = 'block';
-    if (fab) fab.style.display = 'none';
+    const fabGroup = document.getElementById('fabGroup');
+    if (fabGroup) fabGroup.style.display = 'none';
+    else if (fab) fab.style.display = 'none';
     if (gcalContent) gcalContent.classList.add('exercise-view');
     if (exerciseArea) {
         exerciseArea.style.display = 'block';
@@ -2187,7 +2265,9 @@ function showScheduleView() {
     if (todaySummary) todaySummary.style.display = '';
     const vs = document.querySelector('.view-selector');
     if (vs) vs.style.display = '';
-    if (fab) fab.style.display = '';
+    const fabGroup = document.getElementById('fabGroup');
+    if (fabGroup) fabGroup.style.display = 'flex';
+    else if (fab) fab.style.display = '';
     if (gcalContent) gcalContent.classList.remove('exercise-view');
 }
 
