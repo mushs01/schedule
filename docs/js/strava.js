@@ -99,6 +99,16 @@
         saveAccounts(accounts);
     }
 
+    /** 갱신 실패 시 계정 삭제 대신 만료로 표시 (재인증 유도) */
+    function markAccountExpired(athleteId) {
+        const accounts = getStoredAccounts();
+        const idx = accounts.findIndex(a => String(a.athleteId) === String(athleteId));
+        if (idx >= 0) {
+            accounts[idx] = { ...accounts[idx], expired: true };
+            saveAccounts(accounts);
+        }
+    }
+
     function clearAllTokens() {
         localStorage.removeItem(STORAGE_KEY_ACCOUNTS);
         localStorage.removeItem(LEGACY_KEYS.accessToken);
@@ -181,20 +191,28 @@
         return data;
     }
 
+    /** 재시도 횟수 및 지연(ms) */
+    const REFRESH_RETRY_COUNT = 4;
+    const REFRESH_RETRY_DELAYS = [1500, 3000, 6000];
+
     async function ensureValidTokenForAccount(account) {
+        if (account.expired) throw new Error('연동이 만료되었습니다. 연동 해제 후 다시 연결해주세요.');
         if (!isTokenExpired(account.expiresAt)) return;
-        try {
-            await refreshAccessTokenForAccount(account);
-        } catch (e) {
-            /* 일시적 오류 가능성 있어 1회 재시도 후에만 제거 */
+        let lastErr;
+        for (let i = 0; i < REFRESH_RETRY_COUNT; i++) {
             try {
-                await new Promise(r => setTimeout(r, 1500));
                 await refreshAccessTokenForAccount(account);
-            } catch (e2) {
-                removeAccount(account.athleteId);
-                throw new Error('연동이 만료되었습니다. 다시 연결해주세요.');
+                return;
+            } catch (e) {
+                lastErr = e;
+                if (i < REFRESH_RETRY_COUNT - 1) {
+                    const delay = REFRESH_RETRY_DELAYS[i] || 6000;
+                    await new Promise(r => setTimeout(r, delay));
+                }
             }
         }
+        markAccountExpired(account.athleteId);
+        throw new Error('연동이 만료되었습니다. 연동 해제 후 다시 연결해주세요.');
     }
 
     /** 모든 연동 계정에서 활동 가져와 병합 */
@@ -206,6 +224,7 @@
 
         const allActivities = [];
         for (const acc of accounts) {
+            if (acc.expired) continue;
             try {
                 await ensureValidTokenForAccount(acc);
                 const accountsLatest = getStoredAccounts();
@@ -216,7 +235,7 @@
                     headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
                 });
                 if (!response.ok) {
-                    if (response.status === 401) removeAccount(acc.athleteId);
+                    if (response.status === 401) markAccountExpired(acc.athleteId);
                     continue;
                 }
                 const list = await response.json();
@@ -278,16 +297,21 @@
         applyPreloadedAccounts();
         const accounts = getStoredAccounts();
         for (const acc of accounts) {
-            if (isTokenExpired(acc.expiresAt) && acc.refreshToken) {
+            if (acc.expired || !acc.refreshToken) continue;
+            if (!isTokenExpired(acc.expiresAt)) continue;
+            let refreshed = false;
+            for (let i = 0; i < REFRESH_RETRY_COUNT; i++) {
                 try {
                     await refreshAccessTokenForAccount(acc);
+                    refreshed = true;
+                    break;
                 } catch (e) {
-                    /* 1회 재시도 (네트워크 일시 오류 대응) */
-                    try {
-                        await new Promise(r => setTimeout(r, 1500));
-                        await refreshAccessTokenForAccount(acc);
-                    } catch (e2) {
-                        console.warn('Strava 토큰 갱신 실패 (계정 유지):', acc.athleteId, e2);
+                    if (i < REFRESH_RETRY_COUNT - 1) {
+                        const delay = REFRESH_RETRY_DELAYS[i] || 6000;
+                        await new Promise(r => setTimeout(r, delay));
+                    } else {
+                        markAccountExpired(acc.athleteId);
+                        console.warn('Strava 토큰 갱신 실패 (연동 만료 표시):', acc.athleteId, e);
                     }
                 }
             }

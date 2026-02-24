@@ -3048,9 +3048,12 @@ function updateStravaUI() {
                 const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
                 const names = accounts.map(acc => {
                     const a = acc.athlete || {};
-                    return ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || '사용자';
+                    const n = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || '사용자';
+                    return acc.expired ? n + ' (만료)' : n;
                 });
-                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + (names.length ? names.join(', ') : '사용자') + ')';
+                const expiredCount = accounts.filter(a => a.expired).length;
+                const suffix = expiredCount > 0 ? ' - ' + expiredCount + '개 연동 만료' : '';
+                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + (names.length ? names.join(', ') : '사용자') + ')' + suffix;
             } else {
                 connectionStatusEl.classList.add('status-pending');
                 if (iconEl) iconEl.textContent = 'link_off';
@@ -3092,6 +3095,7 @@ function updateStravaUI() {
                     const a = acc.athlete || {};
                     const name = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || ('계정 ' + (idx + 1));
                     const id = acc.athleteId != null ? String(acc.athleteId) : '';
+                    const isExpired = !!acc.expired;
                     var currentPerson = mapping[id];
                     if (!currentPerson || !EXERCISE_FAMILY_ORDER.includes(currentPerson)) {
                         currentPerson = EXERCISE_FAMILY_ORDER[idx] || EXERCISE_FAMILY_ORDER[0];
@@ -3100,10 +3104,12 @@ function updateStravaUI() {
                         var label = (window.PERSON_NAMES && window.PERSON_NAMES[p]) || p;
                         return '<option value="' + esc(p) + '"' + (currentPerson === p ? ' selected' : '') + '>' + esc(label) + '</option>';
                     }).join('');
-                    return '<li class="strava-account-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">' +
-                        '<span style="min-width: 80px;">' + esc(name) + '</span>' +
+                    var badge = isExpired ? ' <span style="color: var(--error-color, #c62828); font-size: 11px;">연동 만료</span>' : '';
+                    var itemStyle = 'display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;' + (isExpired ? ' opacity: 0.9;' : '');
+                    return '<li class="strava-account-item" style="' + itemStyle + '">' +
+                        '<span style="min-width: 80px;">' + esc(name) + '</span>' + badge +
                         '<select class="strava-person-select" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px; min-width: 70px;">' + opts + '</select>' +
-                        '<button type="button" class="btn-secondary strava-disconnect-one" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px;" title="이 계정만 연동 해제"><span class="material-icons" style="font-size: 16px;">link_off</span> 연동 해제</button>' +
+                        '<button type="button" class="btn-secondary strava-disconnect-one" data-athlete-id="' + esc(id) + '" style="padding: 4px 8px; font-size: 12px;" title="' + (isExpired ? '연동 해제 후 다시 연결' : '이 계정만 연동 해제') + '"><span class="material-icons" style="font-size: 16px;">link_off</span> 연동 해제</button>' +
                         '</li>';
                 }).join('') || '<li style="color: var(--text-secondary);">계정 목록 없음</li>';
             }
