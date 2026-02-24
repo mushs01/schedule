@@ -123,9 +123,9 @@
         }
         const result = await firebase.functions().httpsCallable('exchangeStravaToken')({ code });
         const data = result.data;
-        if (!data || !data.access_token) {
-            throw new Error(data?.message || '토큰 교환 실패');
-        }
+        if (!data) throw new Error('토큰 교환 실패');
+        if (data.success === false) throw new Error(data.error || '토큰 교환 실패');
+        if (!data.access_token) throw new Error(data.error || '토큰 교환 실패');
         addOrUpdateAccount(
             data.access_token,
             data.refresh_token,
