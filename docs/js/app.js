@@ -376,9 +376,8 @@ function setupEventListeners() {
     if (addEventBtn) {
         setupFloatingButton(addEventBtn);
     }
-    // AI FAB 말풍선 툴팁 (앱 켤 때마다 8초만 표시)
+    // AI FAB 말풍선 툴팁 (앱 켤 때마다 12초만 표시)
     const aiFabTooltip = document.getElementById('aiFabTooltip');
-    const aiFabTooltipClose = document.getElementById('aiFabTooltipClose');
     let aiFabTooltipTimer = null;
     function dismissAiFabTooltip() {
         if (aiFabTooltip) aiFabTooltip.style.display = 'none';
@@ -390,10 +389,9 @@ function setupEventListeners() {
         if (fabGroup && fabGroup.style.display !== 'none') {
             aiFabTooltip.style.display = 'block';
             if (aiFabTooltipTimer) clearTimeout(aiFabTooltipTimer);
-            aiFabTooltipTimer = setTimeout(dismissAiFabTooltip, 8000);
+            aiFabTooltipTimer = setTimeout(dismissAiFabTooltip, 12000);
         }
     }
-    if (aiFabTooltipClose) aiFabTooltipClose.addEventListener('click', dismissAiFabTooltip);
     window.maybeShowAiFabTooltip = maybeShowAiFabTooltip;
     setTimeout(maybeShowAiFabTooltip, 800);
 
