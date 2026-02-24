@@ -2143,8 +2143,8 @@ body {
 
 /* AI 일정 추가 버튼 */
 .fab-ai {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
     background: linear-gradient(135deg, #7c4dff 0%, #b388ff 50%, #e040fb 100%);
     border: 2px solid rgba(255,255,255,0.4);
     box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4);
