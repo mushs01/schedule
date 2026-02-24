@@ -376,21 +376,21 @@ function setupEventListeners() {
     if (addEventBtn) {
         setupFloatingButton(addEventBtn);
     }
-    // AI FAB 말풍선 툴팁 (최초 1회만 표시)
+    // AI FAB 말풍선 툴팁 (앱 켤 때마다 8초만 표시)
     const aiFabTooltip = document.getElementById('aiFabTooltip');
     const aiFabTooltipClose = document.getElementById('aiFabTooltipClose');
+    let aiFabTooltipTimer = null;
     function dismissAiFabTooltip() {
         if (aiFabTooltip) aiFabTooltip.style.display = 'none';
-        try { localStorage.setItem('ai_fab_tooltip_shown', '1'); } catch (e) {}
+        if (aiFabTooltipTimer) { clearTimeout(aiFabTooltipTimer); aiFabTooltipTimer = null; }
     }
     function maybeShowAiFabTooltip() {
         if (!aiFabTooltip) return;
-        try {
-            if (localStorage.getItem('ai_fab_tooltip_shown')) return;
-        } catch (e) { return; }
         const fabGroup = document.getElementById('fabGroup');
         if (fabGroup && fabGroup.style.display !== 'none') {
             aiFabTooltip.style.display = 'block';
+            if (aiFabTooltipTimer) clearTimeout(aiFabTooltipTimer);
+            aiFabTooltipTimer = setTimeout(dismissAiFabTooltip, 8000);
         }
     }
     if (aiFabTooltipClose) aiFabTooltipClose.addEventListener('click', dismissAiFabTooltip);
