@@ -2005,7 +2005,7 @@ body {
     width: max-content;
     max-width: min(320px, calc(100vw - 120px));
     white-space: normal;
-    background: linear-gradient(135deg, #5e35b1 0%, #7c4dff 100%);
+    background: linear-gradient(135deg, #9575cd 0%, #b39ddb 60%, #ce93d8 100%);
     color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(94, 53, 177, 0.4);
@@ -2023,7 +2023,7 @@ body {
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid #7c4dff;
+    border-top: 8px solid #b39ddb;
 }
 .ai-fab-tooltip p {
     margin: 0;
