@@ -877,18 +877,15 @@ function setupEventListeners() {
             nlExtractBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span> 추출 중...';
             try {
                 const data = await window.naturalLanguageSchedule.extract(text);
-                _nlExtractedData = data;
-                const names = window.PERSON_NAMES || {};
-                nlResultContent.innerHTML = `
-                    <div><strong>담당자:</strong> ${names[data.person] || data.person}</div>
-                    <div><strong>제목:</strong> ${data.title}</div>
-                    <div><strong>날짜:</strong> ${data.date}</div>
-                    <div><strong>시작:</strong> ${data.startTime}</div>
-                    <div><strong>종료:</strong> ${data.endTime}</div>
-                `;
-                nlResult.style.display = 'block';
-                if (nlAddBtn) nlAddBtn.style.display = 'inline-flex';
-                if (window.showToast) window.showToast('필드 추출 완료', 'success');
+                const startDate = new Date(`${data.date}T${data.startTime}`);
+                const endDate = new Date(`${data.date}T${data.endTime}`);
+                closeBetaTestModal();
+                openEventModal(
+                    { start: startDate, end: endDate },
+                    null,
+                    { title: data.title, person: data.person }
+                );
+                if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
             } catch (e) {
                 console.error('자연어 추출 실패:', e);
                 if (nlError) {
@@ -1100,8 +1097,11 @@ function updateNotificationUI(isEnabled) {
 
 /**
  * Open event modal for creating/editing
+ * @param {Object} dateInfo - { start, end } for create mode
+ * @param {Object} event - FullCalendar event for edit mode (null = create)
+ * @param {Object} aiPrefill - { title, person } for AI-extracted data prefill (create mode only)
  */
-function openEventModal(dateInfo = null, event = null) {
+function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     console.log('🔧 openEventModal called - dateInfo:', dateInfo, 'event:', event);
     
     if (!eventForm) {
@@ -1369,6 +1369,16 @@ function openEventModal(dateInfo = null, event = null) {
             document.getElementById('eventEndDate').value = formatDateInput(oneHourLater);
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
             console.log('📅 기본값 사용 (현재 시간)');
+        }
+    }
+    // AI 추출 데이터로 미리 채우기 (자연어 일정 추가, create 모드 전용)
+    if (!event && aiPrefill && (aiPrefill.title || aiPrefill.person)) {
+        if (aiPrefill.title) document.getElementById('eventTitle').value = aiPrefill.title;
+        if (aiPrefill.person) {
+            document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
+            const checkboxId = `person${aiPrefill.person.charAt(0).toUpperCase() + aiPrefill.person.slice(1)}`;
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) checkbox.checked = true;
         }
     }
     
