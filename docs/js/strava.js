@@ -215,7 +215,25 @@
         throw new Error('연동이 만료되었습니다. 연동 해제 후 다시 연결해주세요.');
     }
 
-    /** 모든 연동 계정에서 활동 가져와 병합 */
+    /** Strava API 직접 호출 (CORS에선 실패할 수 있음) → 실패 시 Firebase 프록시 사용 */
+    async function fetchActivitiesFromStrava(accessToken, perPage, page) {
+        if (typeof firebase === 'undefined' || typeof firebase.functions !== 'function') {
+            throw new Error('Firebase Functions를 불러올 수 없습니다.');
+        }
+        try {
+            const result = await firebase.functions().httpsCallable('fetchStravaActivities')({
+                access_token: accessToken,
+                per_page: perPage,
+                page: page
+            });
+            return (result.data && result.data.activities) || [];
+        } catch (e) {
+            window._stravaLastFetchError = e.message || String(e);
+            throw e;
+        }
+    }
+
+    /** 모든 연동 계정에서 활동 가져와 병합 (Firebase 프록시 경유로 CORS 우회) */
     async function fetchActivities(perPage = 30, page = 1) {
         const accounts = getStoredAccounts();
         if (accounts.length === 0) {
@@ -223,6 +241,7 @@
         }
 
         const allActivities = [];
+        let lastFetchErr = null;
         for (const acc of accounts) {
             if (acc.expired) continue;
             try {
@@ -230,19 +249,18 @@
                 const accountsLatest = getStoredAccounts();
                 const current = accountsLatest.find(a => String(a.athleteId) === String(acc.athleteId));
                 const token = current ? current.accessToken : acc.accessToken;
-                const url = `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}`;
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-                });
-                if (!response.ok) {
-                    if (response.status === 401) markAccountExpired(acc.athleteId);
-                    continue;
-                }
-                const list = await response.json();
+                const list = await fetchActivitiesFromStrava(token, perPage, page);
                 const withAthlete = (list || []).map(a => ({ ...a, _athlete: acc.athlete }));
                 allActivities.push(...withAthlete);
+                window._stravaLastFetchError = null;
             } catch (err) {
+                lastFetchErr = err;
+                const msg = err.message || String(err);
+                if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('invalid') || msg.includes('Token')) {
+                    markAccountExpired(acc.athleteId);
+                }
                 console.warn('Strava fetch for account failed:', acc.athleteId, err);
+                window._stravaLastFetchError = msg;
             }
         }
 

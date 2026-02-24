@@ -3008,6 +3008,10 @@ function reapplyStravaPersonMapping() {
  * 모바일 WebView vs 브라우저 localStorage 분리 시 토큰이 안 보일 수 있음
  */
 function getStravaDebugInfo() {
+    const lastFetchErr = window._stravaLastFetchError;
+    if (lastFetchErr) {
+        return { isConnected: true, msg: '연동됨 - 하지만 API 호출 실패: ' + lastFetchErr + ' (네트워크 확인 또는 Strava 앱 설정 확인)' };
+    }
     const isConnected = !!(window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected());
     if (isConnected) {
         const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
@@ -3188,8 +3192,12 @@ async function handleStravaFetch(silent) {
         const activities = await window.stravaModule.fetchActivities(200, 1);
         const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
         const allExpired = accounts.length > 0 && accounts.every(a => a.expired);
+        const lastFetchErr = window._stravaLastFetchError;
         if (activities.length === 0 && allExpired) {
             throw new Error('연동 만료됨 - 연동 해제 후 다시 연결해주세요.');
+        }
+        if (activities.length === 0 && accounts.length > 0 && lastFetchErr) {
+            throw new Error('API 호출 실패: ' + lastFetchErr);
         }
         const mapping = getStravaPersonMapping();
         const athleteIdToPerson = {};
