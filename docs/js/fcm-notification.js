@@ -464,11 +464,10 @@ function updateUserUI() {
     }
 }
 
-// 페이지 로드 시 - 즉시 UI 상태 반영, FCM 초기화는 2초 후
+// 페이지 로드 시 - UI만 반영. FCM은 '알림 켜기' 클릭 시에만 초기화 (Strava 등 다른 기능과 SW 404 충돌 방지)
 document.addEventListener('DOMContentLoaded', () => {
     try { updateUserUI(); } catch (e) { console.warn('updateUserUI:', e); }
     try { updateNotificationUI(); } catch (e) { console.warn('updateNotificationUI:', e); }
-    setTimeout(() => { try { initFCM(); } catch (e) { console.error('initFCM:', e); updateNotificationUI(); } }, 2000);
 });
 
 // 전역 함수 노출
