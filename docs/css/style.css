@@ -2904,9 +2904,19 @@ body {
 .exercise-detail-modal .event-detail-header {
     align-items: center;
 }
+.exercise-detail-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
 .exercise-detail-modal .event-detail-header .exercise-detail-header-top {
     margin-bottom: 0;
     padding: 0;
+}
+.exercise-detail-modal .event-detail .exercise-detail-header-top:first-child {
+    margin-top: 0;
 }
 .exercise-detail-card { padding-bottom: 20px; }
 .exercise-detail-sep {

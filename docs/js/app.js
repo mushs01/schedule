@@ -2853,7 +2853,9 @@ function showExerciseDetail(dateStr, activities) {
     const firstDateTime = firstMeta.text.includes(' · ') ? firstMeta.text.split(' · ')[0] : firstMeta.text;
     const firstLoc = getLocationFromActivity(first) || '-';
     const firstLocId = (!getLocationFromActivity(first) && first.start_latlng && first.start_latlng.length >= 2) ? 'exercise-location-0' : '';
-    headerEl.innerHTML = `
+    headerEl.innerHTML = '<h2 class="exercise-detail-modal-title">운동상세</h2>';
+
+    const headerContentHtml = `
         <div class="exercise-detail-header-top">
             <img src="${firstCfg.img}" alt="${firstPersonName}" class="exercise-detail-avatar-top">
             <div class="exercise-detail-header-info">
@@ -2863,7 +2865,7 @@ function showExerciseDetail(dateStr, activities) {
         </div>
     `;
 
-    let bodyHTML = '';
+    let bodyHTML = headerContentHtml;
     activities.forEach((a, index) => {
         const person = a.person || 'all';
         const cfg = EXERCISE_PERSON_CONFIG[person] || EXERCISE_PERSON_CONFIG.all;
