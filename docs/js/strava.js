@@ -260,7 +260,9 @@
                     markAccountExpired(acc.athleteId);
                 }
                 console.warn('Strava fetch for account failed:', acc.athleteId, err);
-                window._stravaLastFetchError = msg;
+                if (!msg.includes('Messaging') && !msg.includes('ServiceWorker') && !msg.includes('service worker')) {
+                    window._stravaLastFetchError = msg;
+                }
             }
         }
 

@@ -51,9 +51,9 @@ async function initFCM() {
         }
 
         // Service Worker 먼저 등록 (Firebase Messaging 초기화 전에)
-        // GitHub Pages: mushs01.github.io/schedule/ -> basePath = /schedule
+        // GitHub Pages: 항상 /schedule 기준으로 등록 (404 방지)
         let basePath = location.pathname.split('/').slice(0, 2).join('/') || '/';
-        if (location.origin === 'https://mushs01.github.io' && !basePath.includes('schedule')) {
+        if (location.origin === 'https://mushs01.github.io') {
             basePath = '/schedule';
         }
         const swPath = `${basePath}/firebase-messaging-sw.js`.replace(/\/+/g, '/');
@@ -90,7 +90,10 @@ async function initFCM() {
             messaging.onTokenRefresh(async () => {
                 console.log('🔄 FCM 토큰 갱신...');
                 try {
-                    const newToken = await messaging.getToken({ vapidKey: VAPID_KEY });
+                    const newToken = await messaging.getToken({
+                        vapidKey: VAPID_KEY,
+                        serviceWorkerRegistration: swRegistration
+                    });
                     await saveFCMToken(newToken);
                 } catch (error) {
                     console.error('❌ 토큰 갱신 실패:', error);
