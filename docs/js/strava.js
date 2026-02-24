@@ -279,7 +279,10 @@
             return true;
         } catch (error) {
             console.error('Strava token exchange error:', error);
-            window._stravaLastError = error.message || '알 수 없는 오류';
+            var msg = (error && error.message) || '알 수 없는 오류';
+            if ((msg === 'INTERNAL' || msg === 'internal') && error && error.details) msg = (typeof error.details === 'string' ? error.details : (error.details.message || JSON.stringify(error.details)));
+            if (msg === 'INTERNAL' || msg === 'internal') msg = '서버 오류 - Strava 앱 설정·콜백 도메인·코드 만료 확인';
+            window._stravaLastError = msg;
             if (window.showToast) window.showToast('Strava 연동에 실패했습니다: ' + window._stravaLastError, 'error');
             return false;
         }
