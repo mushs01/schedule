@@ -220,9 +220,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (window.stravaModule && window.stravaModule.ensureConnectionAtStartup) {
                 await window.stravaModule.ensureConnectionAtStartup();
+                if (typeof updateStravaUI === 'function') updateStravaUI(); // 갱신 결과(만료 등) 즉시 반영
             }
             await new Promise(r => setTimeout(r, 2500)); // 초기화 대기
-            if (window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected()) {
+            const accounts = (window.stravaModule && window.stravaModule.getStoredAccounts) ? window.stravaModule.getStoredAccounts() : [];
+            const hasValidAccount = accounts.some(a => !a.expired);
+            if (window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected() && hasValidAccount) {
                 handleStravaFetch(true);
             }
         } catch (e) {
@@ -3008,11 +3011,18 @@ function getStravaDebugInfo() {
     const isConnected = !!(window.stravaModule && window.stravaModule.isConnected && window.stravaModule.isConnected());
     if (isConnected) {
         const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+        const expiredCount = accounts.filter(a => a.expired).length;
+        const validCount = accounts.length - expiredCount;
+        if (expiredCount > 0 && validCount === 0) {
+            return { isConnected: false, msg: '연동 만료됨 - 연동 해제 후 다시 연결해주세요.' };
+        }
         const names = accounts.map(acc => {
             const a = acc.athlete || {};
-            return ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || 'Strava';
+            const n = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || 'Strava';
+            return acc.expired ? n + ' (만료)' : n;
         });
-        return { isConnected: true, msg: '✓ 연결됨: ' + (names.length ? names.join(', ') : 'Strava') };
+        const suffix = expiredCount > 0 ? ' (' + expiredCount + '개 연동 만료)' : '';
+        return { isConnected: validCount > 0, msg: (validCount > 0 ? '✓ 연결됨: ' : '연동 만료됨: ') + (names.length ? names.join(', ') : 'Strava') + suffix };
     }
     const lastErr = window._stravaLastError;
     if (lastErr) {
@@ -3043,17 +3053,25 @@ function updateStravaUI() {
                 if (iconEl) iconEl.textContent = 'warning';
                 if (textEl) textEl.textContent = 'Strava 모듈을 불러올 수 없습니다';
             } else if (window.stravaModule.isConnected()) {
-                connectionStatusEl.classList.add('status-success');
-                if (iconEl) iconEl.textContent = 'check_circle';
                 const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
-                const names = accounts.map(acc => {
-                    const a = acc.athlete || {};
-                    const n = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || '사용자';
-                    return acc.expired ? n + ' (만료)' : n;
-                });
+                const validCount = accounts.filter(a => !a.expired).length;
                 const expiredCount = accounts.filter(a => a.expired).length;
-                const suffix = expiredCount > 0 ? ' - ' + expiredCount + '개 연동 만료' : '';
-                if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + (names.length ? names.join(', ') : '사용자') + ')' + suffix;
+                const allExpired = validCount === 0 && expiredCount > 0;
+                if (allExpired) {
+                    connectionStatusEl.classList.add('status-error');
+                    if (iconEl) iconEl.textContent = 'error';
+                    if (textEl) textEl.textContent = '연동 만료됨 - 연동 해제 후 다시 연결해주세요';
+                } else {
+                    connectionStatusEl.classList.add('status-success');
+                    if (iconEl) iconEl.textContent = 'check_circle';
+                    const names = accounts.map(acc => {
+                        const a = acc.athlete || {};
+                        const n = ((a.firstname || '') + ' ' + (a.lastname || '')).trim() || '사용자';
+                        return acc.expired ? n + ' (만료)' : n;
+                    });
+                    const suffix = expiredCount > 0 ? ' - ' + expiredCount + '개 연동 만료' : '';
+                    if (textEl) textEl.textContent = '✓ Strava 연결됨 (' + (names.length ? names.join(', ') : '사용자') + ')' + suffix;
+                }
             } else {
                 connectionStatusEl.classList.add('status-pending');
                 if (iconEl) iconEl.textContent = 'link_off';
@@ -3169,6 +3187,10 @@ async function handleStravaFetch(silent) {
         
         const activities = await window.stravaModule.fetchActivities(200, 1);
         const accounts = (window.stravaModule.getStoredAccounts && window.stravaModule.getStoredAccounts()) || [];
+        const allExpired = accounts.length > 0 && accounts.every(a => a.expired);
+        if (activities.length === 0 && allExpired) {
+            throw new Error('연동 만료됨 - 연동 해제 후 다시 연결해주세요.');
+        }
         const mapping = getStravaPersonMapping();
         const athleteIdToPerson = {};
         accounts.forEach((acc, i) => {
