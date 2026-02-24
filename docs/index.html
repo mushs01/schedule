@@ -171,6 +171,13 @@
             
             <!-- Floating Action Buttons -->
             <div class="fab-group" id="fabGroup">
+                <div class="ai-fab-tooltip" id="aiFabTooltip" style="display: none;">
+                    <p>AI 일정추가 기능을 사용해보세요.</p>
+                    <p class="ai-fab-tooltip-example">이렇게 말해주세요: &quot;내일 오후 3시에 주환이 리드인 일정 넣어줘&quot;</p>
+                    <button type="button" class="ai-fab-tooltip-close" id="aiFabTooltipClose" aria-label="닫기">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
                 <button class="fab fab-ai" id="aiAddEventBtn" title="AI 일정 추가 (음성으로 말하기)">
                     <span class="fab-ai-icon material-icons">auto_awesome</span>
                     <span class="fab-ai-mic material-icons" style="display:none">mic</span>

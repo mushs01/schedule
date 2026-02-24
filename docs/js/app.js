@@ -376,6 +376,27 @@ function setupEventListeners() {
     if (addEventBtn) {
         setupFloatingButton(addEventBtn);
     }
+    // AI FAB 말풍선 툴팁 (최초 1회만 표시)
+    const aiFabTooltip = document.getElementById('aiFabTooltip');
+    const aiFabTooltipClose = document.getElementById('aiFabTooltipClose');
+    function dismissAiFabTooltip() {
+        if (aiFabTooltip) aiFabTooltip.style.display = 'none';
+        try { localStorage.setItem('ai_fab_tooltip_shown', '1'); } catch (e) {}
+    }
+    function maybeShowAiFabTooltip() {
+        if (!aiFabTooltip) return;
+        try {
+            if (localStorage.getItem('ai_fab_tooltip_shown')) return;
+        } catch (e) { return; }
+        const fabGroup = document.getElementById('fabGroup');
+        if (fabGroup && fabGroup.style.display !== 'none') {
+            aiFabTooltip.style.display = 'block';
+        }
+    }
+    if (aiFabTooltipClose) aiFabTooltipClose.addEventListener('click', dismissAiFabTooltip);
+    window.maybeShowAiFabTooltip = maybeShowAiFabTooltip;
+    setTimeout(maybeShowAiFabTooltip, 800);
+
     // AI 일정 추가 FAB
     const aiAddEventBtn = document.getElementById('aiAddEventBtn');
     if (aiAddEventBtn) {
@@ -390,6 +411,7 @@ function setupEventListeners() {
             recognition.lang = 'ko-KR';
         }
         aiAddEventBtn.addEventListener('click', async () => {
+            dismissAiFabTooltip();
             if (!window.naturalLanguageSchedule || !window.naturalLanguageSchedule.isConfigured()) {
                 if (window.showToast) window.showToast('Gemini API 키를 설정해주세요. 베타테스트에서 API 키를 입력하고 저장하세요.', 'warning');
                 return;
@@ -2269,6 +2291,7 @@ function showScheduleView() {
     if (fabGroup) fabGroup.style.display = 'flex';
     else if (fab) fab.style.display = '';
     if (gcalContent) gcalContent.classList.remove('exercise-view');
+    if (typeof window.maybeShowAiFabTooltip === 'function') window.maybeShowAiFabTooltip();
 }
 
 function getIntensityLevel(activity) {
