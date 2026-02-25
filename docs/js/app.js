@@ -2756,6 +2756,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             const d = dist[i] / 1000;
             const v = vel[i] || 0.001;
             const paceMin = 1000 / (60 * v);
+            // Pace: lower value = better → draw at top (small y offset from padT)
             const yPace = padT + ((paceMin - minPace) / (maxPace - minPace)) * chartH;
             const x = padL + (d / maxDist) * chartW;
             pacePath += (pacePath ? ' L' : 'M') + x.toFixed(1) + ',' + Math.max(padT, Math.min(padT + chartH, yPace)).toFixed(1);
@@ -2764,7 +2765,8 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         }
         const fmtPace = (m) => Math.floor(m) + ':' + String(Math.round((m % 1) * 60)).padStart(2, '0');
         const xLabels = [];
-        for (let k = 0; k < maxDist; k += 5) xLabels.push(k);
+        const xStep = maxDist > 20 ? 2 : 1;
+        for (let k = 0; k <= Math.ceil(maxDist); k += xStep) xLabels.push(k);
         const altBase = Math.floor(altMin / 50) * 50;
         const altTop = Math.ceil(altMax / 50) * 50;
         const leftLabels = [];
