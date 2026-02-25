@@ -2630,6 +2630,7 @@ async function handleExerciseMoreClick(e) {
         const isExp = container.classList.toggle('expanded');
         btn.classList.toggle('expanded', isExp);
         btn.innerHTML = isExp ? '<span class="material-icons">expand_less</span> 접기' : '<span class="material-icons">expand_more</span> 더보기';
+        if (isExp) requestAnimationFrame(() => container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
         return;
     }
     btn.disabled = true;
@@ -2647,6 +2648,7 @@ async function handleExerciseMoreClick(e) {
         btn.classList.add('expanded');
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons">expand_less</span> 접기';
+        requestAnimationFrame(() => container.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     } catch (err) {
         console.error('운동 상세 로드 실패:', err);
         container.innerHTML = '<p class="exercise-more-error">데이터를 불러올 수 없습니다.</p>';
