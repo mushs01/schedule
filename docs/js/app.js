@@ -91,13 +91,9 @@ function setupFloatingButton(btn) {
     });
 }
 
-/**
- * 선택된 담당자로 일정 추가 모달 열기
- */
-function openEventModalWithPerson(person) {
-    openEventModal();
-    
-    // 담당자 체크박스 설정
+/** 이미 연 일정 모달에서 담당자 체크만 설정 (기본 추가·AI 추가 공용) */
+function setEventModalPerson(person) {
+    if (!person) return;
     const personCheckboxes = {
         'all': document.getElementById('personAll'),
         'juhwan': document.getElementById('personJuhwan'),
@@ -105,17 +101,17 @@ function openEventModalWithPerson(person) {
         'mom': document.getElementById('personMom'),
         'dad': document.getElementById('personDad')
     };
-    
-    // 모든 체크박스 해제
-    Object.values(personCheckboxes).forEach(checkbox => {
-        if (checkbox) checkbox.checked = false;
-    });
-    
-    // 선택된 담당자만 체크
-    if (personCheckboxes[person]) {
-        personCheckboxes[person].checked = true;
-    }
-    
+    Object.values(personCheckboxes).forEach(cb => { if (cb) cb.checked = false; });
+    const p = String(person).toLowerCase();
+    if (personCheckboxes[p]) personCheckboxes[p].checked = true;
+}
+
+/**
+ * 선택된 담당자로 일정 추가 모달 열기
+ */
+function openEventModalWithPerson(person) {
+    openEventModal();
+    setEventModalPerson(person);
 }
 
 /**
@@ -444,7 +440,9 @@ function setupEventListeners() {
                     const data = await window.naturalLanguageSchedule.extract(transcript);
                     const startDate = new Date(`${data.date}T${data.startTime}`);
                     const endDate = new Date(`${data.date}T${data.endTime}`);
-                    openEventModal({ start: startDate, end: endDate }, null, { title: data.title, person: data.person });
+                    openEventModal({ start: startDate, end: endDate }, null, { title: data.title });
+                    // 담당자 체크는 모달 연 뒤에 설정 (기본 일정추가와 동일한 순서)
+                    setEventModalPerson(data.person);
                     if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
                 } catch (err) {
                     if (window.showToast) window.showToast(err.message || '추출 실패', 'error');
@@ -979,11 +977,8 @@ function setupEventListeners() {
                 const startDate = new Date(`${data.date}T${data.startTime}`);
                 const endDate = new Date(`${data.date}T${data.endTime}`);
                 closeBetaTestModal();
-                openEventModal(
-                    { start: startDate, end: endDate },
-                    null,
-                    { title: data.title, person: data.person }
-                );
+                openEventModal({ start: startDate, end: endDate }, null, { title: data.title });
+                setEventModalPerson(data.person);
                 if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
             } catch (e) {
                 console.error('자연어 추출 실패:', e);
@@ -1470,21 +1465,9 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             console.log('📅 기본값 사용 (현재 시간)');
         }
     }
-    // AI 추출 데이터로 미리 채우기 (수동 추가와 동일한 담당자 체크 로직 사용)
-    if (!event && aiPrefill && (aiPrefill.title || aiPrefill.person)) {
-        if (aiPrefill.title) document.getElementById('eventTitle').value = aiPrefill.title;
-        if (aiPrefill.person) {
-            document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
-            const person = String(aiPrefill.person).toLowerCase();
-            const checkboxId = `person${person.charAt(0).toUpperCase() + person.slice(1)}`;
-            const checkbox = document.getElementById(checkboxId);
-            if (checkbox) {
-                checkbox.checked = true;
-            } else {
-                const byValue = document.querySelector(`input[name="eventPerson"][value="${person}"]`);
-                if (byValue) byValue.checked = true;
-            }
-        }
+    // AI 추출 데이터로 제목만 미리 채우기 (담당자는 호출측에서 setEventModalPerson으로 설정)
+    if (!event && aiPrefill && aiPrefill.title) {
+        document.getElementById('eventTitle').value = aiPrefill.title;
     }
     
     console.log('Opening modal...');
@@ -1815,10 +1798,12 @@ async function handleEventFormSubmit(e) {
             }
         }
         
-        // 수동 추가와 동일: 저장 후 캘린더·AI요약·중요일정·오늘 요약 갱신
-        if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
-            window.calendarModule.refresh();
-        }
+        // 수동 추가와 동일: 저장 후 캘린더 갱신(다음 프레임에서 실행해 Firestore 반영 보장)
+        requestAnimationFrame(() => {
+            if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
+                window.calendarModule.refresh();
+            }
+        });
         loadAISummary();
         loadImportantEvents();
         loadTodaySummary();
