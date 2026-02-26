@@ -88,7 +88,7 @@ body {
     min-width: 0;
 }
 
-/* 일정관리 / 운동관리 토글 (헤더) - 좌우 컴팩트 */
+/* 일정관리 / 운동관리 토글 (헤더) - 70% 크기 */
 .header-mode-toggle {
     display: inline-flex;
     border: 1px solid rgba(0, 0, 0, 0.2);
@@ -100,8 +100,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 28px;
+    width: 22px;
+    height: 20px;
     padding: 0;
     border: none;
     background: transparent;
@@ -110,7 +110,7 @@ body {
     transition: background 0.15s, color 0.15s;
 }
 .header-mode-toggle-btn .material-icons {
-    font-size: 18px;
+    font-size: 13px;
 }
 .header-mode-toggle-btn:hover {
     background: rgba(0, 0, 0, 0.04);
@@ -131,17 +131,13 @@ body {
     border-radius: 0 999px 999px 0;
 }
 
-/* 오늘 버튼 - 날짜 오른쪽, 아이콘+텍스트 */
+/* 오늘 버튼 - 날짜 오른쪽, 텍스트만 */
 .today-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
     padding: 6px 10px;
     font-size: 13px;
     font-weight: 500;
-}
-.today-btn .material-icons {
-    font-size: 18px;
 }
 .today-btn-text {
     white-space: nowrap;

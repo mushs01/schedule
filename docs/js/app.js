@@ -102,8 +102,18 @@ function setEventModalPerson(person) {
         'dad': document.getElementById('personDad')
     };
     Object.values(personCheckboxes).forEach(cb => { if (cb) cb.checked = false; });
-    const p = String(person).toLowerCase();
-    if (personCheckboxes[p]) personCheckboxes[p].checked = true;
+    const p = String(person).toLowerCase().trim();
+    if (personCheckboxes[p]) {
+        personCheckboxes[p].checked = true;
+        return;
+    }
+    // 한글/혼합 입력 대비: value로 매칭
+    const byValue = document.querySelector(`input[name="eventPerson"][value="${p}"]`);
+    if (byValue) {
+        byValue.checked = true;
+        return;
+    }
+    console.warn('setEventModalPerson: 담당자 매칭 실패, person=', person);
 }
 
 /**
@@ -441,8 +451,8 @@ function setupEventListeners() {
                     const startDate = new Date(`${data.date}T${data.startTime}`);
                     const endDate = new Date(`${data.date}T${data.endTime}`);
                     openEventModal({ start: startDate, end: endDate }, null, { title: data.title });
-                    // 담당자 체크는 모달 연 뒤에 설정 (기본 일정추가와 동일한 순서)
-                    setEventModalPerson(data.person);
+                    // 담당자 체크는 모달 DOM 반영 후 설정 (한 틱 뒤 실행)
+                    requestAnimationFrame(() => setEventModalPerson(data.person));
                     if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
                 } catch (err) {
                     if (window.showToast) window.showToast(err.message || '추출 실패', 'error');
@@ -1763,6 +1773,9 @@ async function handleEventFormSubmit(e) {
             // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
             console.log('➕ Creating new event(s)');
             console.log('📋 Selected persons:', selectedPersons);
+            if (selectedPersons.length === 0) {
+                console.warn('⚠️ AI 일정 추가 시 담당자가 비어 있음 - setEventModalPerson 확인 필요');
+            }
             console.log('📋 Form data - title:', title, 'start:', startDateTime.toISOString(), 'end:', endDateTime.toISOString());
             
             // '전체' 선택 시 하나의 일정만 생성
@@ -1815,12 +1828,16 @@ async function handleEventFormSubmit(e) {
             }
         }
         
-        // 수동 추가와 동일: 저장 후 캘린더 갱신(다음 프레임에서 실행해 Firestore 반영 보장)
-        requestAnimationFrame(() => {
+        // Firestore 반영 후 캘린더 갱신 (바로 refresh하면 새 문서가 아직 안 보일 수 있음)
+        const doRefresh = () => {
             if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
                 window.calendarModule.refresh();
             }
-        });
+        };
+        doRefresh();
+        setTimeout(doRefresh, 400);
+        setTimeout(doRefresh, 1200);
+        
         loadAISummary();
         loadImportantEvents();
         loadTodaySummary();
