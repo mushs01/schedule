@@ -91,7 +91,7 @@ body {
 /* 일정관리 / 운동관리 토글 (헤더) - 70% 크기 */
 .header-mode-toggle {
     display: inline-flex;
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 999px;
     overflow: hidden;
     background: #fff;
