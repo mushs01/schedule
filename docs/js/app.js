@@ -1470,19 +1470,19 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             console.log('📅 기본값 사용 (현재 시간)');
         }
     }
-    // AI 추출 데이터로 미리 채우기 (자연어 일정 추가, create 모드 전용)
+    // AI 추출 데이터로 미리 채우기 (수동 추가와 동일한 담당자 체크 로직 사용)
     if (!event && aiPrefill && (aiPrefill.title || aiPrefill.person)) {
         if (aiPrefill.title) document.getElementById('eventTitle').value = aiPrefill.title;
         if (aiPrefill.person) {
             document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
-            const p = String(aiPrefill.person).toLowerCase();
-            const checkboxId = 'person' + (p.charAt(0).toUpperCase() + p.slice(1));
-            let checkbox = document.getElementById(checkboxId);
-            if (!checkbox) {
-                const byValue = document.querySelector(`input[name="eventPerson"][value="${p}"]`);
-                if (byValue) byValue.checked = true;
-            } else {
+            const person = String(aiPrefill.person).toLowerCase();
+            const checkboxId = `person${person.charAt(0).toUpperCase() + person.slice(1)}`;
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
                 checkbox.checked = true;
+            } else {
+                const byValue = document.querySelector(`input[name="eventPerson"][value="${person}"]`);
+                if (byValue) byValue.checked = true;
             }
         }
     }
@@ -1538,7 +1538,11 @@ async function handleEventFormSubmit(e) {
     
     // 유효성 검사
     if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
-        showToast('모든 필수 항목을 입력해주세요.', 'error');
+        if (selectedPersons.length === 0) {
+            showToast('담당자를 한 명 이상 선택해주세요.', 'error');
+        } else {
+            showToast('모든 필수 항목을 입력해주세요.', 'error');
+        }
         return;
     }
     
@@ -1811,7 +1815,7 @@ async function handleEventFormSubmit(e) {
             }
         }
         
-        // Refresh calendar, AI summary, important events, and today's summary
+        // 수동 추가와 동일: 저장 후 캘린더·AI요약·중요일정·오늘 요약 갱신
         if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
             window.calendarModule.refresh();
         }
