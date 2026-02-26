@@ -83,7 +83,47 @@ body {
 .gcal-header-center {
     flex: 1 1 auto;
     justify-content: center;
+    align-items: center;
+    gap: 8px;
     min-width: 0;
+}
+
+/* 일정관리 / 운동관리 토글 (헤더) */
+.header-mode-toggle {
+    display: inline-flex;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 999px;
+    overflow: hidden;
+    background: #fff;
+}
+.header-mode-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.header-mode-toggle-btn .material-icons {
+    font-size: 20px;
+}
+.header-mode-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+.header-mode-toggle-btn.active {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+.header-mode-toggle-btn:first-child {
+    border-radius: 999px 0 0 999px;
+}
+.header-mode-toggle-btn:last-child {
+    border-radius: 0 999px 999px 0;
 }
 
 .gcal-header-right {

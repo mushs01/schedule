@@ -539,6 +539,22 @@ function setupEventListeners() {
         });
     });
     
+    // 헤더 일정관리/운동관리 토글
+    document.querySelectorAll('.header-mode-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            document.querySelectorAll('.header-mode-toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (mode === 'exercise') {
+                showExerciseView();
+            } else {
+                showScheduleView();
+            }
+            const sidebar = document.querySelector('.gcal-sidebar');
+            if (sidebar && window.innerWidth <= 768) sidebar.classList.remove('show');
+        });
+    });
+    
     // Person filter
     const personFilter = document.getElementById('personFilter');
     if (personFilter) {
@@ -612,6 +628,7 @@ function setupEventListeners() {
         }
         const exerciseArea = document.getElementById('exerciseArea');
         if (exerciseArea && exerciseArea.style.display !== 'none') {
+            exerciseCalendarCurrentDate = new Date();
             renderExerciseCalendar();
         }
     });
@@ -2248,7 +2265,14 @@ function closeBetaTestModal() {
 
 let exerciseCalendarCurrentDate = new Date();
 
+function setHeaderModeToggle(mode) {
+    document.querySelectorAll('.header-mode-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+    });
+}
+
 function showExerciseView() {
+    setHeaderModeToggle('exercise');
     const scheduleArea = document.getElementById('scheduleArea');
     const exerciseArea = document.getElementById('exerciseArea');
     const importantEvents = document.getElementById('importantEvents');
@@ -2276,6 +2300,7 @@ function showExerciseView() {
 }
 
 function showScheduleView() {
+    setHeaderModeToggle('schedule');
     const scheduleArea = document.getElementById('scheduleArea');
     const exerciseArea = document.getElementById('exerciseArea');
     const importantEvents = document.getElementById('importantEvents');
