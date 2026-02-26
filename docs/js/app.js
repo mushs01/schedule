@@ -2307,7 +2307,7 @@ function showScheduleView() {
     const todaySummary = document.getElementById('todaySummary');
     const fab = document.getElementById('addEventBtn');
     const gcalContent = document.querySelector('.gcal-content');
-    if (scheduleArea) scheduleArea.style.display = 'block';
+    if (scheduleArea) scheduleArea.style.display = 'flex';
     if (exerciseArea) {
         exerciseArea.style.display = 'none';
         const exercisePersonFilter = document.getElementById('exercisePersonFilter');
@@ -2322,6 +2322,14 @@ function showScheduleView() {
     else if (fab) fab.style.display = '';
     if (gcalContent) gcalContent.classList.remove('exercise-view');
     if (typeof window.maybeShowAiFabTooltip === 'function') window.maybeShowAiFabTooltip();
+    // 일정관리로 돌아온 뒤 캘린더 레이아웃 재계산 (깨짐 방지)
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            if (window.calendarModule && typeof window.calendarModule.updateSize === 'function') {
+                window.calendarModule.updateSize();
+            }
+        });
+    });
 }
 
 function getIntensityLevel(activity) {

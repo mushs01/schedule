@@ -862,6 +862,10 @@ function refreshCalendar() {
     calendar.refetchEvents();
 }
 
+function updateCalendarSize() {
+    if (calendar) calendar.updateSize();
+}
+
 /**
  * Filter calendar by person
  */
@@ -1292,6 +1296,7 @@ window.calendarModule = {
     init: initCalendar,
     changeView,
     refresh: refreshCalendar,
+    updateSize: updateCalendarSize,
     filter: filterByPerson,
     filterByPersons,
     getCurrentDate,

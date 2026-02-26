@@ -88,7 +88,7 @@ body {
     min-width: 0;
 }
 
-/* 일정관리 / 운동관리 토글 (헤더) */
+/* 일정관리 / 운동관리 토글 (헤더) - 좌우 컴팩트 */
 .header-mode-toggle {
     display: inline-flex;
     border: 1px solid rgba(0, 0, 0, 0.2);
@@ -100,8 +100,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 36px;
+    width: 32px;
+    height: 28px;
     padding: 0;
     border: none;
     background: transparent;
@@ -110,7 +110,7 @@ body {
     transition: background 0.15s, color 0.15s;
 }
 .header-mode-toggle-btn .material-icons {
-    font-size: 20px;
+    font-size: 18px;
 }
 .header-mode-toggle-btn:hover {
     background: rgba(0, 0, 0, 0.04);
@@ -119,11 +119,32 @@ body {
     background: #e3f2fd;
     color: #1976d2;
 }
+/* 운동관리 버튼 - 컨셉에 맞게 러닝 아이콘 강조 */
+.header-mode-toggle-btn[data-mode="exercise"].active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
 .header-mode-toggle-btn:first-child {
     border-radius: 999px 0 0 999px;
 }
 .header-mode-toggle-btn:last-child {
     border-radius: 0 999px 999px 0;
+}
+
+/* 오늘 버튼 - 날짜 오른쪽, 아이콘+텍스트 */
+.today-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.today-btn .material-icons {
+    font-size: 18px;
+}
+.today-btn-text {
+    white-space: nowrap;
 }
 
 .gcal-header-right {
@@ -336,6 +357,27 @@ body {
     background: #ffffff;
     overflow: hidden;
     position: relative;
+}
+
+.gcal-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    overflow: auto;
+}
+
+#scheduleArea {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.gcal-content.exercise-view #scheduleArea {
+    display: none;
 }
 
 /* Calendar */

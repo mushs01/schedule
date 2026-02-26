@@ -54,17 +54,18 @@
         
         <div class="gcal-header-center">
             <div class="header-mode-toggle" role="group" aria-label="일정관리 / 운동관리">
-                <button type="button" class="header-mode-toggle-btn active" data-mode="schedule" title="일정관리">
+                <button type="button" class="header-mode-toggle-btn active" data-mode="schedule" title="일정관리 (주일정)">
                     <span class="material-icons">calendar_today</span>
                 </button>
                 <button type="button" class="header-mode-toggle-btn" data-mode="exercise" title="운동관리">
-                    <span class="material-icons">task_alt</span>
+                    <span class="material-icons">directions_run</span>
                 </button>
             </div>
-            <button class="icon-btn" id="todayBtn" title="오늘로 이동">
-                <span class="material-icons">today</span>
-            </button>
             <h2 class="current-month" id="currentMonth">2025년 10월</h2>
+            <button class="icon-btn today-btn" id="todayBtn" title="오늘로 이동">
+                <span class="material-icons">today</span>
+                <span class="today-btn-text">오늘</span>
+            </button>
         </div>
         
         <div class="gcal-header-right">
