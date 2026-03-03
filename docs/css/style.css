@@ -88,7 +88,11 @@ body {
     min-width: 0;
 }
 
-/* 일정관리 / 운동관리 토글 (헤더) - 아이콘 크게, 버튼 컴팩트 */
+/* 일정관리 / 운동관리 토글 (헤더) - 아이콘 크게, 버튼 컴팩트 (.gcal-header button min 규칙 덮어쓰기) */
+.header-mode-toggle .header-mode-toggle-btn {
+    min-width: 20px !important;
+    min-height: 18px !important;
+}
 .header-mode-toggle {
     display: inline-flex;
     border: 1px solid rgba(0, 0, 0, 0.08);
@@ -102,6 +106,8 @@ body {
     justify-content: center;
     width: 20px;
     height: 18px;
+    min-width: 20px;
+    min-height: 18px;
     padding: 0;
     border: none;
     background: transparent;
