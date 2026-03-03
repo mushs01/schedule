@@ -450,9 +450,7 @@ function setupEventListeners() {
                     const data = await window.naturalLanguageSchedule.extract(transcript);
                     const startDate = new Date(`${data.date}T${data.startTime}`);
                     const endDate = new Date(`${data.date}T${data.endTime}`);
-                    openEventModal({ start: startDate, end: endDate }, null, { title: data.title });
-                    // 담당자 체크는 모달 DOM 반영 후 설정 (한 틱 뒤 실행)
-                    requestAnimationFrame(() => setEventModalPerson(data.person));
+                    openEventModal({ start: startDate, end: endDate }, null, { title: data.title, person: data.person });
                     if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
                 } catch (err) {
                     if (window.showToast) window.showToast(err.message || '추출 실패', 'error');
@@ -1004,8 +1002,7 @@ function setupEventListeners() {
                 const startDate = new Date(`${data.date}T${data.startTime}`);
                 const endDate = new Date(`${data.date}T${data.endTime}`);
                 closeBetaTestModal();
-                openEventModal({ start: startDate, end: endDate }, null, { title: data.title });
-                setEventModalPerson(data.person);
+                openEventModal({ start: startDate, end: endDate }, null, { title: data.title, person: data.person });
                 if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
             } catch (e) {
                 console.error('자연어 추출 실패:', e);
@@ -1492,9 +1489,20 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             console.log('📅 기본값 사용 (현재 시간)');
         }
     }
-    // AI 추출 데이터로 제목만 미리 채우기 (담당자는 호출측에서 setEventModalPerson으로 설정)
-    if (!event && aiPrefill && aiPrefill.title) {
-        document.getElementById('eventTitle').value = aiPrefill.title;
+    // AI 추출 데이터로 미리 채우기 (수동 추가와 동일 - 제목·담당자 동기 설정)
+    if (!event && aiPrefill) {
+        if (aiPrefill.title) document.getElementById('eventTitle').value = aiPrefill.title;
+        if (aiPrefill.person) {
+            document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
+            const p = String(aiPrefill.person).toLowerCase().trim();
+            const checkboxId = `person${p.charAt(0).toUpperCase() + p.slice(1)}`;
+            const cb = document.getElementById(checkboxId);
+            if (cb) cb.checked = true;
+            else {
+                const byVal = document.querySelector(`input[name="eventPerson"][value="${p}"]`);
+                if (byVal) byVal.checked = true;
+            }
+        }
     }
     
     console.log('Opening modal...');
@@ -2441,33 +2449,36 @@ function renderExerciseCalendar() {
     const totalDistKm = (acts) => acts.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
     const circleSize = (km) => Math.min(26, Math.max(14, 12 + Math.min(km, 25) * 0.45));
     const formatDist = (km) => km >= 1 ? Math.round(km) : (km >= 0.1 ? km.toFixed(1) : Math.round(km * 10) / 10);
-    const hexToRgb = (hex) => {
-        const m = hex.replace('#','').match(/.{2}/g);
-        return m ? m.map(x => parseInt(x, 16)) : [0,0,0];
-    };
-    const mixColors = (hexArr) => {
-        if (hexArr.length === 0) return '#8d6e63';
-        const sum = hexArr.reduce((s, h) => {
-            const [r,g,b] = hexToRgb(h);
-            return [s[0]+r, s[1]+g, s[2]+b];
-        }, [0,0,0]);
-        const n = hexArr.length;
-        return '#' + sum.map(v => Math.round(v/n).toString(16).padStart(2,'0')).join('');
-    };
     const renderDay = (dayNum, ds, acts, otherMonth, dayOfWeek) => {
         const persons = [...new Set(acts.map(a => a.person))];
         const distKm = totalDistKm(acts);
-        let circleColor = '#0f9d58';
+        let badgeStyle = '';
         if (persons.length >= 2) {
-            const colors = persons.map(p => (EXERCISE_PERSON_CONFIG[p] || {}).color || '#0f9d58');
-            circleColor = mixColors(colors);
+            const total = totalDistKm(acts);
+            const byPerson = {};
+            acts.forEach(a => {
+                const p = a.person;
+                byPerson[p] = (byPerson[p] || 0) + (a.distance || 0) / 1000;
+            });
+            const ordered = persons.map(p => ({
+                color: (EXERCISE_PERSON_CONFIG[p] || {}).color || '#0f9d58',
+                share: total > 0 ? (byPerson[p] || 0) / total : 1 / persons.length
+            }));
+            let cum = 0;
+            const segments = ordered.map(({ color, share }) => {
+                const start = cum;
+                cum += share;
+                return `${color} ${(start * 100).toFixed(1)}% ${(cum * 100).toFixed(1)}%`;
+            }).join(', ');
+            badgeStyle = `--size:${circleSize(distKm)}px; background: conic-gradient(${segments});`;
         } else if (persons.length === 1) {
-            circleColor = (EXERCISE_PERSON_CONFIG[persons[0]] || {}).color || '#0f9d58';
+            const c = (EXERCISE_PERSON_CONFIG[persons[0]] || {}).color || '#0f9d58';
+            badgeStyle = `--size:${circleSize(distKm)}px; --color:${c}`;
         }
         const size = circleSize(distKm);
         const distLabel = formatDist(distKm);
         const countBadge = acts.length >= 2 ? `<span class="exercise-count-badge">${acts.length}</span>` : '';
-        const badge = acts.length ? `<span class="exercise-badge-wrap"><span class="exercise-badge" style="--size:${size}px;--color:${circleColor}">${distLabel}${countBadge}</span></span>` : '';
+        const badge = acts.length ? `<span class="exercise-badge-wrap"><span class="exercise-badge" style="${badgeStyle}">${distLabel}${countBadge}</span></span>` : '';
         const sunSat = dayOfWeek === 0 ? ' day-sun' : (dayOfWeek === 6 ? ' day-sat' : '');
         const cls = ['exercise-calendar-day', otherMonth ? 'other-month' : '', ds === todayStr ? 'today' : '', acts.length ? 'has-exercise' : '', sunSat].filter(Boolean).join(' ');
         return `<div class="${cls}" data-date="${ds}"><span class="day-num">${dayNum}</span>${badge}</div>`;
