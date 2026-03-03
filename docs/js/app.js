@@ -2790,9 +2790,28 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
     const vel = velStream && (velStream.data || velStream);
     if (streams && dist && dist.length && vel && vel.length) {
         const maxDist = Math.max(0.1, Math.max(...dist) / 1000);
-        const paceValues = dist.map((_, i) => (vel[i] && vel[i] > 0) ? 1000 / (60 * vel[i]) : 0).filter(v => v > 0);
-        const minPace = paceValues.length ? Math.max(1.5, Math.min(...paceValues) - 0.5) : 2;
-        const maxPace = paceValues.length ? Math.min(12, Math.max(...paceValues) + 0.5) : 10;
+        const PACE_MIN = 2, PACE_MAX = 12;
+        const rawPace = dist.map((_, i) => (vel[i] && vel[i] > 0) ? 1000 / (60 * vel[i]) : null);
+        const smoothPace = (arr, win) => {
+            const out = [];
+            const half = Math.floor(win / 2);
+            for (let i = 0; i < arr.length; i++) {
+                let sum = 0, n = 0;
+                for (let j = Math.max(0, i - half); j <= Math.min(arr.length - 1, i + half); j++) {
+                    if (arr[j] != null && arr[j] >= PACE_MIN && arr[j] <= PACE_MAX) {
+                        sum += arr[j]; n++;
+                    }
+                }
+                const raw = arr[i];
+                out.push(n > 0 ? sum / n : (raw != null ? Math.max(PACE_MIN, Math.min(PACE_MAX, raw)) : null));
+            }
+            return out;
+        };
+        const paceArr = smoothPace(rawPace, 7);
+        const validPace = paceArr.filter(v => v != null && v >= PACE_MIN && v <= PACE_MAX);
+        const minPace = validPace.length ? Math.max(1.5, Math.min(...validPace) - 0.5) : 2;
+        const maxPace = validPace.length ? Math.min(12, Math.max(...validPace) + 0.5) : 10;
+        const paceRange = maxPace - minPace || 1;
         const altArr = altData && Array.isArray(altData) ? altData : [];
         const altMin = altArr.length ? Math.min(...altArr) : 0;
         const altMax = altArr.length ? Math.max(...altArr) : 0;
@@ -2806,10 +2825,9 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         let altPath = '';
         for (let i = 0; i < dist.length; i += step) {
             const d = dist[i] / 1000;
-            const v = vel[i] || 0.001;
-            const paceMin = 1000 / (60 * v);
+            const paceMin = paceArr[i] != null ? Math.max(PACE_MIN, Math.min(PACE_MAX, paceArr[i])) : (minPace + maxPace) / 2;
             // Pace: lower value = better → draw at top (small y offset from padT)
-            const yPace = padT + ((paceMin - minPace) / (maxPace - minPace)) * chartH;
+            const yPace = padT + ((paceMin - minPace) / paceRange) * chartH;
             const x = padL + (d / maxDist) * chartW;
             pacePath += (pacePath ? ' L' : 'M') + x.toFixed(1) + ',' + Math.max(padT, Math.min(padT + chartH, yPace)).toFixed(1);
             const ah = altArr[i] != null ? padT + chartH - ((altArr[i] - altMin) / altRange) * chartH * 0.4 : padT + chartH;
@@ -2830,7 +2848,6 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
             if (leftLabels[leftLabels.length - 1] !== altTop) leftLabels.push(altTop);
         }
         const rightPaces = [minPace, (minPace + maxPace) / 2, maxPace].map(fmtPace);
-        const paceRange = maxPace - minPace || 1;
         const yAvgPace = avgPaceMin != null && avgPaceMin >= minPace && avgPaceMin <= maxPace
             ? padT + ((avgPaceMin - minPace) / paceRange) * chartH : null;
         const avgPaceLine = yAvgPace != null ? `<line x1="${padL}" y1="${yAvgPace}" x2="${padL + chartW}" y2="${yAvgPace}" class="pace-avg-line" stroke="#5dade2" stroke-width="1" stroke-dasharray="4,3"/>` : '';
