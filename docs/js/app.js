@@ -2909,7 +2909,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
         `;
     }
 
-    return '<div class="exercise-more-inner">' + splitsHtml + paceGraphHtml + '</div>';
+    return '<div class="exercise-more-inner">' + paceGraphHtml + splitsHtml + '</div>';
 }
 
 function showExerciseDetail(dateStr, activities) {
