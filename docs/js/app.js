@@ -2693,6 +2693,7 @@ async function handleExerciseMoreClick(e) {
         ]);
         const streams = streamsRaw && !Array.isArray(streamsRaw) ? streamsRaw : null;
         container.innerHTML = renderExerciseSplitsAndPace(detail, streams, a);
+        initExercisePaceTooltip(container, streams, a);
         container.dataset.loaded = '1';
         container.classList.add('expanded');
         btn.classList.add('expanded');
@@ -2883,6 +2884,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
     })()}
                             ${rightPaces.map((t, i) => `<text x="${padL + chartW + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick pace-axis-right" text-anchor="start" font-size="8">${t}</text>`).join('')}
                         </svg>
+                        <div class="pace-tooltip" data-visible="0" style="display:none;"></div>
                     </div>
                     <div class="exercise-pace-metrics">
                         <div class="pace-metric"><span>Avg Pace</span><span>${avgPace || '-'}</span></div>
@@ -2910,6 +2912,126 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
     }
 
     return '<div class="exercise-more-inner">' + paceGraphHtml + splitsHtml + '</div>';
+}
+
+function initExercisePaceTooltip(container, streams, activity) {
+    if (!streams || !container) return;
+    const graph = container.querySelector('.exercise-pace-graph');
+    const svg = graph && graph.querySelector('.pace-chart-svg');
+    const tooltip = graph && graph.querySelector('.pace-tooltip');
+    if (!graph || !svg || !tooltip || graph.dataset.tooltipInitialized === '1') return;
+
+    const distStream = streams.distance || (Array.isArray(streams) && streams.find(s => s.type === 'distance'));
+    const altStream = streams.altitude || (Array.isArray(streams) && streams.find(s => s.type === 'altitude'));
+    const velStream = streams.velocity_smooth || (Array.isArray(streams) && streams.find(s => s.type === 'velocity_smooth'));
+    const dist = distStream && (distStream.data || distStream);
+    const altData = altStream && (altStream.data || altStream);
+    const vel = velStream && (velStream.data || velStream);
+    if (!dist || !vel || !dist.length || !vel.length) return;
+
+    const distKmArr = dist.map(d => d / 1000);
+    const maxDist = Math.max(0.1, Math.max(...distKmArr));
+    const PACE_MIN = 2, PACE_MAX = 12;
+    const rawPace = distKmArr.map((_, i) => (vel[i] && vel[i] > 0) ? 1000 / (60 * vel[i]) : null);
+    const smoothPace = (arr, win) => {
+        const out = [];
+        const half = Math.floor(win / 2);
+        for (let i = 0; i < arr.length; i++) {
+            let sum = 0, n = 0;
+            for (let j = Math.max(0, i - half); j <= Math.min(arr.length - 1, i + half); j++) {
+                if (arr[j] != null && arr[j] >= PACE_MIN && arr[j] <= PACE_MAX) {
+                    sum += arr[j]; n++;
+                }
+            }
+            const raw = arr[i];
+            out.push(n > 0 ? sum / n : (raw != null ? Math.max(PACE_MIN, Math.min(PACE_MAX, raw)) : null));
+        }
+        return out;
+    };
+    const paceArr = smoothPace(rawPace, 7);
+    const altArr = altData && Array.isArray(altData) ? altData : [];
+
+    const totalDistKm = (activity.distance || 0) / 1000 || maxDist;
+    const totalTimeSec = activity.moving_time || activity.elapsed_time || 0;
+
+    const fmtPace = (m) => {
+        const mm = Math.floor(m);
+        const ss = Math.round((m % 1) * 60);
+        return mm + ':' + String(ss).padStart(2, '0');
+    };
+
+    const formatTime = (sec) => {
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = Math.floor(sec % 60);
+        if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        return `${m}:${String(s).padStart(2, '0')}`;
+    };
+
+    const padL = 44, padR = 54;
+    const viewW = 400;
+
+    const findIndexByDist = (targetKm) => {
+        if (targetKm <= distKmArr[0]) return 0;
+        for (let i = 1; i < distKmArr.length; i++) {
+            if (distKmArr[i] >= targetKm) {
+                return (targetKm - distKmArr[i - 1]) <= (distKmArr[i] - targetKm) ? i - 1 : i;
+            }
+        }
+        return distKmArr.length - 1;
+    };
+
+    const updateTooltip = (clientX) => {
+        const rect = svg.getBoundingClientRect();
+        const left = rect.left + (padL / viewW) * rect.width;
+        const right = rect.left + ((viewW - padR) / viewW) * rect.width;
+        const x = Math.max(left, Math.min(right, clientX));
+        const ratio = (x - left) / (right - left);
+        const targetKm = ratio * maxDist;
+        const idx = findIndexByDist(targetKm);
+
+        const dKm = distKmArr[idx];
+        const pace = paceArr[idx];
+        const elev = altArr[idx] != null ? Math.round(altArr[idx]) : null;
+        const tSec = totalDistKm > 0 ? (totalTimeSec * (dKm / totalDistKm)) : 0;
+
+        const parts = [];
+        parts.push(`Time: ${formatTime(tSec)}`);
+        parts.push(`Dist: ${dKm.toFixed(1)} km`);
+        if (pace != null) parts.push(`Pace: ${fmtPace(pace)}/km`);
+        if (elev != null) parts.push(`Elev: ${elev} m`);
+        tooltip.innerText = parts.join(' · ');
+
+        const relX = (x - rect.left) / rect.width;
+        tooltip.style.left = `${relX * 100}%`;
+        tooltip.style.display = 'block';
+        tooltip.dataset.visible = '1';
+    };
+
+    const handleMove = (ev) => {
+        let clientX;
+        if (ev.touches && ev.touches.length) {
+            clientX = ev.touches[0].clientX;
+        } else {
+            clientX = ev.clientX;
+        }
+        updateTooltip(clientX);
+    };
+
+    const hideTooltip = () => {
+        if (tooltip.dataset.visible === '1') {
+            tooltip.style.display = 'none';
+            tooltip.dataset.visible = '0';
+        }
+    };
+
+    svg.addEventListener('mousemove', handleMove);
+    svg.addEventListener('touchmove', handleMove, { passive: true });
+    svg.addEventListener('mouseleave', hideTooltip);
+    svg.addEventListener('touchend', hideTooltip);
+    svg.addEventListener('touchcancel', hideTooltip);
+
+    graph.dataset.tooltipInitialized = '1';
 }
 
 function showExerciseDetail(dateStr, activities) {
