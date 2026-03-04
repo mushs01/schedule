@@ -2866,6 +2866,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                     <div class="exercise-pace-graph" style="height:${h}px">
                         <svg class="pace-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
                             <g class="pace-grid">${gridV}${gridH}</g>
+                            <line class="pace-crosshair" x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}"/>
                             <path class="pace-graph-alt" d="${altPath} L${padL + chartW},${padT + chartH} L${padL},${padT + chartH} Z" fill="rgba(96,96,96,0.28)" stroke="none"/>
                             <path class="pace-graph-pace" d="${pacePath}" fill="none" stroke="#42a5f5" stroke-width="1"/>
                             ${avgPaceLine}
@@ -2885,6 +2886,7 @@ function renderExerciseSplitsAndPace(detail, streams, activity) {
                             ${rightPaces.map((t, i) => `<text x="${padL + chartW + 6}" y="${padT + (i / (rightPaces.length - 1 || 1)) * chartH}" class="pace-axis-tick pace-axis-right" text-anchor="start" font-size="8">${t}</text>`).join('')}
                         </svg>
                         <div class="pace-tooltip" data-visible="0" style="display:none;"></div>
+                        <div class="pace-cursor-line" style="display:none;"></div>
                     </div>
                     <div class="exercise-pace-metrics">
                         <div class="pace-metric"><span>Avg Pace</span><span>${avgPace || '-'}</span></div>
@@ -2919,7 +2921,8 @@ function initExercisePaceTooltip(container, streams, activity) {
     const graph = container.querySelector('.exercise-pace-graph');
     const svg = graph && graph.querySelector('.pace-chart-svg');
     const tooltip = graph && graph.querySelector('.pace-tooltip');
-    if (!graph || !svg || !tooltip || graph.dataset.tooltipInitialized === '1') return;
+    const cursorLine = graph && graph.querySelector('.pace-cursor-line');
+    if (!graph || !svg || !tooltip || !cursorLine || graph.dataset.tooltipInitialized === '1') return;
 
     const distStream = streams.distance || (Array.isArray(streams) && streams.find(s => s.type === 'distance'));
     const altStream = streams.altitude || (Array.isArray(streams) && streams.find(s => s.type === 'altitude'));
@@ -2970,6 +2973,7 @@ function initExercisePaceTooltip(container, streams, activity) {
 
     const padL = 44, padR = 54;
     const viewW = 400;
+    const chartW = viewW - padL - padR;
 
     const findIndexByDist = (targetKm) => {
         if (targetKm <= distKmArr[0]) return 0;
@@ -2995,17 +2999,20 @@ function initExercisePaceTooltip(container, streams, activity) {
         const elev = altArr[idx] != null ? Math.round(altArr[idx]) : null;
         const tSec = totalDistKm > 0 ? (totalTimeSec * (dKm / totalDistKm)) : 0;
 
-        const parts = [];
-        parts.push(`Time: ${formatTime(tSec)}`);
-        parts.push(`Dist: ${dKm.toFixed(1)} km`);
-        if (pace != null) parts.push(`Pace: ${fmtPace(pace)}/km`);
-        if (elev != null) parts.push(`Elev: ${elev} m`);
-        tooltip.innerText = parts.join(' · ');
+        const timeStr = formatTime(tSec);
+        let html = timeStr;
+        html += `<br>Dist. ${dKm.toFixed(1)} km`;
+        if (elev != null) html += `<br>Elev. ${elev} m`;
+        if (pace != null) html += `<br>Pace ${fmtPace(pace)}/km`;
+        tooltip.innerHTML = html;
 
         const relX = (x - rect.left) / rect.width;
         tooltip.style.left = `${relX * 100}%`;
         tooltip.style.display = 'block';
         tooltip.dataset.visible = '1';
+
+        cursorLine.style.left = `${relX * 100}%`;
+        cursorLine.style.display = 'block';
     };
 
     const handleMove = (ev) => {
@@ -3023,6 +3030,7 @@ function initExercisePaceTooltip(container, streams, activity) {
             tooltip.style.display = 'none';
             tooltip.dataset.visible = '0';
         }
+        cursorLine.style.display = 'none';
     };
 
     svg.addEventListener('mousemove', handleMove);
