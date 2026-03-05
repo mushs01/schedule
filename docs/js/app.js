@@ -141,17 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadingOverlay = document.getElementById('loadingOverlay');
     toast = document.getElementById('toast');
     
-    // 메뉴·폼 등 리스너 등록 (캘린더 init 실패해도 동작하도록 try-catch)
-    appendAiScheduleLog('form.submit', {
-        title,
-        start: startDateTime.toISOString(),
-        end: endDateTime.toISOString(),
-        selectedPersons,
-        repeatType,
-        repeatEndDate,
-        isImportant
-    });
-
     try {
         setupEventListeners();
     } catch (e) {
