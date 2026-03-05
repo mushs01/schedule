@@ -46,10 +46,22 @@
         const cfg = window.GEMINI_CONFIG || {};
         const model = cfg.model || 'gemini-2.0-flash';
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        // 오늘 날짜 정보를 프롬프트에 함께 전달하여 "오늘/내일/이번주 토요일" 등을 정확히 해석하게 함
+        const now = new Date();
+        const todayIso = formatDateISO(now);
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const todayDow = days[now.getDay()];
+        const promptWithToday = `${PROMPT}
+
+[현재 기준 날짜]
+- 오늘은 ${todayIso} (${todayDow}요일)입니다.
+- 사용자가 말하는 "오늘", "내일", "이번주 토요일", "다음주 수요일" 등 상대적인 날짜 표현은 반드시 이 날짜를 기준으로 실제 YYYY-MM-DD 형식으로 계산해서 date 필드에 넣어주세요.
+- 예: 오늘이 2025-02-09 (일요일)일 때, "내일" → 2025-02-10, "이번주 토요일" → 2025-02-15, "다음주 수요일" → 2025-02-19 처럼 변환합니다.`;
         const body = {
             contents: [{
                 parts: [
-                    { text: PROMPT },
+                    { text: promptWithToday },
                     { text: `사용자 입력: ${text}` }
                 ]
             }],
