@@ -102,16 +102,21 @@ function initCalendar() {
         slotDuration: '01:00:00', // 1시간 단위로 표시
         slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
         slotLabelFormat: function(date) {
-            // 06:00은 빈 문자열 반환
             const hour = date.date.hour;
-            if (hour === 6) {
-                return '';
-            }
+            if (hour === 6) return '';
             const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-            // 오전은 7시에만, 오후는 12시에만 표시
-            if (hour === 7) return `오전 ${hour12}시`;
-            if (hour === 12) return `오후 ${hour12}시`;
             return `${hour12}시`;
+        },
+        // 시간은 위줄, 오전/오후는 아래줄에 표시 (레이블 폭 절약 → 일정표 영역 확대)
+        slotLabelContent: function(arg) {
+            const hour = arg.date.getHours();
+            if (hour === 6) return { html: '' };
+            const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+            const line2 = hour === 7 ? '오전' : (hour === 12 ? '오후' : '');
+            const html = line2
+                ? `<div class="fc-slot-label-line1">${hour12}시</div><div class="fc-slot-label-line2">${line2}</div>`
+                : `<div class="fc-slot-label-line1">${hour12}시</div>`;
+            return { html };
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         contentHeight: 'auto', // 콘텐츠 높이는 auto
@@ -193,6 +198,11 @@ function initCalendar() {
                 }, 300);
             }
             
+            // 왼쪽 시간 레이블에 현재시간 붉은색 표시
+            if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+                setTimeout(updateCurrentTimeLabel, 350);
+            }
+            
             // 모든 뷰에 스와이프 제스처 추가 (주간/일간/월간)
             setTimeout(() => {
                 addSwipeGestureToDateHeader();
@@ -206,15 +216,19 @@ function initCalendar() {
     // 초기 공휴일 표시
     setTimeout(() => markHolidays(), 200);
     
-    // 초기 렌더링 시 현재 시간 중심으로 스크롤
+    // 초기 렌더링 시 현재 시간 중심으로 스크롤 + 현재시간 레이블
     setTimeout(() => {
         console.log('🎯 초기 렌더링 스크롤 시도, 현재 뷰:', calendar.view.type);
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
             scrollToCurrentTime();
+            updateCurrentTimeLabel();
         } else {
             console.log('⚠️ 현재 뷰가 timeGrid가 아닙니다:', calendar.view.type);
         }
     }, 500);
+    
+    // 현재시간 레이블 1분마다 갱신
+    setInterval(updateCurrentTimeLabel, 60000);
     
     // 초기 스와이프 제스처 활성화
     setTimeout(() => {
@@ -227,6 +241,34 @@ function initCalendar() {
             if (calendar) calendar.updateSize();
         } catch (e) { /* ignore */ }
     }, 600);
+}
+
+/**
+ * 왼쪽 시간 레이블에 현재시간 붉은색으로 표시 (예: 8:30)
+ */
+function updateCurrentTimeLabel() {
+    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
+    
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    if (hour < 6 || hour >= 24) return; // 표시 범위 밖
+    
+    const timeStr = `${hour}:${String(minute).padStart(2, '0')}`;
+    const slotTime = `${String(hour).padStart(2, '0')}:00:00`;
+    
+    document.querySelectorAll('.fc-now-time-label').forEach(el => el.remove());
+    
+    const slotEl = document.querySelector(`.fc-timegrid-slot[data-time="${slotTime}"]`);
+    if (!slotEl) return;
+    
+    const cushion = slotEl.querySelector('.fc-timegrid-slot-label-cushion');
+    if (!cushion) return;
+    
+    const span = document.createElement('span');
+    span.className = 'fc-now-time-label';
+    span.textContent = timeStr;
+    cushion.appendChild(span);
 }
 
 /**
