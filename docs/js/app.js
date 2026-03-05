@@ -142,6 +142,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     toast = document.getElementById('toast');
     
     // 메뉴·폼 등 리스너 등록 (캘린더 init 실패해도 동작하도록 try-catch)
+    appendAiScheduleLog('form.submit', {
+        title,
+        start: startDateTime.toISOString(),
+        end: endDateTime.toISOString(),
+        selectedPersons,
+        repeatType,
+        repeatEndDate,
+        isImportant
+    });
+
     try {
         setupEventListeners();
     } catch (e) {
@@ -376,6 +386,38 @@ function setupDateChangeListeners() {
     }
 }
 
+const AI_LOG_MAX_LINES = 80;
+function appendAiScheduleLog(event, payload) {
+    try {
+        const ts = new Date();
+        const hh = String(ts.getHours()).padStart(2, '0');
+        const mm = String(ts.getMinutes()).padStart(2, '0');
+        const ss = String(ts.getSeconds()).padStart(2, '0');
+        let line = `[${hh}:${mm}:${ss}] ${event}`;
+        if (payload !== undefined) {
+            let json;
+            try {
+                json = JSON.stringify(payload);
+            } catch (_) {
+                json = String(payload);
+            }
+            line += ' ' + json;
+        }
+        window._aiScheduleLogs = window._aiScheduleLogs || [];
+        window._aiScheduleLogs.push(line);
+        if (window._aiScheduleLogs.length > AI_LOG_MAX_LINES) {
+            window._aiScheduleLogs.splice(0, window._aiScheduleLogs.length - AI_LOG_MAX_LINES);
+        }
+        const logEl = document.getElementById('aiScheduleLog');
+        if (logEl) {
+            logEl.textContent = window._aiScheduleLogs.join('\n');
+        }
+    } catch (e) {
+        console.warn('appendAiScheduleLog error:', e);
+    }
+}
+window.appendAiScheduleLog = appendAiScheduleLog;
+
 /**
  * Setup all event listeners
  */
@@ -418,6 +460,7 @@ function setupEventListeners() {
             recognition.lang = 'ko-KR';
         }
         aiAddEventBtn.addEventListener('click', async () => {
+            appendAiScheduleLog('voice.click', {});
             dismissAiFabTooltip();
             if (!window.naturalLanguageSchedule || !window.naturalLanguageSchedule.isConfigured()) {
                 if (window.showToast) window.showToast('Gemini API 키를 설정해주세요. 베타테스트에서 API 키를 입력하고 저장하세요.', 'warning');
@@ -448,17 +491,20 @@ function setupEventListeners() {
                 if (window.showToast) window.showToast('일정 추출 중...', 'info');
                 try {
                     const data = await window.naturalLanguageSchedule.extract(transcript);
+                    appendAiScheduleLog('voice.extract.success', { transcript, data });
                     const startDate = new Date(`${data.date}T${data.startTime}`);
                     const endDate = new Date(`${data.date}T${data.endTime}`);
                     openEventModal({ start: startDate, end: endDate }, null, { title: data.title, person: data.person });
                     if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
                 } catch (err) {
+                    appendAiScheduleLog('voice.extract.error', { message: err?.message || String(err) });
                     if (window.showToast) window.showToast(err.message || '추출 실패', 'error');
                 } finally {
                     aiAddEventBtn.classList.remove('loading');
                 }
             };
             recognition.onerror = (e) => {
+                appendAiScheduleLog('voice.error', { error: e?.error || String(e) });
                 aiAddEventBtn.classList.remove('recording', 'loading');
                 if (aiFabIcon) aiFabIcon.style.display = '';
                 if (aiFabMic) aiFabMic.style.display = 'none';
@@ -576,6 +622,16 @@ function setupEventListeners() {
     if (refreshSummaryBtn) {
         refreshSummaryBtn.addEventListener('click', () => {
             loadAISummary();
+        });
+    }
+
+    // AI 일정추가 로그 지우기
+    const aiLogClearBtn = document.getElementById('aiScheduleLogClearBtn');
+    if (aiLogClearBtn) {
+        aiLogClearBtn.addEventListener('click', () => {
+            window._aiScheduleLogs = [];
+            const logEl = document.getElementById('aiScheduleLog');
+            if (logEl) logEl.textContent = 'AI 일정추가 로그가 여기에 표시됩니다.';
         });
     }
     
@@ -999,6 +1055,7 @@ function setupEventListeners() {
             nlExtractBtn.innerHTML = '<span class="loading-spinner" style="width:14px;height:14px;border-width:2px;"></span> 추출 중...';
             try {
                 const data = await window.naturalLanguageSchedule.extract(text);
+                appendAiScheduleLog('beta.extract.success', { text, data });
                 const startDate = new Date(`${data.date}T${data.startTime}`);
                 const endDate = new Date(`${data.date}T${data.endTime}`);
                 closeBetaTestModal();
@@ -1006,6 +1063,7 @@ function setupEventListeners() {
                 if (window.showToast) window.showToast('AI 일정 추가 내용을 확인해 주세요', 'info');
             } catch (e) {
                 console.error('자연어 추출 실패:', e);
+                appendAiScheduleLog('beta.extract.error', { message: e?.message || String(e) });
                 if (nlError) {
                     nlError.textContent = e.message || '추출 실패';
                     nlError.style.display = 'block';
@@ -1056,6 +1114,7 @@ function setupEventListeners() {
                     if (!confirm(msg)) return;
                 }
                 showLoading(true);
+                appendAiScheduleLog('beta.createSchedule', scheduleData);
                 await window.api.createSchedule(scheduleData);
                 if (window.showToast) window.showToast('일정이 추가되었습니다.', 'success');
                 closeBetaTestModal();
@@ -1783,6 +1842,7 @@ async function handleEventFormSubmit(e) {
             console.log('📋 Selected persons:', selectedPersons);
             if (selectedPersons.length === 0) {
                 console.warn('⚠️ AI 일정 추가 시 담당자가 비어 있음 - setEventModalPerson 확인 필요');
+                appendAiScheduleLog('form.submit.error', { reason: 'no selectedPersons' });
             }
             console.log('📋 Form data - title:', title, 'start:', startDateTime.toISOString(), 'end:', endDateTime.toISOString());
             
@@ -1804,7 +1864,7 @@ async function handleEventFormSubmit(e) {
                     repeat_monthly_type: repeatMonthlyType,
                     is_important: isImportant
                 };
-                
+                appendAiScheduleLog('createSchedule.single', scheduleData);
                 await api.createSchedule(scheduleData);
                 showToast('일정이 추가되었습니다.', 'success');
             } else {
@@ -1828,6 +1888,7 @@ async function handleEventFormSubmit(e) {
                     };
                     
                     console.log(`📋 Creating schedule for ${person}:`, scheduleData);
+                    appendAiScheduleLog('createSchedule.multi', scheduleData);
                     await api.createSchedule(scheduleData);
                 }
                 
@@ -1853,6 +1914,7 @@ async function handleEventFormSubmit(e) {
         closeEventModal();
     } catch (error) {
         console.error('❌ Error saving event:', error);
+        appendAiScheduleLog('form.submit.exception', { message: error?.message || String(error) });
         showToast('일정 저장에 실패했습니다.', 'error');
     } finally {
         showLoading(false);
