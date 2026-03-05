@@ -558,9 +558,9 @@ body {
     overflow-y: auto !important;
 }
 
-/* 타임그리드 슬롯 높이 */
+/* 타임그리드 슬롯 높이 (1.5배: 40px → 60px) */
 .fc .fc-timegrid-slot {
-    height: 40px !important;
+    height: 60px !important;
     border-top: none !important; /* 시간 레이블 영역 가로선 제거 */
 }
 
@@ -2618,7 +2618,7 @@ body {
     }
     
     .fc .fc-timegrid-slot {
-        height: 36px;
+        height: 54px; /* 1.5배: 36px → 54px */
     }
     
     .fc .fc-col-header-cell {
