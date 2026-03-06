@@ -191,15 +191,12 @@ function initCalendar() {
                 markHolidays();
             }, 100);
             
-            // 주간/일간 뷰일 때만 현재 시간 중심으로 스크롤
+            // 주간/일간 뷰: 시간축 열 고정 → 일정표 겹침 방지
             if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
                 setTimeout(() => {
+                    applyTimeGridAxisCol();
                     scrollToCurrentTime();
-                }, 300);
-            }
-            
-            // 왼쪽 시간 레이블에 현재시간 붉은색 표시
-            if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+                }, 100);
                 setTimeout(updateCurrentTimeLabel, 350);
             }
             
@@ -216,14 +213,12 @@ function initCalendar() {
     // 초기 공휴일 표시
     setTimeout(() => markHolidays(), 200);
     
-    // 초기 렌더링 시 현재 시간 중심으로 스크롤 + 현재시간 레이블
+    // 초기 렌더링 시 시간축 열 고정 + 스크롤 + 현재시간 레이블
     setTimeout(() => {
-        console.log('🎯 초기 렌더링 스크롤 시도, 현재 뷰:', calendar.view.type);
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+            applyTimeGridAxisCol();
             scrollToCurrentTime();
             updateCurrentTimeLabel();
-        } else {
-            console.log('⚠️ 현재 뷰가 timeGrid가 아닙니다:', calendar.view.type);
         }
     }, 500);
     
@@ -241,6 +236,30 @@ function initCalendar() {
             if (calendar) calendar.updateSize();
         } catch (e) { /* ignore */ }
     }, 600);
+}
+
+/**
+ * 시간축 열 너비 고정 - 일정표가 축 영역을 침범하지 않도록 colgroup 주입
+ */
+function applyTimeGridAxisCol() {
+    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
+    const axisWidthPx = 90;
+    const tables = document.querySelectorAll('.fc-timegrid .fc-scrollgrid-section table');
+    tables.forEach(table => {
+        if (table.querySelector('colgroup.fc-timegrid-axis-colgroup')) return;
+        const colgroup = document.createElement('colgroup');
+        colgroup.className = 'fc-timegrid-axis-colgroup';
+        const colAxis = document.createElement('col');
+        colAxis.style.width = axisWidthPx + 'px';
+        colAxis.style.minWidth = axisWidthPx + 'px';
+        colgroup.appendChild(colAxis);
+        const dayColCount = (table.querySelector('thead tr') || table.querySelector('tbody tr'))?.cells?.length - 1 || 6;
+        for (let i = 0; i < dayColCount; i++) {
+            const col = document.createElement('col');
+            colgroup.appendChild(col);
+        }
+        table.insertBefore(colgroup, table.firstChild);
+    });
 }
 
 /**
