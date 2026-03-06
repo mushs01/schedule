@@ -60,6 +60,18 @@ function initCalendar() {
         return;
     }
     
+    // 모바일: FC가 측정할 때부터 컨테이너를 뷰포트 폭으로 고정해 여백 방지
+    if (window.innerWidth <= 768) {
+        const scheduleArea = document.getElementById('scheduleArea');
+        const vw = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+        if (scheduleArea && vw > 0) {
+            scheduleArea.style.width = vw + 'px';
+            scheduleArea.style.maxWidth = vw + 'px';
+            calendarEl.style.width = vw + 'px';
+            calendarEl.style.maxWidth = vw + 'px';
+        }
+    }
+    
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'ko',
@@ -193,6 +205,17 @@ function initCalendar() {
             
             // 주간/일간 뷰: 시간축 열 고정 → 일정표 겹침 방지
             if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+                if (window.innerWidth <= 768) {
+                    const scheduleArea = document.getElementById('scheduleArea');
+                    const calEl = document.getElementById('calendar');
+                    const vw = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+                    if (scheduleArea && calEl && vw > 0) {
+                        scheduleArea.style.width = vw + 'px';
+                        scheduleArea.style.maxWidth = vw + 'px';
+                        calEl.style.width = vw + 'px';
+                        calEl.style.maxWidth = vw + 'px';
+                    }
+                }
                 setTimeout(() => {
                     applyTimeGridAxisCol();
                     scrollToCurrentTime();
@@ -230,12 +253,26 @@ function initCalendar() {
         addSwipeGestureToDateHeader();
     }, 600);
     
-    // 모바일 첫 로드 시 레이아웃 지연으로 크기 0 되는 경우 대비 (1회만)
+    // 모바일 첫 로드 시 레이아웃 지연 대비 - updateSize()가 너비를 줄이므로, 이후 다시 꽉 차게 적용
     setTimeout(() => {
         try {
             if (calendar) calendar.updateSize();
+            if (window.innerWidth <= 768 && calendar && (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay')) {
+                setTimeout(forceTimeGridFullWidth, 80);
+            }
         } catch (e) { /* ignore */ }
     }, 600);
+    
+    // 모바일: FC가 나중에 레이아웃을 다시 잡는 경우 대비, 여러 번 꽉 차게 재적용
+    if (window.innerWidth <= 768) {
+        [800, 1200, 1800].forEach(ms => {
+            setTimeout(() => {
+                if (calendar && (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay')) {
+                    forceTimeGridFullWidth();
+                }
+            }, ms);
+        });
+    }
     
     // 모바일: 리사이즈 시 일정표 가로 폭 다시 적용
     let resizeTimeout;
