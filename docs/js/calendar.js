@@ -236,6 +236,19 @@ function initCalendar() {
             if (calendar) calendar.updateSize();
         } catch (e) { /* ignore */ }
     }, 600);
+    
+    // 모바일: 리사이즈 시 일정표 가로 폭 다시 적용
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) return;
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (calendar && (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay')) {
+                applyTimeGridAxisCol();
+                forceTimeGridFullWidth();
+            }
+        }, 150);
+    });
 }
 
 /**
@@ -273,6 +286,33 @@ function applyTimeGridAxisCol() {
             table.style.tableLayout = 'fixed';
         }
     });
+    if (isMobile) {
+        setTimeout(forceTimeGridFullWidth, 50);
+    }
+}
+
+/**
+ * 모바일: 일정표가 시간레이블 옆부터 오른쪽 끝까지 꽉 차도록 너비 강제
+ */
+function forceTimeGridFullWidth() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
+    const availableWidth = calendarEl.getBoundingClientRect().width;
+    if (availableWidth <= 0) return;
+    const root = calendarEl.querySelector('.fc');
+    const harness = calendarEl.querySelector('.fc-view-harness');
+    const scrollgrid = calendarEl.querySelector('.fc-timegrid .fc-scrollgrid');
+    const scroller = calendarEl.querySelector('.fc-timegrid .fc-scroller');
+    [root, harness, scrollgrid, scroller].forEach(el => {
+        if (el) {
+            el.style.width = availableWidth + 'px';
+            el.style.maxWidth = availableWidth + 'px';
+            el.style.minWidth = availableWidth + 'px';
+        }
+    });
+    if (calendar && typeof calendar.updateSize === 'function') {
+        calendar.updateSize();
+    }
 }
 
 /**
