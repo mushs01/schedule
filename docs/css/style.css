@@ -462,20 +462,29 @@ body {
     border-left: none !important;
 }
 
-/* 첫 번째 열(시간 레이블 열)의 오른쪽 경계선 제거 */
-.fc .fc-timegrid-axis-chunk {
+/* 첫 번째 열(시간 레이블 열)의 오른쪽 경계선 제거, 잘림 방지 */
+.fc .fc-timegrid-axis-chunk,
+.fc .fc-timegrid-axis-frame {
     border-right: none !important;
+    overflow: visible !important;
 }
 
-/* 시간 축 열 폭 고정 → 일정표(요일 열) 영역 좌우로 확대 */
+/* 시간 축 열 폭 - 레이블·현재시간이 잘리지 않고 일정표와 겹치지 않도록 */
 .fc .fc-timegrid-axis,
 .fc .fc-col-header-cell.fc-timegrid-axis {
-    width: 32px !important;
-    min-width: 32px !important;
-    max-width: 32px !important;
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    overflow: visible !important;
 }
 .fc .fc-timegrid .fc-scrollgrid-section table {
     table-layout: fixed !important;
+}
+/* 시간 레이블 영역이 잘리지 않도록 */
+.fc .fc-timegrid-slot-label,
+.fc .fc-timegrid-slot-label-frame,
+.fc .fc-timegrid-slot-label-cushion {
+    overflow: visible !important;
 }
 
 /* 캘린더 전체 테두리 제거 */
@@ -575,11 +584,12 @@ body {
     border-top: none !important; /* 시간 레이블 영역 가로선 제거 */
 }
 
-/* 시간 축 (왼쪽 레이블) - 모든 경계선 제거, 배경 투명 */
+/* 시간 축 (왼쪽 레이블) - 모든 경계선 제거, 배경 투명, 잘림 방지 */
 .fc .fc-timegrid-axis {
     border: none !important;
     position: relative !important;
     background: transparent !important;
+    overflow: visible !important;
 }
 
 /* 시간 레이블이 있는 열 전체 경계선 제거, 배경 투명 */
@@ -630,10 +640,11 @@ body {
     border: none !important;
 }
 
-/* 시간 표시 레이블: 시간 위줄, 오전/오후 아래줄 (좌우 폭 절약), 오른쪽 정렬 */
+/* 시간 표시 레이블: '시' 기준 오른쪽 정렬, 일정표와 겹치지 않도록 여백 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
-    padding-right: 4px !important;
+    padding-right: 8px !important;
+    padding-left: 4px !important;
     text-align: right !important;
     vertical-align: top !important;
     padding-top: 0 !important;
@@ -642,6 +653,7 @@ body {
     background: transparent !important;
     display: block !important;
     width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .fc .fc-timegrid-slot-label-cushion {
@@ -653,7 +665,9 @@ body {
     line-height: 1.1 !important;
     gap: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
     text-align: right !important;
+    box-sizing: border-box !important;
 }
 
 /* 시간(위줄) / 오전·오후(아래줄) - 오른쪽 정렬 */
@@ -671,7 +685,7 @@ body {
     color: var(--text-secondary, #5f6368);
 }
 
-/* 현재시간 레이블 (해당 슬롯에 붉은색 표시) */
+/* 현재시간 레이블 - 잘리지 않고 잘 보이도록 */
 .fc .fc-now-time-label {
     display: block !important;
     font-size: 11px !important;
@@ -679,6 +693,10 @@ body {
     color: #d93025 !important;
     line-height: 1.1 !important;
     margin-top: 1px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: right !important;
+    flex-shrink: 0 !important;
 }
 
 /* 06:00 시간 라벨만 숨기기 */
@@ -691,15 +709,17 @@ body {
     position: relative !important;
 }
 
-/* 시간 레이블 프레임 - 오른쪽 정렬 */
+/* 시간 레이블 프레임 - '시' 기준 오른쪽 정렬, 여백 확보 */
 .fc .fc-timegrid-slot-label-frame {
     text-align: right !important;
-    padding-right: 4px !important;
+    padding-right: 8px !important;
+    padding-left: 4px !important;
     height: 100% !important;
     width: 100% !important;
     display: flex !important;
     align-items: flex-start !important;
     justify-content: flex-end !important;
+    box-sizing: border-box !important;
 }
 
 .fc .fc-event {
@@ -2711,9 +2731,9 @@ body {
     .fc .fc-slot-label-line2 { font-size: 8px !important; }
     .fc .fc-timegrid-axis,
     .fc .fc-col-header-cell.fc-timegrid-axis {
-        width: 28px !important;
-        min-width: 28px !important;
-        max-width: 28px !important;
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
     }
     
     .fc .fc-event {
