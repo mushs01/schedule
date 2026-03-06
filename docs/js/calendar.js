@@ -330,11 +330,12 @@ function applyTimeGridAxisCol() {
 
 /**
  * 모바일: 일정표가 화면 가로폭 전체를 쓰도록 너비 강제 (뷰포트 기준)
+ * 컨테이너(#scheduleArea, #calendar)부터 FC 내부까지 모두 동일 너비로 맞춤.
  */
 function forceTimeGridFullWidth() {
+    const scheduleArea = document.getElementById('scheduleArea');
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
-    // 실제 화면(뷰포트) 가로폭 사용 - 컨테이너가 좁게 잡히는 경우 대비
     const viewportW = Math.max(
         window.innerWidth || 0,
         document.documentElement.clientWidth || 0,
@@ -343,16 +344,18 @@ function forceTimeGridFullWidth() {
     const containerW = calendarEl.getBoundingClientRect().width;
     const targetWidth = viewportW > 0 ? viewportW : containerW;
     if (targetWidth <= 0) return;
-    const root = calendarEl.querySelector('.fc');
-    const harness = calendarEl.querySelector('.fc-view-harness');
-    const scrollgrid = calendarEl.querySelector('.fc-timegrid .fc-scrollgrid');
-    const scroller = calendarEl.querySelector('.fc-timegrid .fc-scroller');
-    [root, harness, scrollgrid, scroller].forEach(el => {
-        if (el) {
-            el.style.width = targetWidth + 'px';
-            el.style.maxWidth = targetWidth + 'px';
-            el.style.minWidth = targetWidth + 'px';
-        }
+    const toApply = [
+        scheduleArea,
+        calendarEl,
+        calendarEl.querySelector('.fc'),
+        calendarEl.querySelector('.fc-view-harness'),
+        calendarEl.querySelector('.fc-timegrid .fc-scrollgrid'),
+        calendarEl.querySelector('.fc-timegrid .fc-scroller')
+    ].filter(Boolean);
+    toApply.forEach(el => {
+        el.style.width = targetWidth + 'px';
+        el.style.maxWidth = targetWidth + 'px';
+        el.style.minWidth = targetWidth + 'px';
     });
     if (calendar && typeof calendar.updateSize === 'function') {
         calendar.updateSize();
