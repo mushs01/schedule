@@ -630,7 +630,7 @@ body {
     border: none !important;
 }
 
-/* 시간 표시 레이블: 시간 위줄, 오전/오후 아래줄 (좌우 폭 절약) */
+/* 시간 표시 레이블: 시간 위줄, 오전/오후 아래줄 (좌우 폭 절약), 오른쪽 정렬 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
     padding-right: 4px !important;
@@ -640,7 +640,8 @@ body {
     position: relative !important;
     top: -8px !important;
     background: transparent !important;
-    display: inline-block !important;
+    display: block !important;
+    width: 100% !important;
 }
 
 .fc .fc-timegrid-slot-label-cushion {
@@ -651,9 +652,16 @@ body {
     justify-content: flex-start !important;
     line-height: 1.1 !important;
     gap: 0 !important;
+    width: 100% !important;
+    text-align: right !important;
 }
 
-/* 시간(위줄) / 오전·오후(아래줄) */
+/* 시간(위줄) / 오전·오후(아래줄) - 오른쪽 정렬 */
+.fc .fc-slot-label-line1,
+.fc .fc-slot-label-line2 {
+    text-align: right !important;
+    width: 100%;
+}
 .fc .fc-slot-label-line1 {
     font-size: 11px;
     font-weight: 500;
@@ -683,11 +691,12 @@ body {
     position: relative !important;
 }
 
-/* 시간 레이블 프레임 */
+/* 시간 레이블 프레임 - 오른쪽 정렬 */
 .fc .fc-timegrid-slot-label-frame {
     text-align: right !important;
     padding-right: 4px !important;
     height: 100% !important;
+    width: 100% !important;
     display: flex !important;
     align-items: flex-start !important;
     justify-content: flex-end !important;
