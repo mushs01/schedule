@@ -2712,26 +2712,42 @@ body {
         height: calc(100vh - 48px);
     }
     
-    /* 모바일: 실제 화면 가로폭(100vw) 기준으로 일정표 꽉 채우기 */
+    /* 모바일: 빨간 영역(좌우 여백) 제거 - 화면 끝까지 일정표 채우기 */
+    html, body {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin: 0 !important;
+        overflow-x: hidden;
+    }
     .gcal-main,
     .gcal-content {
-        min-width: 100vw !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        min-width: 100% !important;
         width: 100% !important;
+    }
+    .gcal-content .view-selector,
+    .gcal-content .today-summary,
+    .gcal-content .important-events {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
     #scheduleArea.schedule-area {
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-        min-width: 100vw !important;
-        max-width: 100vw !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
     }
     #calendar {
         padding: 0 !important;
         margin: 0 !important;
-        width: 100vw !important;
-        min-width: 100vw !important;
-        max-width: 100vw !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
     }
     #calendar .fc {
