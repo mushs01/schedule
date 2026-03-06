@@ -212,6 +212,7 @@ function initCalendar() {
                 setTimeout(() => {
                     applyTimeGridFullWidthStyles();
                     scrollToCurrentTime();
+                    updateCurrentTimeLabel();
                 }, 100);
             }
             
@@ -233,8 +234,11 @@ function initCalendar() {
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
             applyTimeGridFullWidthStyles();
             scrollToCurrentTime();
+            updateCurrentTimeLabel();
         }
     }, 500);
+    
+    setInterval(updateCurrentTimeLabel, 60000);
     
     // 초기 스와이프 제스처 활성화
     setTimeout(() => {
@@ -326,6 +330,29 @@ function applyTimeGridFullWidthStyles() {
         table.style.width = '100%';
         table.style.minWidth = '100%';
     });
+}
+
+/**
+ * 왼쪽 시간축에 현재시간(예: 15:04)을 해당 시간선 위치에 붉은색으로 표시. 레이아웃 변경 없이 absolute로 겹침.
+ */
+function updateCurrentTimeLabel() {
+    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    if (hour < 6 || hour >= 24) return;
+    const timeStr = hour + ':' + String(minute).padStart(2, '0');
+    const slotTime = String(hour).padStart(2, '0') + ':00:00';
+    document.querySelectorAll('.fc-now-time-label').forEach(el => el.remove());
+    const slotEl = document.querySelector('.fc-timegrid-slot[data-time="' + slotTime + '"]');
+    if (!slotEl) return;
+    const slotHeight = 60;
+    const topPx = (minute / 60) * slotHeight;
+    const span = document.createElement('span');
+    span.className = 'fc-now-time-label';
+    span.textContent = timeStr;
+    span.style.top = topPx + 'px';
+    slotEl.appendChild(span);
 }
 
 /**
