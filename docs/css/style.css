@@ -469,12 +469,12 @@ body {
     overflow: visible !important;
 }
 
-/* 시간 축 열 폭 - 레이블·현재시간이 잘리지 않고 일정표와 겹치지 않도록 */
+/* 시간 축 열 폭 - 레이블·현재시간이 겹치거나 잘리지 않도록 충분히 확보 */
 .fc .fc-timegrid-axis,
 .fc .fc-col-header-cell.fc-timegrid-axis {
-    width: 48px !important;
-    min-width: 48px !important;
-    max-width: 48px !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
     overflow: visible !important;
 }
 .fc .fc-timegrid .fc-scrollgrid-section table {
@@ -640,11 +640,11 @@ body {
     border: none !important;
 }
 
-/* 시간 표시 레이블: '시' 기준 오른쪽 정렬, 일정표와 겹치지 않도록 여백 */
+/* 시간 표시 레이블: '시' 기준 오른쪽 정렬, 일정표와 겹치지 않도록 충분한 여백 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
-    padding-right: 8px !important;
-    padding-left: 4px !important;
+    padding-right: 12px !important;
+    padding-left: 8px !important;
     text-align: right !important;
     vertical-align: top !important;
     padding-top: 0 !important;
@@ -685,7 +685,7 @@ body {
     color: var(--text-secondary, #5f6368);
 }
 
-/* 현재시간 레이블 - 잘리지 않고 잘 보이도록 */
+/* 현재시간 레이블 - 왼쪽 잘림 방지, 충분히 보이도록 */
 .fc .fc-now-time-label {
     display: block !important;
     font-size: 11px !important;
@@ -693,10 +693,13 @@ body {
     color: #d93025 !important;
     line-height: 1.1 !important;
     margin-top: 1px !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
     white-space: nowrap !important;
     overflow: visible !important;
     text-align: right !important;
     flex-shrink: 0 !important;
+    min-width: fit-content !important;
 }
 
 /* 06:00 시간 라벨만 숨기기 */
@@ -704,16 +707,20 @@ body {
     visibility: hidden !important;
 }
 
-/* 시간 슬롯 기본 설정 */
+/* 시간 슬롯 기본 설정 - 잘림 방지 */
 .fc .fc-timegrid-slot {
     position: relative !important;
+    overflow: visible !important;
+}
+.fc .fc-timegrid-slots td.fc-timegrid-slot {
+    overflow: visible !important;
 }
 
-/* 시간 레이블 프레임 - '시' 기준 오른쪽 정렬, 여백 확보 */
+/* 시간 레이블 프레임 - '시' 기준 오른쪽 정렬, 충분한 여백으로 겹침·잘림 방지 */
 .fc .fc-timegrid-slot-label-frame {
     text-align: right !important;
-    padding-right: 8px !important;
-    padding-left: 4px !important;
+    padding-right: 12px !important;
+    padding-left: 8px !important;
     height: 100% !important;
     width: 100% !important;
     display: flex !important;
@@ -2731,9 +2738,9 @@ body {
     .fc .fc-slot-label-line2 { font-size: 8px !important; }
     .fc .fc-timegrid-axis,
     .fc .fc-col-header-cell.fc-timegrid-axis {
-        width: 44px !important;
-        min-width: 44px !important;
-        max-width: 44px !important;
+        width: 56px !important;
+        min-width: 56px !important;
+        max-width: 56px !important;
     }
     
     .fc .fc-event {
