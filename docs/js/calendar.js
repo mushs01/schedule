@@ -243,22 +243,35 @@ function initCalendar() {
  */
 function applyTimeGridAxisCol() {
     if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
-    const axisWidthPx = 90;
+    const isMobile = window.innerWidth <= 768;
+    const axisWidthPx = isMobile ? 62 : 90;
     const tables = document.querySelectorAll('.fc-timegrid .fc-scrollgrid-section table');
     tables.forEach(table => {
-        if (table.querySelector('colgroup.fc-timegrid-axis-colgroup')) return;
-        const colgroup = document.createElement('colgroup');
-        colgroup.className = 'fc-timegrid-axis-colgroup';
-        const colAxis = document.createElement('col');
-        colAxis.style.width = axisWidthPx + 'px';
-        colAxis.style.minWidth = axisWidthPx + 'px';
-        colgroup.appendChild(colAxis);
-        const dayColCount = (table.querySelector('thead tr') || table.querySelector('tbody tr'))?.cells?.length - 1 || 6;
-        for (let i = 0; i < dayColCount; i++) {
-            const col = document.createElement('col');
-            colgroup.appendChild(col);
+        let colgroup = table.querySelector('colgroup.fc-timegrid-axis-colgroup');
+        if (!colgroup) {
+            colgroup = document.createElement('colgroup');
+            colgroup.className = 'fc-timegrid-axis-colgroup';
+            const colAxis = document.createElement('col');
+            colAxis.style.width = axisWidthPx + 'px';
+            colAxis.style.minWidth = axisWidthPx + 'px';
+            colgroup.appendChild(colAxis);
+            const dayColCount = (table.querySelector('thead tr') || table.querySelector('tbody tr'))?.cells?.length - 1 || 6;
+            for (let i = 0; i < dayColCount; i++) {
+                const col = document.createElement('col');
+                colgroup.appendChild(col);
+            }
+            table.insertBefore(colgroup, table.firstChild);
+        } else {
+            const firstCol = colgroup.querySelector('col');
+            if (firstCol) {
+                firstCol.style.width = axisWidthPx + 'px';
+                firstCol.style.minWidth = axisWidthPx + 'px';
+            }
         }
-        table.insertBefore(colgroup, table.firstChild);
+        if (isMobile) {
+            table.style.width = '100%';
+            table.style.tableLayout = 'fixed';
+        }
     });
 }
 

@@ -2712,19 +2712,48 @@ body {
         height: calc(100vh - 48px);
     }
     
-    /* 모바일: 일정표 좌우 꽉 채우기 (겹치지 않게) */
+    /* 모바일: 시간레이블 옆부터 오른쪽 끝까지 일정표 꽉 채우기 */
     #calendar {
         padding: 0 !important;
         width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
     }
     .fc-timeGridWeek-view,
     .fc-timeGridDay-view {
         padding-left: 0 !important;
+        padding-right: 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
     }
-    .fc .fc-timegrid .fc-scrollgrid,
+    .fc-timeGridWeek-view .fc-view-harness,
+    .fc-timeGridDay-view .fc-view-harness {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .fc-timeGridWeek-view .fc-scrollgrid,
+    .fc-timeGridDay-view .fc-scrollgrid,
+    .fc-timeGridWeek-view .fc-scroller,
+    .fc-timeGridDay-view .fc-scroller {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .fc .fc-timegrid .fc-scrollgrid-section,
+    .fc .fc-timegrid .fc-scrollgrid-section > * {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
     .fc .fc-timegrid .fc-scrollgrid-section table {
         width: 100% !important;
+        table-layout: fixed !important;
+    }
+    /* 요일 열이 남은 너비를 균등 분할 (오른쪽 끝까지 채움) */
+    .fc .fc-timegrid .fc-scrollgrid-section table {
+        min-width: 100% !important;
+    }
+    .fc .fc-timegrid-col,
+    .fc .fc-col-header-cell:not(.fc-timegrid-axis) {
+        min-width: 0 !important;
     }
     
     .fc {
