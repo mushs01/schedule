@@ -341,7 +341,8 @@ function updateCurrentTimeLabel() {
     const hour = now.getHours();
     const minute = now.getMinutes();
     if (hour < 6 || hour >= 24) return;
-    const timeStr = hour + ':' + String(minute).padStart(2, '0');
+    const h12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    const timeStr = h12 + ':' + String(minute).padStart(2, '0');
     const slotTime = String(hour).padStart(2, '0') + ':00:00';
     document.querySelectorAll('.fc-now-time-label').forEach(el => el.remove());
     const slotEl = document.querySelector('.fc-timegrid-slot[data-time="' + slotTime + '"]');
