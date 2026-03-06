@@ -2712,8 +2712,19 @@ body {
         height: calc(100vh - 48px);
     }
     
+    /* 모바일: 일정표 좌우 꽉 채우기 (겹치지 않게) */
     #calendar {
-        padding: 4px;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+    .fc-timeGridWeek-view,
+    .fc-timeGridDay-view {
+        padding-left: 0 !important;
+        width: 100% !important;
+    }
+    .fc .fc-timegrid .fc-scrollgrid,
+    .fc .fc-timegrid .fc-scrollgrid-section table {
+        width: 100% !important;
     }
     
     .fc {
@@ -2760,18 +2771,38 @@ body {
         height: 32px;
     }
     
+    /* 시간레이블 왼쪽으로 붙이기 */
+    .fc .fc-timegrid-slot-label,
+    .fc .fc-timegrid-slot-label-frame {
+        padding-left: 2px !important;
+        padding-right: 4px !important;
+    }
+    .fc .fc-timegrid-axis-chunk,
+    .fc .fc-timegrid-axis-frame {
+        padding-left: 2px !important;
+        padding-right: 6px !important;
+    }
     .fc .fc-timegrid-slot-label {
         font-size: 10px;
-        padding: 0 2px !important;
     }
     .fc .fc-slot-label-line1 { font-size: 10px !important; }
     .fc .fc-slot-label-line2 { font-size: 8px !important; }
+    /* 시간축 최소 폭만 확보 → 일정표가 최대한 좌우로 채워지도록 */
     .fc .fc-timegrid-axis,
     .fc .fc-col-header-cell.fc-timegrid-axis {
-        width: 76px !important;
-        min-width: 76px !important;
-        max-width: 76px !important;
-        flex: 0 0 76px !important;
+        width: 62px !important;
+        min-width: 62px !important;
+        max-width: 62px !important;
+        flex: 0 0 62px !important;
+    }
+    .fc .fc-timegrid-axis-colgroup col:first-child {
+        width: 62px !important;
+        min-width: 62px !important;
+    }
+    /* 일정표 첫 열과의 간격 최소화 (겹치지 않게만) */
+    .fc td.fc-timegrid-slot + td.fc-timegrid-col,
+    .fc th.fc-timegrid-axis + th {
+        padding-left: 4px !important;
     }
     
     .fc .fc-event {
