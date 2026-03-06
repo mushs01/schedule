@@ -218,6 +218,7 @@ function initCalendar() {
                 }
                 setTimeout(() => {
                     applyTimeGridAxisCol();
+                    applyTimeGridFullWidthStyles();
                     scrollToCurrentTime();
                 }, 100);
                 setTimeout(updateCurrentTimeLabel, 350);
@@ -240,6 +241,7 @@ function initCalendar() {
     setTimeout(() => {
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
             applyTimeGridAxisCol();
+            applyTimeGridFullWidthStyles();
             scrollToCurrentTime();
             updateCurrentTimeLabel();
         }
@@ -277,12 +279,12 @@ function initCalendar() {
     // 모바일: 리사이즈 시 일정표 가로 폭 다시 적용
     let resizeTimeout;
     window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) return;
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(function() {
             if (calendar && (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay')) {
                 applyTimeGridAxisCol();
-                forceTimeGridFullWidth();
+                applyTimeGridFullWidthStyles();
+                if (window.innerWidth <= 768) forceTimeGridFullWidth();
             }
         }, 150);
     });
@@ -318,10 +320,18 @@ function applyTimeGridAxisCol() {
                 firstCol.style.minWidth = axisWidthPx + 'px';
             }
         }
-        if (isMobile) {
-            table.style.width = '100%';
-            table.style.tableLayout = 'fixed';
-        }
+        table.style.width = '100%';
+        table.style.minWidth = '100%';
+        table.style.tableLayout = 'fixed';
+    });
+    // 주/일 뷰가 화면 가로 전체를 쓰도록 루트·스크롤그리드 인라인 너비 강제 (FC 기본값/인라인 덮어씀)
+    const viewRoot = document.querySelector('.fc-timeGridWeek-view, .fc-timeGridDay-view');
+    const scrollgrid = document.querySelector('.fc-timegrid .fc-scrollgrid');
+    const scroller = document.querySelector('.fc-timegrid .fc-scroller');
+    [viewRoot, scrollgrid, scroller].filter(Boolean).forEach(el => {
+        el.style.width = '100%';
+        el.style.minWidth = '100%';
+        el.style.maxWidth = '100%';
     });
     if (isMobile) {
         setTimeout(forceTimeGridFullWidth, 50);
@@ -360,6 +370,26 @@ function forceTimeGridFullWidth() {
     if (calendar && typeof calendar.updateSize === 'function') {
         calendar.updateSize();
     }
+    // updateSize() 후 FC가 다시 너비를 줄일 수 있으므로 주/일 뷰 요소에 100% 재적용
+    setTimeout(applyTimeGridFullWidthStyles, 50);
+}
+
+/** 주/일 뷰 전용: 뷰 루트·스크롤그리드·테이블에 100% 너비 강제 (데스크톱/모바일 공통) */
+function applyTimeGridFullWidthStyles() {
+    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
+    const viewRoot = document.querySelector('.fc-timeGridWeek-view, .fc-timeGridDay-view');
+    const scrollgrid = document.querySelector('.fc-timegrid .fc-scrollgrid');
+    const scroller = document.querySelector('.fc-timegrid .fc-scroller');
+    const tables = document.querySelectorAll('.fc-timegrid .fc-scrollgrid-section table');
+    [viewRoot, scrollgrid, scroller].filter(Boolean).forEach(el => {
+        el.style.width = '100%';
+        el.style.minWidth = '100%';
+        el.style.maxWidth = '100%';
+    });
+    tables.forEach(table => {
+        table.style.width = '100%';
+        table.style.minWidth = '100%';
+    });
 }
 
 /**

@@ -409,11 +409,22 @@ body {
 .fc-dayGridMonth-view {
     padding: 8px 0 !important;
 }
-/* 주/일 일정표: 시간축 열만 사용, 추가 padding 제거 */
+/* 주/일 일정표: 화면 가로 전체 사용(월간처럼 꽉 차게) */
 .fc-timeGridWeek-view,
 .fc-timeGridDay-view {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+    box-sizing: border-box !important;
+}
+.fc .fc-view-harness .fc-timeGridWeek-view,
+.fc .fc-view-harness .fc-timeGridDay-view {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
 }
 
 /* FullCalendar 커스텀 - 모바일 최적화 */
@@ -543,9 +554,25 @@ body {
     z-index: 5 !important;
     position: relative !important;
 }
-/* 일정표 영역이 시간축을 침범하지 않도록 최소 너비 보장 */
+/* 일정표 영역이 시간축을 침범하지 않도록 최소 너비 보장 + 가로 풀폭 */
 .fc .fc-timegrid .fc-scrollgrid {
     min-width: 90px;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+/* 주/일 뷰 스크롤그리드·스크롤러·섹션 테이블 전부 풀폭 (FC 인라인 너비 덮어씀) */
+.fc-timeGridWeek-view .fc-scrollgrid,
+.fc-timeGridDay-view .fc-scrollgrid,
+.fc-timeGridWeek-view .fc-scroller,
+.fc-timeGridDay-view .fc-scroller,
+.fc-timeGridWeek-view .fc-scrollgrid-section,
+.fc-timeGridDay-view .fc-scrollgrid-section,
+.fc-timeGridWeek-view .fc-scrollgrid-section table,
+.fc-timeGridDay-view .fc-scrollgrid-section table {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
 }
 /* 시간 레이블 영역이 잘리지 않도록 */
 .fc .fc-timegrid-slot-label,
