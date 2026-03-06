@@ -733,7 +733,7 @@ body {
     position: relative !important;
 }
 
-/* 현재시간(예: 3:12) - 시간 레이블(8시 등)과 같은 영역에 해당 분 위치에 겹쳐 표시 */
+/* 현재시간(예: 3:12) - 시간 레이블 영역에 표시, 일정 블록 위에 보이도록 */
 .fc .fc-now-time-label {
     position: absolute !important;
     left: 0 !important;
@@ -743,7 +743,7 @@ body {
     line-height: 1 !important;
     white-space: nowrap !important;
     pointer-events: none !important;
-    z-index: 2 !important;
+    z-index: 10 !important;
 }
 
 .fc .fc-event {
