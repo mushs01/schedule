@@ -113,15 +113,15 @@ function initCalendar() {
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
         slotLabelInterval: '01:00:00',
-        // 7시만 "오전 7시", 12시만 "오후 12시", 나머지는 "N시"만
+        // 7시만 "오전 7", 12시만 "오후 12", 나머지는 숫자만 (시 생략)
         slotLabelFormat: function(arg) {
             const d = arg.date;
             const hour = typeof d.getHours === 'function' ? d.getHours() : d.hour;
             if (hour === 6) return '';
             const h12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-            if (hour === 7) return '오전 7시';
-            if (hour === 12) return '오후 12시';
-            return h12 + '시';
+            if (hour === 7) return '오전 7';
+            if (hour === 12) return '오후 12';
+            return String(h12);
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         contentHeight: 'auto', // 콘텐츠 높이는 auto
@@ -347,13 +347,15 @@ function updateCurrentTimeLabel() {
     document.querySelectorAll('.fc-now-time-label').forEach(el => el.remove());
     const slotEl = document.querySelector('.fc-timegrid-slot[data-time="' + slotTime + '"]');
     if (!slotEl) return;
+    const cushion = slotEl.querySelector('.fc-timegrid-slot-label-cushion');
+    if (!cushion) return;
     const slotHeight = 60;
     const topPx = (minute / 60) * slotHeight;
     const span = document.createElement('span');
     span.className = 'fc-now-time-label';
     span.textContent = timeStr;
     span.style.top = topPx + 'px';
-    slotEl.appendChild(span);
+    cushion.appendChild(span);
 }
 
 /**

@@ -730,9 +730,10 @@ body {
 .fc .fc-timegrid-slot-label-cushion {
     padding-top: 0 !important;
     line-height: 1.2 !important;
+    position: relative !important;
 }
 
-/* 현재시간(예: 15:04) - 시간축 슬롯 위에 해당 분 위치에 겹쳐 표시, 레이아웃 무변경 */
+/* 현재시간(예: 3:12) - 시간 레이블(8시 등)과 같은 영역에 해당 분 위치에 겹쳐 표시 */
 .fc .fc-now-time-label {
     position: absolute !important;
     left: 0 !important;
