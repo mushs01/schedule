@@ -112,24 +112,7 @@ function initCalendar() {
         slotMinTime: '06:00:00',
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
-        slotLabelInterval: '01:00:00', // 1시간마다 라벨 표시
-        slotLabelFormat: function(date) {
-            const hour = date.date.hour;
-            if (hour === 6) return '';
-            const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-            return `${hour12}시`;
-        },
-        // 시간은 위줄, 오전/오후는 아래줄에 표시 (레이블 폭 절약 → 일정표 영역 확대)
-        slotLabelContent: function(arg) {
-            const hour = arg.date.getHours();
-            if (hour === 6) return { html: '' };
-            const hour12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-            const line2 = hour === 7 ? '오전' : (hour === 12 ? '오후' : '');
-            const html = line2
-                ? `<div class="fc-slot-label-line1">${hour12}시</div><div class="fc-slot-label-line2">${line2}</div>`
-                : `<div class="fc-slot-label-line1">${hour12}시</div>`;
-            return { html };
-        },
+        slotLabelInterval: '01:00:00',
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         contentHeight: 'auto', // 콘텐츠 높이는 auto
         expandRows: false, // 행 확장 방지하여 스크롤 활성화
@@ -217,11 +200,9 @@ function initCalendar() {
                     }
                 }
                 setTimeout(() => {
-                    applyTimeGridAxisCol();
                     applyTimeGridFullWidthStyles();
                     scrollToCurrentTime();
                 }, 100);
-                setTimeout(updateCurrentTimeLabel, 350);
             }
             
             // 모든 뷰에 스와이프 제스처 추가 (주간/일간/월간)
@@ -240,15 +221,10 @@ function initCalendar() {
     // 초기 렌더링 시 시간축 열 고정 + 스크롤 + 현재시간 레이블
     setTimeout(() => {
         if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
-            applyTimeGridAxisCol();
             applyTimeGridFullWidthStyles();
             scrollToCurrentTime();
-            updateCurrentTimeLabel();
         }
     }, 500);
-    
-    // 현재시간 레이블 1분마다 갱신
-    setInterval(updateCurrentTimeLabel, 60000);
     
     // 초기 스와이프 제스처 활성화
     setTimeout(() => {
@@ -282,60 +258,11 @@ function initCalendar() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(function() {
             if (calendar && (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay')) {
-                applyTimeGridAxisCol();
                 applyTimeGridFullWidthStyles();
                 if (window.innerWidth <= 768) forceTimeGridFullWidth();
             }
         }, 150);
     });
-}
-
-/**
- * 시간축 열 너비 고정 - 일정표가 축 영역을 침범하지 않도록 colgroup 주입
- */
-function applyTimeGridAxisCol() {
-    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
-    const isMobile = window.innerWidth <= 768;
-    const axisWidthPx = isMobile ? 62 : 90;
-    const tables = document.querySelectorAll('.fc-timegrid .fc-scrollgrid-section table');
-    tables.forEach(table => {
-        let colgroup = table.querySelector('colgroup.fc-timegrid-axis-colgroup');
-        if (!colgroup) {
-            colgroup = document.createElement('colgroup');
-            colgroup.className = 'fc-timegrid-axis-colgroup';
-            const colAxis = document.createElement('col');
-            colAxis.style.width = axisWidthPx + 'px';
-            colAxis.style.minWidth = axisWidthPx + 'px';
-            colgroup.appendChild(colAxis);
-            const dayColCount = (table.querySelector('thead tr') || table.querySelector('tbody tr'))?.cells?.length - 1 || 6;
-            for (let i = 0; i < dayColCount; i++) {
-                const col = document.createElement('col');
-                colgroup.appendChild(col);
-            }
-            table.insertBefore(colgroup, table.firstChild);
-        } else {
-            const firstCol = colgroup.querySelector('col');
-            if (firstCol) {
-                firstCol.style.width = axisWidthPx + 'px';
-                firstCol.style.minWidth = axisWidthPx + 'px';
-            }
-        }
-        table.style.width = '100%';
-        table.style.minWidth = '100%';
-        table.style.tableLayout = 'fixed';
-    });
-    // 주/일 뷰가 화면 가로 전체를 쓰도록 루트·스크롤그리드 인라인 너비 강제 (FC 기본값/인라인 덮어씀)
-    const viewRoot = document.querySelector('.fc-timeGridWeek-view, .fc-timeGridDay-view');
-    const scrollgrid = document.querySelector('.fc-timegrid .fc-scrollgrid');
-    const scroller = document.querySelector('.fc-timegrid .fc-scroller');
-    [viewRoot, scrollgrid, scroller].filter(Boolean).forEach(el => {
-        el.style.width = '100%';
-        el.style.minWidth = '100%';
-        el.style.maxWidth = '100%';
-    });
-    if (isMobile) {
-        setTimeout(forceTimeGridFullWidth, 50);
-    }
 }
 
 /**
@@ -370,11 +297,10 @@ function forceTimeGridFullWidth() {
     if (calendar && typeof calendar.updateSize === 'function') {
         calendar.updateSize();
     }
-    // updateSize() 후 FC가 다시 너비를 줄일 수 있으므로 주/일 뷰 요소에 100% 재적용
     setTimeout(applyTimeGridFullWidthStyles, 50);
 }
 
-/** 주/일 뷰 전용: 뷰 루트·스크롤그리드·테이블에 100% 너비 강제 (데스크톱/모바일 공통) */
+/** 주/일 뷰: 뷰 루트·스크롤그리드·테이블 100% 너비 강제 */
 function applyTimeGridFullWidthStyles() {
     if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
     const viewRoot = document.querySelector('.fc-timeGridWeek-view, .fc-timeGridDay-view');
@@ -390,34 +316,6 @@ function applyTimeGridFullWidthStyles() {
         table.style.width = '100%';
         table.style.minWidth = '100%';
     });
-}
-
-/**
- * 왼쪽 시간 레이블에 현재시간 붉은색으로 표시 (예: 8:30)
- */
-function updateCurrentTimeLabel() {
-    if (!calendar || (calendar.view.type !== 'timeGridWeek' && calendar.view.type !== 'timeGridDay')) return;
-    
-    const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-    if (hour < 6 || hour >= 24) return; // 표시 범위 밖
-    
-    const timeStr = `${hour}:${String(minute).padStart(2, '0')}`;
-    const slotTime = `${String(hour).padStart(2, '0')}:00:00`;
-    
-    document.querySelectorAll('.fc-now-time-label').forEach(el => el.remove());
-    
-    const slotEl = document.querySelector(`.fc-timegrid-slot[data-time="${slotTime}"]`);
-    if (!slotEl) return;
-    
-    const cushion = slotEl.querySelector('.fc-timegrid-slot-label-cushion');
-    if (!cushion) return;
-    
-    const span = document.createElement('span');
-    span.className = 'fc-now-time-label';
-    span.textContent = timeStr;
-    cushion.appendChild(span);
 }
 
 /**
