@@ -389,10 +389,10 @@ body {
     overflow: auto;
     background: #ffffff;
 }
-/* 주/일 일정표: 좌측 여백 확보로 시간레이블·현재시간 잘림 방지 */
+/* 주/일 일정표: 시간레이블 왼쪽 여유, 겹침·잘림 방지 */
 .fc-timeGridWeek-view,
 .fc-timeGridDay-view {
-    padding-left: 12px !important;
+    padding-left: 16px !important;
 }
 
 /* FullCalendar 커스텀 - 모바일 최적화 */
@@ -467,22 +467,23 @@ body {
     border-left: none !important;
 }
 
-/* 첫 번째 열(시간 레이블 열) - 경계선 제거, 일정표와 구분선 추가 */
+/* 첫 번째 열(시간 레이블 열) - 일정표와 구분, 여백 확보 */
 .fc .fc-timegrid-axis-chunk,
 .fc .fc-timegrid-axis-frame {
     border-right: 1px solid #dadce0 !important;
     overflow: visible !important;
     background: #ffffff !important;
+    padding-right: 12px !important;
 }
 
-/* 시간 축 열 폭 - 레이블·현재시간이 겹치거나 잘리지 않도록 충분히 확보 */
+/* 시간 축 열 폭 - 시간레이블·현재시간이 겹치거나 잘리지 않도록 넉넉히 확보 */
 .fc .fc-timegrid-axis,
 .fc .fc-col-header-cell.fc-timegrid-axis {
-    width: 72px !important;
-    min-width: 72px !important;
-    max-width: 72px !important;
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
     overflow: visible !important;
-    flex: 0 0 72px !important;
+    flex: 0 0 88px !important;
 }
 /* 시간 축이 일정표 위에 겹치지 않도록 배경·z-index */
 .fc .fc-timegrid-axis,
@@ -497,7 +498,7 @@ body {
 }
 /* 일정표 영역이 시간축을 침범하지 않도록 최소 너비 보장 */
 .fc .fc-timegrid .fc-scrollgrid {
-    min-width: 72px;
+    min-width: 88px;
 }
 /* 시간 레이블 영역이 잘리지 않도록 */
 .fc .fc-timegrid-slot-label,
@@ -641,6 +642,11 @@ body {
     border-right: 1px solid #dadce0 !important;
     border-color: #dadce0 !important;
 }
+/* 첫 번째 날짜 열: 시간축과 일정표 간격 확보 (겹침 방지) */
+.fc td.fc-timegrid-slot + td.fc-timegrid-col,
+.fc th.fc-timegrid-axis + th {
+    padding-left: 12px !important;
+}
 
 /* 일정 영역 가로선 */
 .fc .fc-timegrid-slot-lane {
@@ -659,11 +665,11 @@ body {
     border: none !important;
 }
 
-/* 시간 표시 레이블: '시' 기준 오른쪽 정렬, 일정표와 겹치지 않도록 충분한 여백 */
+/* 시간 표시 레이블: '시' 기준 오른쪽 정렬, 왼쪽 여유 확보 */
 .fc .fc-timegrid-slot-label {
     font-size: 11px;
-    padding-right: 12px !important;
-    padding-left: 8px !important;
+    padding-right: 8px !important;
+    padding-left: 4px !important;
     text-align: right !important;
     vertical-align: top !important;
     padding-top: 0 !important;
@@ -682,7 +688,7 @@ body {
     align-items: flex-end !important;
     justify-content: flex-start !important;
     line-height: 1.1 !important;
-    gap: 0 !important;
+    gap: 4px !important;
     width: 100% !important;
     max-width: 100% !important;
     text-align: right !important;
@@ -704,16 +710,15 @@ body {
     color: var(--text-secondary, #5f6368);
 }
 
-/* 현재시간 레이블 - 왼쪽 잘림 방지, 충분히 보이도록 */
+/* 현재시간 레이블 - 겹침·잘림 방지, 명확히 표시 */
 .fc .fc-now-time-label {
     display: block !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     color: #d93025 !important;
     line-height: 1.1 !important;
-    margin-top: 1px !important;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
+    margin: 0 !important;
+    padding: 2px 0 0 0 !important;
     white-space: nowrap !important;
     overflow: visible !important;
     text-align: right !important;
@@ -735,11 +740,11 @@ body {
     overflow: visible !important;
 }
 
-/* 시간 레이블 프레임 - '시' 기준 오른쪽 정렬, 충분한 여백으로 겹침·잘림 방지 */
+/* 시간 레이블 프레임 - '시' 기준 오른쪽 정렬 */
 .fc .fc-timegrid-slot-label-frame {
     text-align: right !important;
-    padding-right: 12px !important;
-    padding-left: 8px !important;
+    padding-right: 8px !important;
+    padding-left: 4px !important;
     height: 100% !important;
     width: 100% !important;
     display: flex !important;
@@ -2757,10 +2762,10 @@ body {
     .fc .fc-slot-label-line2 { font-size: 8px !important; }
     .fc .fc-timegrid-axis,
     .fc .fc-col-header-cell.fc-timegrid-axis {
-        width: 64px !important;
-        min-width: 64px !important;
-        max-width: 64px !important;
-        flex: 0 0 64px !important;
+        width: 76px !important;
+        min-width: 76px !important;
+        max-width: 76px !important;
+        flex: 0 0 76px !important;
     }
     
     .fc .fc-event {
