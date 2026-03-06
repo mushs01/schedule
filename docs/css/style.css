@@ -389,6 +389,11 @@ body {
     overflow: auto;
     background: #ffffff;
 }
+/* 주/일 일정표: 좌측 여백 확보로 시간레이블·현재시간 잘림 방지 */
+.fc-timeGridWeek-view,
+.fc-timeGridDay-view {
+    padding-left: 12px !important;
+}
 
 /* FullCalendar 커스텀 - 모바일 최적화 */
 .fc {
@@ -462,23 +467,37 @@ body {
     border-left: none !important;
 }
 
-/* 첫 번째 열(시간 레이블 열)의 오른쪽 경계선 제거, 잘림 방지 */
+/* 첫 번째 열(시간 레이블 열) - 경계선 제거, 일정표와 구분선 추가 */
 .fc .fc-timegrid-axis-chunk,
 .fc .fc-timegrid-axis-frame {
-    border-right: none !important;
+    border-right: 1px solid #dadce0 !important;
     overflow: visible !important;
+    background: #ffffff !important;
 }
 
 /* 시간 축 열 폭 - 레이블·현재시간이 겹치거나 잘리지 않도록 충분히 확보 */
 .fc .fc-timegrid-axis,
 .fc .fc-col-header-cell.fc-timegrid-axis {
-    width: 64px !important;
-    min-width: 64px !important;
-    max-width: 64px !important;
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
     overflow: visible !important;
+    flex: 0 0 72px !important;
+}
+/* 시간 축이 일정표 위에 겹치지 않도록 배경·z-index */
+.fc .fc-timegrid-axis,
+.fc .fc-timegrid-axis-chunk,
+.fc .fc-col-header-cell.fc-timegrid-axis {
+    background: #ffffff !important;
+    z-index: 5 !important;
+    position: relative !important;
 }
 .fc .fc-timegrid .fc-scrollgrid-section table {
     table-layout: fixed !important;
+}
+/* 일정표 영역이 시간축을 침범하지 않도록 최소 너비 보장 */
+.fc .fc-timegrid .fc-scrollgrid {
+    min-width: 72px;
 }
 /* 시간 레이블 영역이 잘리지 않도록 */
 .fc .fc-timegrid-slot-label,
@@ -2738,9 +2757,10 @@ body {
     .fc .fc-slot-label-line2 { font-size: 8px !important; }
     .fc .fc-timegrid-axis,
     .fc .fc-col-header-cell.fc-timegrid-axis {
-        width: 56px !important;
-        min-width: 56px !important;
-        max-width: 56px !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        max-width: 64px !important;
+        flex: 0 0 64px !important;
     }
     
     .fc .fc-event {
