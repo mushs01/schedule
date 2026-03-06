@@ -292,22 +292,29 @@ function applyTimeGridAxisCol() {
 }
 
 /**
- * 모바일: 일정표가 시간레이블 옆부터 오른쪽 끝까지 꽉 차도록 너비 강제
+ * 모바일: 일정표가 화면 가로폭 전체를 쓰도록 너비 강제 (뷰포트 기준)
  */
 function forceTimeGridFullWidth() {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
-    const availableWidth = calendarEl.getBoundingClientRect().width;
-    if (availableWidth <= 0) return;
+    // 실제 화면(뷰포트) 가로폭 사용 - 컨테이너가 좁게 잡히는 경우 대비
+    const viewportW = Math.max(
+        window.innerWidth || 0,
+        document.documentElement.clientWidth || 0,
+        document.body.clientWidth || 0
+    );
+    const containerW = calendarEl.getBoundingClientRect().width;
+    const targetWidth = viewportW > 0 ? viewportW : containerW;
+    if (targetWidth <= 0) return;
     const root = calendarEl.querySelector('.fc');
     const harness = calendarEl.querySelector('.fc-view-harness');
     const scrollgrid = calendarEl.querySelector('.fc-timegrid .fc-scrollgrid');
     const scroller = calendarEl.querySelector('.fc-timegrid .fc-scroller');
     [root, harness, scrollgrid, scroller].forEach(el => {
         if (el) {
-            el.style.width = availableWidth + 'px';
-            el.style.maxWidth = availableWidth + 'px';
-            el.style.minWidth = availableWidth + 'px';
+            el.style.width = targetWidth + 'px';
+            el.style.maxWidth = targetWidth + 'px';
+            el.style.minWidth = targetWidth + 'px';
         }
     });
     if (calendar && typeof calendar.updateSize === 'function') {
