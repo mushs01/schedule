@@ -730,19 +730,6 @@ body {
 .fc .fc-timegrid-slot-label-cushion {
     padding-top: 0 !important;
     line-height: 1.2 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 2px !important;
-}
-.fc .fc-slot-label-line1 {
-    font-size: inherit;
-    font-weight: 500;
-}
-.fc .fc-slot-label-line2 {
-    font-size: 9px;
-    color: var(--text-secondary, #5f6368);
-    font-weight: 400;
 }
 
 .fc .fc-event {

@@ -113,15 +113,15 @@ function initCalendar() {
         slotMaxTime: '24:00:00',
         slotDuration: '01:00:00', // 1시간 단위로 표시
         slotLabelInterval: '01:00:00',
-        // 7시·12시는 위줄에 시간, 아랫줄에 오전/오후; 나머지는 "N시"만
-        slotLabelContent: function(arg) {
+        // 7시만 "오전 7시", 12시만 "오후 12시", 나머지는 "N시"만
+        slotLabelFormat: function(arg) {
             const d = arg.date;
             const hour = typeof d.getHours === 'function' ? d.getHours() : d.hour;
-            if (hour === 6) return { html: '' };
+            if (hour === 6) return '';
             const h12 = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-            if (hour === 7) return { html: '<div class="fc-slot-label-line1">7시</div><div class="fc-slot-label-line2">오전</div>' };
-            if (hour === 12) return { html: '<div class="fc-slot-label-line1">12시</div><div class="fc-slot-label-line2">오후</div>' };
-            return { html: '<div class="fc-slot-label-line1">' + h12 + '시</div>' };
+            if (hour === 7) return '오전 7시';
+            if (hour === 12) return '오후 12시';
+            return h12 + '시';
         },
         snapDuration: '00:30:00', // 드래그 시 30분 단위로 스냅
         contentHeight: 'auto', // 콘텐츠 높이는 auto
