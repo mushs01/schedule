@@ -4,17 +4,29 @@
 window.uploadScheduleAttachments = async function uploadScheduleAttachments(scheduleId) {
     const storage = window.storage;
     const api = window.api;
+    const log = window.appendAiScheduleLog || function () {};
+
     if (!storage || !api) {
         console.error('❌ Storage or API not initialized');
+        log('attachments.error.init', { hasStorage: !!storage, hasApi: !!api });
+        if (window.showToast) window.showToast('파일 첨부 초기화에 실패했습니다.', 'error');
         return;
     }
     if (!scheduleId) {
         console.error('❌ Missing scheduleId for attachment upload');
+        log('attachments.error.noScheduleId', {});
         return;
     }
     if (!Array.isArray(pendingAttachments) || pendingAttachments.length === 0) {
+        log('attachments.skip.noFiles', {});
         return;
     }
+
+    log('attachments.upload.start', {
+        scheduleId,
+        count: pendingAttachments.length,
+        names: pendingAttachments.map(f => f.name)
+    });
 
     try {
         const storageRef = storage.ref();
@@ -40,8 +52,13 @@ window.uploadScheduleAttachments = async function uploadScheduleAttachments(sche
         const merged = existingAttachments.concat(uploaded);
         await api.updateSchedule(scheduleId, { attachments: merged });
         console.log('✅ Attachments uploaded for schedule', scheduleId, merged);
+        log('attachments.upload.success', {
+            scheduleId,
+            uploaded: uploaded.map(u => ({ name: u.name, type: u.type, size: u.size }))
+        });
     } catch (err) {
         console.error('❌ Failed to upload attachments:', err);
+        log('attachments.upload.error', { message: err?.message || String(err) });
         if (window.showToast) {
             window.showToast('첨부 파일 업로드에 실패했습니다.', 'error');
         }
