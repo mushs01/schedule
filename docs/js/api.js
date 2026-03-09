@@ -83,6 +83,7 @@ const api = {
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                         is_important: data.is_important === true,
                         exclude_dates: data.exclude_dates || [],
+                        attachments: data.attachments || [],
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                         updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
                     };
@@ -171,7 +172,8 @@ const api = {
                     repeat_end_date: data.repeat_end_date ? data.repeat_end_date.toDate().toISOString() : null,
                     repeat_weekdays: data.repeat_weekdays || [],
                     repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
-                    is_important: data.is_important === true
+                    is_important: data.is_important === true,
+                    attachments: data.attachments || []
                 };
             } else {
                 throw new Error('Schedule not found');
@@ -289,6 +291,9 @@ const api = {
             }
             if (scheduleData.is_important !== undefined) {
                 updateData.is_important = scheduleData.is_important === true;
+            }
+            if (scheduleData.attachments !== undefined) {
+                updateData.attachments = scheduleData.attachments || [];
             }
             
             console.log('📤 Updating schedule with data:');
@@ -443,7 +448,7 @@ const api = {
                 }
             }
             
-            return {
+                return {
                 id: doc.id,
                 title: data.title,
                 description: data.description,
@@ -464,6 +469,7 @@ const api = {
                 repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                 is_important: data.is_important === true,
                 exclude_dates: data.exclude_dates || [],
+                attachments: data.attachments || [],
                 createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
                 updatedAt: data.updated_at ? data.updated_at.toDate().toISOString() : null
             };

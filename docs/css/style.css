@@ -2683,6 +2683,35 @@ body {
     font-size: 14px;
 }
 
+/* 일정 첨부 파일 */
+.attachment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+.attachment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.attachment-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: var(--hover-bg);
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.attachment-item img {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
 
 /* 모바일 반응형 */
 @media (max-width: 768px) {

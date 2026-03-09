@@ -730,7 +730,8 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                     repeat_type: schedule.repeat_type || 'none',
                     repeat_end_date: schedule.repeat_end_date || null,
                     repeat_weekdays: schedule.repeat_weekdays || [],
-                    repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth'
+                    repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth',
+                    attachments: schedule.attachments || []
                 }
             };
             

@@ -293,6 +293,17 @@
                     </label>
                     <textarea id="eventDescription" rows="3" placeholder="설명을 입력하세요" class="input-large"></textarea>
                 </div>
+
+                <!-- 파일 첨부 -->
+                <div class="form-group">
+                    <label class="form-label" title="첨부 파일">
+                        <span class="material-icons form-icon">attach_file</span>
+                    </label>
+                    <div class="attachment-field">
+                        <input type="file" id="eventAttachmentsInput" multiple accept="image/*,application/pdf,text/plain" />
+                        <div id="eventAttachmentsList" class="attachment-list"></div>
+                    </div>
+                </div>
                 
                 <!-- 푸시 알림 -->
                 <div class="form-group">
@@ -739,6 +750,7 @@
     <!-- Firebase JS SDK (messaging은 알림 사용 시에만 로드 - Strava 연동 404 방지) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <!-- Firebase Config -->
     <script src="js/firebase-config.js?v=22"></script>
@@ -755,6 +767,7 @@
     <script src="js/fcm-notification.js?v=331"></script>
     <script src="js/api.js?v=310"></script>
     <script src="js/calendar.js?v=260"></script>
+    <script src="js/attachments.js?v=1"></script>
     <script src="js/app.js?v=332"></script>
 </body>
 </html>

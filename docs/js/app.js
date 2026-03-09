@@ -15,6 +15,7 @@ let settingsModal;
 let betaTestModal;
 let deleteRecurringModal;
 let eventForm;
+let pendingAttachments = [];
 let loadingOverlay;
 let toast;
 
@@ -538,6 +539,38 @@ function setupEventListeners() {
     if (closeDetailBtn) {
         closeDetailBtn.addEventListener('click', closeEventDetailModal);
         console.log('✅ Close detail button listener added');
+    }
+    
+    // Event attachments (file input)
+    const attachmentsInput = document.getElementById('eventAttachmentsInput');
+    const attachmentsList = document.getElementById('eventAttachmentsList');
+    if (attachmentsInput) {
+        attachmentsInput.addEventListener('change', (e) => {
+            pendingAttachments = Array.from(e.target.files || []);
+            if (attachmentsList) {
+                attachmentsList.innerHTML = '';
+                pendingAttachments.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'attachment-item';
+                    const isImage = file.type && file.type.startsWith('image/');
+                    if (isImage) {
+                        const img = document.createElement('img');
+                        img.src = URL.createObjectURL(file);
+                        img.alt = file.name;
+                        item.appendChild(img);
+                    } else {
+                        const icon = document.createElement('span');
+                        icon.className = 'material-icons';
+                        icon.textContent = 'insert_drive_file';
+                        item.appendChild(icon);
+                    }
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = file.name;
+                    item.appendChild(nameSpan);
+                    attachmentsList.appendChild(item);
+                });
+            }
+        });
     }
     
     // Event form submission
@@ -1288,6 +1321,11 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     
     // Reset form
     eventForm.reset();
+    pendingAttachments = [];
+    const attachmentsInput = document.getElementById('eventAttachmentsInput');
+    const attachmentsList = document.getElementById('eventAttachmentsList');
+    if (attachmentsInput) attachmentsInput.value = '';
+    if (attachmentsList) attachmentsList.innerHTML = '';
     
     // 새 일정 추가 시 알림 기본값 OFF (reset 직후 적용)
     const notificationStartField = document.getElementById('eventNotificationStart');
@@ -1825,6 +1863,11 @@ async function handleEventFormSubmit(e) {
             } else {
                 showToast('일정이 수정되었습니다.', 'success');
             }
+            // 수정 모드에서 첨부 파일이 선택된 경우, 현재 편집 중인 일정 ID 기준으로 업로드
+            if (pendingAttachments.length > 0) {
+                const targetId = currentEditingEvent.extendedProps?.id || currentEditingEvent.id;
+                await uploadScheduleAttachments(targetId);
+            }
         } else {
             // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
             console.log('➕ Creating new event(s)');
@@ -1854,7 +1897,11 @@ async function handleEventFormSubmit(e) {
                     is_important: isImportant
                 };
                 appendAiScheduleLog('createSchedule.single', scheduleData);
-                await api.createSchedule(scheduleData);
+                const created = await api.createSchedule(scheduleData);
+                // 첨부 파일 업로드 (전체 일정)
+                if (pendingAttachments.length > 0) {
+                    await uploadScheduleAttachments(created.id);
+                }
                 showToast('일정이 추가되었습니다.', 'success');
             } else {
                 // 복수 담당자 선택 시 각 담당자별로 별도 일정 생성
@@ -1878,7 +1925,12 @@ async function handleEventFormSubmit(e) {
                     
                     console.log(`📋 Creating schedule for ${person}:`, scheduleData);
                     appendAiScheduleLog('createSchedule.multi', scheduleData);
-                    await api.createSchedule(scheduleData);
+                    const created = await api.createSchedule(scheduleData);
+                    // 첨부 파일 업로드 (첫 번째 생성된 일정 기준으로 1회만 업로드)
+                    if (pendingAttachments.length > 0) {
+                        await uploadScheduleAttachments(created.id);
+                        pendingAttachments = [];
+                    }
                 }
                 
                 const personCount = selectedPersons.length;
@@ -1966,6 +2018,37 @@ function showEventDetail(event) {
         repeatText = repeatTypeText + endDateText;
     }
     
+    const attachments = event.extendedProps.attachments || [];
+    
+    let attachmentsHtml = '';
+    if (attachments.length > 0) {
+        const items = attachments.map(att => {
+            const isImage = att.type && att.type.startsWith('image/');
+            if (isImage) {
+                return `
+                <div class="event-detail-row">
+                    <span class="material-icons detail-icon">attach_file</span>
+                    <span class="detail-content">
+                        <img src="${att.url}" alt="${att.name}" style="max-width: 100%; border-radius: 4px; display: block; margin-bottom: 4px;" />
+                        <a href="${att.url}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--primary-blue); text-decoration: underline;">
+                            ${att.name}
+                        </a>
+                    </span>
+                </div>`;
+            }
+            return `
+            <div class="event-detail-row">
+                <span class="material-icons detail-icon">attach_file</span>
+                <span class="detail-content">
+                    <a href="${att.url}" target="_blank" rel="noopener" style="font-size: 13px; color: var(--primary-blue); text-decoration: underline;">
+                        ${att.name}
+                    </a>
+                </span>
+            </div>`;
+        }).join('');
+        attachmentsHtml = items;
+    }
+    
     detail.innerHTML = `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">event</span>
@@ -1997,6 +2080,7 @@ function showEventDetail(event) {
             <span class="detail-content">${repeatText}</span>
         </div>
         ` : ''}
+        ${attachmentsHtml}
     `;
     
     currentEditingEvent = event;
