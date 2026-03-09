@@ -1641,10 +1641,14 @@ async function handleEventFormSubmit(e) {
     const description = document.getElementById('eventDescription').value;
     
     // 담당자 체크박스에서 선택된 값들 가져오기
-    const selectedPersons = [];
+    let selectedPersons = [];
     document.querySelectorAll('input[name="eventPerson"]:checked').forEach(checkbox => {
         selectedPersons.push(checkbox.value);
     });
+    // '전체'가 선택된 경우에는 나머지 담당자는 모두 무시하고 가족일정 하나만 생성/유지
+    if (selectedPersons.includes('all')) {
+        selectedPersons = ['all'];
+    }
     
     // 유효성 검사
     if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
