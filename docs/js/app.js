@@ -547,6 +547,12 @@ function setupEventListeners() {
     if (attachmentsInput) {
         attachmentsInput.addEventListener('change', (e) => {
             pendingAttachments = Array.from(e.target.files || []);
+            if (window.appendAiScheduleLog) {
+                window.appendAiScheduleLog('attachments.select', {
+                    count: pendingAttachments.length,
+                    names: pendingAttachments.map(f => f.name)
+                });
+            }
             if (attachmentsList) {
                 attachmentsList.innerHTML = '';
                 pendingAttachments.forEach(file => {
@@ -1722,6 +1728,13 @@ async function handleEventFormSubmit(e) {
     const isImportant = importantCheckbox ? importantCheckbox.checked : false;
     console.log('⭐ 중요일정:', isImportant);
     
+    if (window.appendAiScheduleLog) {
+        window.appendAiScheduleLog('form.submit.attachments', {
+            count: pendingAttachments.length,
+            names: pendingAttachments.map(f => f.name)
+        });
+    }
+
     try {
         showLoading(true);
         
