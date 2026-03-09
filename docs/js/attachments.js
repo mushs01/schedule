@@ -22,6 +22,12 @@ window.uploadScheduleAttachments = async function uploadScheduleAttachments(sche
         return;
     }
 
+    const statusEl = document.getElementById('eventAttachmentsStatus');
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.textContent = '첨부 업로드 중...';
+    }
+
     log('attachments.upload.start', {
         scheduleId,
         count: pendingAttachments.length,
@@ -56,11 +62,20 @@ window.uploadScheduleAttachments = async function uploadScheduleAttachments(sche
             scheduleId,
             uploaded: uploaded.map(u => ({ name: u.name, type: u.type, size: u.size }))
         });
+        if (statusEl) {
+            statusEl.textContent = '첨부 업로드 완료';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 2000);
+        }
     } catch (err) {
         console.error('❌ Failed to upload attachments:', err);
         log('attachments.upload.error', { message: err?.message || String(err) });
         if (window.showToast) {
             window.showToast('첨부 파일 업로드에 실패했습니다.', 'error');
+        }
+        if (statusEl) {
+            statusEl.textContent = '첨부 업로드 실패';
         }
     }
 }

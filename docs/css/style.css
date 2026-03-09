@@ -2711,6 +2711,10 @@ body {
     object-fit: cover;
     border-radius: 3px;
 }
+.attachment-status {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
 
 
 /* 모바일 반응형 */
