@@ -2390,6 +2390,27 @@ body {
     background: #c62828;
 }
 
+/* 일정 모달: 본문만 스크롤, 취소/저장은 항상 하단에 보이도록 */
+#eventModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+#eventModal #eventForm {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+#eventModal .modal-actions {
+    position: sticky;
+    bottom: 0;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+
 /* Modal Actions - 항상 하단에 고정 */
 .modal-actions {
     display: flex;
@@ -2398,7 +2419,6 @@ body {
     gap: 12px;
     padding: 16px;
     border-top: 1px solid var(--border-color);
-    flex-shrink: 0;
     background: #ffffff;
 }
 
