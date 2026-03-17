@@ -50,7 +50,15 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            openEventModalWithPerson(btn.getAttribute('data-person'));
+            const person = btn.getAttribute('data-person');
+            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
+            if (slot) {
+                window.calendarModule.clearSlotSelection();
+                setEventModalPerson(person);
+                openEventModal({ start: slot.start, end: slot.end });
+            } else {
+                openEventModalWithPerson(person);
+            }
         }, 500); // 500ms 길게 누르기
     });
     
@@ -74,7 +82,15 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            openEventModalWithPerson(btn.getAttribute('data-person'));
+            const person = btn.getAttribute('data-person');
+            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
+            if (slot) {
+                window.calendarModule.clearSlotSelection();
+                setEventModalPerson(person);
+                openEventModal({ start: slot.start, end: slot.end });
+            } else {
+                openEventModalWithPerson(person);
+            }
         }, 500); // 500ms 길게 누르기
     });
     

@@ -6,6 +6,8 @@
 let calendar;
 let currentFilter = 'showAll'; // 초기 로딩 시 모든 담당자 선택 → 모든 일정 표시
 let holidays = {}; // 공휴일 데이터 저장
+let slotAddEventRef = null; // 시간대 터치 시 표시하는 임시 하이라이트 이벤트
+let slotSelection = null;   // { start, end } - 선택된 1시간 구간
 
 // Person colors mapping (글로벌 변수로 변경)
 window.PERSON_COLORS = window.PERSON_COLORS || {
@@ -184,12 +186,22 @@ function initCalendar() {
                 }
             }
             
+            // 시간대 터치 선택 하이라이트: + 아이콘만 표시
+            if (info.event.id === '_slotAdd_' || info.event.extendedProps._slotAdd) {
+                info.el.classList.add('slot-add-highlight');
+                info.el.innerHTML = '<span class="material-icons" style="font-size: 24px; pointer-events: none;">add</span>';
+                info.el.title = '이 시간에 일정 추가 (오른쪽 아래 + 버튼 길게 누르기)';
+                return;
+            }
             // Add tooltip
             info.el.title = `${PERSON_NAMES[info.event.extendedProps.person]}: ${info.event.title}`;
         },
         
         // 날짜 변경 시 헤더 업데이트 및 공휴일 표시
         datesSet: function(dateInfo) {
+            if (dateInfo.view.type !== 'timeGridWeek' && dateInfo.view.type !== 'timeGridDay') {
+                clearSlotSelection();
+            }
             updateHeaderDate();
             // 약간의 지연 후 공휴일 표시 (DOM이 렌더링된 후)
             setTimeout(() => {
@@ -779,6 +791,7 @@ function handleDateSelect(selectInfo) {
  */
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
+    if (event.id === '_slotAdd_' || event.extendedProps._slotAdd) return; // 슬롯 하이라이트 클릭 시 상세 열지 않음
     console.log('🖱️ Event clicked:', event);
     
     console.log('📋 Event ID:', event.id);
@@ -800,7 +813,13 @@ function handleEventClick(clickInfo) {
 async function handleDateClick(dateClickInfo) {
     console.log('📅 Date clicked:', dateClickInfo);
     
-    // 월 보기가 아니면 기본 동작
+    // 주간/일간 보기: 시간대 터치 시 해당 1시간 하이라이트 + 일정 추가용으로 선택
+    if (calendar.view.type === 'timeGridWeek' || calendar.view.type === 'timeGridDay') {
+        handleTimeGridSlotClick(dateClickInfo);
+        return;
+    }
+    
+    // 월 보기가 아니면 무시
     if (calendar.view.type !== 'dayGridMonth') {
         return;
     }
@@ -832,6 +851,45 @@ async function handleDateClick(dateClickInfo) {
     
     // 월 보기에서는 항상 하루 일정 요약 모달 표시 (일정이 없어도)
     showDaySchedule(clickedDate, dayEvents);
+}
+
+/**
+ * 주간/일간 보기에서 시간대(슬롯) 터치 시: 해당 1시간 하이라이트 + 플러스 표시, 일정 추가 시 사용
+ */
+function handleTimeGridSlotClick(dateClickInfo) {
+    const slotStart = new Date(dateClickInfo.date);
+    const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    clearSlotSelection();
+    slotSelection = { start: slotStart, end: slotEnd };
+    slotAddEventRef = calendar.addEvent({
+        id: '_slotAdd_',
+        start: slotStart,
+        end: slotEnd,
+        title: '+',
+        display: 'block',
+        editable: false,
+        classNames: ['slot-add-highlight'],
+        extendedProps: { _slotAdd: true }
+    });
+}
+
+/**
+ * 슬롯 선택 해제 (하이라이트 제거)
+ */
+function clearSlotSelection() {
+    if (slotAddEventRef) {
+        slotAddEventRef.remove();
+        slotAddEventRef = null;
+    }
+    slotSelection = null;
+}
+
+/**
+ * 현재 선택된 슬롯(1시간 구간) 반환. 없으면 null.
+ */
+function getSlotSelection() {
+    if (!slotSelection) return null;
+    return { start: new Date(slotSelection.start), end: new Date(slotSelection.end) };
 }
 
 /**
@@ -1437,7 +1495,9 @@ window.calendarModule = {
     gotoDate,
     updateHeaderDate,
     navigatePrevMonth,
-    navigateNextMonth
+    navigateNextMonth,
+    getSlotSelection,
+    clearSlotSelection
 };
 
 console.log('✅ calendarModule exported:', window.calendarModule);

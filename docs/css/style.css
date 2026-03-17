@@ -863,6 +863,29 @@ body {
     opacity: 0.6;
 }
 
+/* 시간대 터치 선택: 해당 1시간 하이라이트 + 플러스 표시 */
+.fc .slot-add-highlight,
+.slot-add-highlight {
+    background: rgba(26, 115, 232, 0.25) !important;
+    border: 2px dashed var(--primary-blue, #1a73e8) !important;
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 2em;
+}
+.fc .slot-add-highlight .fc-event-main,
+.slot-add-highlight .fc-event-main {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.fc .slot-add-highlight .fc-event-title,
+.slot-add-highlight .fc-event-title {
+    display: none;
+}
+
 /* 월 일정 날짜 숫자 영역 */
 .fc-dayGridMonth-view .fc-daygrid-day-top {
     display: flex !important;
