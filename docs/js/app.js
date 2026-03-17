@@ -1643,6 +1643,8 @@ async function handleEventFormSubmit(e) {
     const startTime = document.getElementById('eventStartTime').value;
     const endDate = document.getElementById('eventEndDate').value;
     const endTime = document.getElementById('eventEndTime').value;
+    const allDayCheckbox = document.getElementById('eventAllDay');
+    const isAllDay = allDayCheckbox ? allDayCheckbox.checked : false;
     const description = document.getElementById('eventDescription').value;
     
     // 담당자 체크박스에서 선택된 값들 가져오기
@@ -1662,8 +1664,14 @@ async function handleEventFormSubmit(e) {
     }
     
     // Combine date and time
-    const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = new Date(`${endDate}T${endTime}`);
+    let startDateTime = new Date(`${startDate}T${startTime}`);
+    let endDateTime = new Date(`${endDate}T${endTime}`);
+
+    // 하루 종일 일정인 경우: 선택한 날짜 전체로 확장 (00:00 ~ 23:59:59)
+    if (isAllDay) {
+        startDateTime = new Date(`${startDate}T00:00:00`);
+        endDateTime = new Date(`${startDate}T23:59:59`);
+    }
     
     // 종료 시간이 시작 시간보다 빠른지 확인 (동일 시각은 허용)
     if (endDateTime < startDateTime) {

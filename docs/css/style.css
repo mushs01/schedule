@@ -1657,6 +1657,17 @@ body {
     margin: 0;
 }
 
+/* 일정 추가 모달 - 하루 종일 체크박스 */
+.all-day-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.all-day-row .checkbox-label span {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
 /* 반복 상세 옵션 */
 .repeat-detail-options {
     padding: 10px 0;

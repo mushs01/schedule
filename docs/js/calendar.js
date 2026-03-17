@@ -136,7 +136,7 @@ function initCalendar() {
         weekends: true,
         longPressDelay: 0, // 모바일에서 즉시 선택 가능
         selectLongPressDelay: 0, // 길게 누르지 않아도 선택 가능
-        allDaySlot: false, // all-day 줄 숨기기
+        allDaySlot: true, // 하루 종일 일정 줄 표시
         
         // Event handlers
         select: handleDateSelect,
@@ -718,11 +718,18 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
             
             console.log(`📅 Event: ${schedule.title}, Person: ${person}, Color: ${color}, ID: ${schedule.id}`);
             
+            const startDate = new Date(schedule.start);
+            const endDate = schedule.end ? new Date(schedule.end) : null;
+            const isAllDay = !!(endDate &&
+                startDate.getHours() === 0 && startDate.getMinutes() === 0 &&
+                endDate.getHours() === 23 && endDate.getMinutes() === 59);
+
             const event = {
                 id: schedule.id,
                 title: schedule.title,
                 start: schedule.start,
                 end: schedule.end,
+                allDay: isAllDay,
                 backgroundColor: color,
                 borderColor: color,
                 textColor: '#ffffff',
