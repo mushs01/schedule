@@ -1706,12 +1706,27 @@ async function uploadAttachmentFiles(scheduleId, files) {
     return results;
 }
 
+/** 미리보기용 object URL 정리 (메모리 누수 방지) */
+let _attachmentObjectUrls = [];
+
+function _isImageUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const u = url.split('?')[0];
+    return /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(u);
+}
+
+function _isImageFile(file) {
+    return file && file.type && file.type.startsWith('image/');
+}
+
 /**
- * 일정 폼 첨부 목록 UI 갱신
+ * 일정 폼 첨부 목록 UI 갱신 (미리보기 포함)
  */
 function renderEventAttachmentList() {
     const listEl = document.getElementById('eventAttachmentList');
     if (!listEl) return;
+    _attachmentObjectUrls.forEach(u => { try { URL.revokeObjectURL(u); } catch (_) {} });
+    _attachmentObjectUrls = [];
     listEl.innerHTML = '';
     const escapeHtml = (s) => {
         const div = document.createElement('div');
@@ -1719,8 +1734,25 @@ function renderEventAttachmentList() {
         return div.innerHTML;
     };
     eventAttachmentExisting.forEach((att, i) => {
-        const item = document.createElement('span');
+        const item = document.createElement('div');
         item.className = 'attachment-item';
+        const isImg = att.url && _isImageUrl(att.url);
+        const preview = document.createElement('div');
+        preview.className = 'attachment-preview';
+        if (isImg) {
+            const img = document.createElement('img');
+            img.src = att.url;
+            img.alt = att.name || '';
+            img.loading = 'lazy';
+            img.onerror = () => { preview.classList.add('attachment-preview-fallback'); preview.textContent = ''; };
+            preview.appendChild(img);
+        } else {
+            preview.classList.add('attachment-preview-fallback');
+            preview.innerHTML = '<span class="material-icons">description</span>';
+        }
+        item.appendChild(preview);
+        const info = document.createElement('div');
+        info.className = 'attachment-info';
         if (att.url) {
             const a = document.createElement('a');
             a.href = att.url;
@@ -1728,12 +1760,12 @@ function renderEventAttachmentList() {
             a.rel = 'noopener';
             a.className = 'attachment-name';
             a.textContent = att.name || '파일';
-            item.appendChild(a);
+            info.appendChild(a);
         } else {
             const span = document.createElement('span');
             span.className = 'attachment-name';
             span.textContent = att.name || '파일';
-            item.appendChild(span);
+            info.appendChild(span);
         }
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
@@ -1742,13 +1774,31 @@ function renderEventAttachmentList() {
         removeBtn.setAttribute('data-index', String(i));
         removeBtn.setAttribute('aria-label', '제거');
         removeBtn.innerHTML = '<span class="material-icons">close</span>';
-        item.appendChild(removeBtn);
+        info.appendChild(removeBtn);
+        item.appendChild(info);
         listEl.appendChild(item);
     });
     eventAttachmentPendingFiles.forEach((file, i) => {
-        const item = document.createElement('span');
+        const item = document.createElement('div');
         item.className = 'attachment-item';
-        item.innerHTML = `<span class="attachment-name">${escapeHtml(file.name)}</span><button type="button" class="attachment-remove" data-type="pending" data-index="${i}" aria-label="제거"><span class="material-icons">close</span></button>`;
+        const preview = document.createElement('div');
+        preview.className = 'attachment-preview';
+        if (_isImageFile(file)) {
+            const url = URL.createObjectURL(file);
+            _attachmentObjectUrls.push(url);
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = file.name || '';
+            preview.appendChild(img);
+        } else {
+            preview.classList.add('attachment-preview-fallback');
+            preview.innerHTML = '<span class="material-icons">description</span>';
+        }
+        item.appendChild(preview);
+        const info = document.createElement('div');
+        info.className = 'attachment-info';
+        info.innerHTML = `<span class="attachment-name">${escapeHtml(file.name)}</span><button type="button" class="attachment-remove" data-type="pending" data-index="${i}" aria-label="제거"><span class="material-icons">close</span></button>`;
+        item.appendChild(info);
         listEl.appendChild(item);
     });
 }

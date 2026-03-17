@@ -1302,26 +1302,58 @@ body {
 .attachment-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
     margin-bottom: 8px;
     min-height: 0;
 }
 .attachment-item {
     display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
+    flex-direction: column;
+    align-items: stretch;
+    width: 88px;
+    padding: 0;
     background: var(--hover-bg);
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-primary);
-    max-width: 100%;
+    overflow: hidden;
+}
+.attachment-preview {
+    width: 88px;
+    height: 88px;
+    background: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.attachment-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.attachment-preview-fallback {
+    color: var(--text-secondary);
+}
+.attachment-preview-fallback .material-icons {
+    font-size: 32px;
+}
+.attachment-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 6px 6px 8px;
+    min-width: 0;
 }
 .attachment-item .attachment-name {
+    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 160px;
+    min-width: 0;
+    font-size: 11px;
 }
 .attachment-item a.attachment-name {
     color: var(--primary-blue, #1a73e8);
@@ -1332,8 +1364,9 @@ body {
 }
 .attachment-item .attachment-remove {
     padding: 0;
-    min-width: 24px;
-    height: 24px;
+    min-width: 22px;
+    height: 22px;
+    flex-shrink: 0;
     border: none;
     background: transparent;
     color: var(--text-secondary);
