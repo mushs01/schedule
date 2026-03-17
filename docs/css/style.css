@@ -1670,6 +1670,13 @@ body {
     color: var(--text-secondary);
 }
 
+.datetime-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
 .toggle-text {
     font-size: 14px;
     color: var(--text-primary);
@@ -1728,15 +1735,9 @@ body {
 .fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
     content: '';
 }
-.fc-timegrid-all-day .fc-timegrid-events {
-    min-height: 0 !important;
-}
-.fc-timegrid-all-day .fc-event {
-    margin: 0 2px !important;
-    padding: 0 4px !important;
-    line-height: 1.2;
-}
-.fc-no-all-day .fc-timegrid-all-day {
+/* 현재는 실제 all-day 이벤트를 사용하지 않으므로,
+   상단 all-day 줄을 전역으로 숨긴다 (빈칸 방지). */
+.fc-timegrid-all-day {
     display: none !important;
 }
 
