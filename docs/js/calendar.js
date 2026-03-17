@@ -203,16 +203,13 @@ function initCalendar() {
             updateHeaderDate();
             // 하루 종일 일정 유무에 따라 all-day 줄 표시/숨김
             try {
-                const calEl = calendar.el;
-                if (calEl) {
-                    const hasAllDay = calendar.getEvents().some(e => e.allDay);
-                    if (hasAllDay) {
-                        calEl.classList.remove('no-all-day');
-                        const axis = calEl.querySelector('.fc-timegrid-all-day .fc-timegrid-axis-cushion');
-                        if (axis) axis.textContent = '';
-                    } else {
-                        calEl.classList.add('no-all-day');
-                    }
+                const hasAllDay = calendar.getEvents().some(e => e.allDay);
+                if (hasAllDay) {
+                    document.body.classList.remove('fc-no-all-day');
+                    const axis = calendar.el.querySelector('.fc-timegrid-all-day .fc-timegrid-axis-cushion');
+                    if (axis) axis.textContent = '';
+                } else {
+                    document.body.classList.add('fc-no-all-day');
                 }
             } catch (e) {
                 console.warn('all-day visibility update error:', e);

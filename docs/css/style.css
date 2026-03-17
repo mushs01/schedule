@@ -1684,7 +1684,7 @@ body {
     padding: 0 4px !important;
     line-height: 1.2;
 }
-.no-all-day .fc-timegrid-all-day {
+.fc-no-all-day .fc-timegrid-all-day {
     display: none !important;
 }
 

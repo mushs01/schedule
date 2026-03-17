@@ -613,16 +613,18 @@ function setupEventListeners() {
         });
     });
     
-    // 하루 종일 토글 - 시간 입력 비활성화 처리
+    // 하루 종일 토글 - 시간 설정 숨김/비활성화
     const allDayCheckbox = document.getElementById('eventAllDay');
     if (allDayCheckbox) {
         const startTimeInput = document.getElementById('eventStartTime');
         const endTimeInput = document.getElementById('eventEndTime');
         const startCapsule = document.getElementById('startTimeCapsule');
         const endCapsule = document.getElementById('endTimeCapsule');
+        const dateTimeRow = document.querySelector('.datetime-horizontal');
+        
         const updateAllDayUI = () => {
-            const checked = allDayCheckbox.checked;
-            const disabled = !!checked;
+            const checked = !!allDayCheckbox.checked;
+            const disabled = checked;
             if (startTimeInput) startTimeInput.disabled = disabled;
             if (endTimeInput) endTimeInput.disabled = disabled;
             if (startCapsule) {
@@ -633,8 +635,13 @@ function setupEventListeners() {
                 endCapsule.disabled = disabled;
                 endCapsule.classList.toggle('disabled', disabled);
             }
+            if (dateTimeRow) {
+                dateTimeRow.style.display = checked ? 'none' : '';
+            }
         };
         allDayCheckbox.addEventListener('change', updateAllDayUI);
+        // 디폴트는 미체크 상태 (HTML 기본), UI만 초기화
+        allDayCheckbox.checked = false;
         updateAllDayUI();
     }
 
