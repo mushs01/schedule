@@ -613,6 +613,31 @@ function setupEventListeners() {
         });
     });
     
+    // 하루 종일 토글 - 시간 입력 비활성화 처리
+    const allDayCheckbox = document.getElementById('eventAllDay');
+    if (allDayCheckbox) {
+        const startTimeInput = document.getElementById('eventStartTime');
+        const endTimeInput = document.getElementById('eventEndTime');
+        const startCapsule = document.getElementById('startTimeCapsule');
+        const endCapsule = document.getElementById('endTimeCapsule');
+        const updateAllDayUI = () => {
+            const checked = allDayCheckbox.checked;
+            const disabled = !!checked;
+            if (startTimeInput) startTimeInput.disabled = disabled;
+            if (endTimeInput) endTimeInput.disabled = disabled;
+            if (startCapsule) {
+                startCapsule.disabled = disabled;
+                startCapsule.classList.toggle('disabled', disabled);
+            }
+            if (endCapsule) {
+                endCapsule.disabled = disabled;
+                endCapsule.classList.toggle('disabled', disabled);
+            }
+        };
+        allDayCheckbox.addEventListener('change', updateAllDayUI);
+        updateAllDayUI();
+    }
+
     // 헤더 일정관리/운동관리 토글
     document.querySelectorAll('.header-mode-toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1654,7 +1679,7 @@ async function handleEventFormSubmit(e) {
     });
     
     // 유효성 검사
-    if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
+    if (!title || !startDate || (!isAllDay && !startTime) || !endDate || (!isAllDay && !endTime) || selectedPersons.length === 0) {
         if (selectedPersons.length === 0) {
             showToast('담당자를 한 명 이상 선택해주세요.', 'error');
         } else {

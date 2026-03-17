@@ -1668,6 +1668,26 @@ body {
     color: var(--text-secondary);
 }
 
+/* 하루 종일 일정 줄 - all-day 라벨 제거, 여백 최소화 */
+.fc-timegrid-all-day .fc-timegrid-axis-cushion {
+    font-size: 0;
+    padding: 0;
+}
+.fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
+    content: '';
+}
+.fc-timegrid-all-day .fc-timegrid-events {
+    min-height: 0 !important;
+}
+.fc-timegrid-all-day .fc-event {
+    margin: 0 2px !important;
+    padding: 0 4px !important;
+    line-height: 1.2;
+}
+.no-all-day .fc-timegrid-all-day {
+    display: none !important;
+}
+
 /* 반복 상세 옵션 */
 .repeat-detail-options {
     padding: 10px 0;
