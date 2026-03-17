@@ -1402,7 +1402,7 @@ body {
 .form-group {
     margin-bottom: 16px;
     display: flex;
-    align-items: center;  /* flex-start에서 center로 변경 */
+    align-items: center;  /* 기본: 데스크톱에서는 아이콘-내용 가로 정렬 */
     gap: 12px;
     padding: 0 12px;
 }
@@ -1758,6 +1758,17 @@ body {
 @media (max-width: 768px) {
     .repeat-detail-options {
         border-radius: 8px;
+    }
+
+    /* 모바일에서 일정 추가 폼은 세로(컬럼) 정렬로 보기 좋게 배치 */
+    #eventForm .form-group {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+    }
+
+    #eventForm .form-label {
+        margin-bottom: 4px;
     }
 }
 
