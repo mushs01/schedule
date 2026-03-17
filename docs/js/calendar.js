@@ -778,6 +778,26 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         console.log('Events:', events);
         
         successCallback(events);
+        // 이벤트 렌더 후 all-day 영역 표시 여부 갱신 (약간 지연 후 DOM 기준으로 확인)
+        setTimeout(() => {
+            try {
+                if (!calendar) return;
+                const calEl = calendar.el;
+                if (!calEl) return;
+                const allDayRow = calEl.querySelector('.fc-timegrid-all-day');
+                if (!allDayRow) return;
+                const hasAllDayEvent = !!allDayRow.querySelector('.fc-event');
+                if (hasAllDayEvent) {
+                    document.body.classList.remove('fc-no-all-day');
+                    const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
+                    if (axis) axis.textContent = '';
+                } else {
+                    document.body.classList.add('fc-no-all-day');
+                }
+            } catch (e) {
+                console.warn('all-day visibility update error (loadEvents):', e);
+            }
+        }, 50);
     } catch (error) {
         console.error('Error loading events:', error);
         showToast('일정을 불러오는데 실패했습니다.', 'error');
