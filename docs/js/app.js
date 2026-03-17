@@ -6,6 +6,9 @@
 // Global state
 let currentEditingEvent = null;
 let deleteRecurringOption = null; // 'single', 'future', 'all', or null
+/** 일정 첨부파일: 새로 추가한 File 목록 / 기존 저장된 { name, url } 목록 */
+let eventAttachmentPendingFiles = [];
+let eventAttachmentExisting = [];
 
 // DOM Elements - will be initialized after DOM loads
 let eventModal;
@@ -574,6 +577,39 @@ function setupEventListeners() {
     // Event form submission
     if (eventForm) {
         eventForm.addEventListener('submit', handleEventFormSubmit);
+    }
+    
+    // 파일 첨부: 추가 버튼 → file input 트리거
+    const eventAttachmentAddBtn = document.getElementById('eventAttachmentAddBtn');
+    const eventAttachmentsInput = document.getElementById('eventAttachments');
+    if (eventAttachmentAddBtn && eventAttachmentsInput) {
+        eventAttachmentAddBtn.addEventListener('click', () => eventAttachmentsInput.click());
+    }
+    if (eventAttachmentsInput) {
+        eventAttachmentsInput.addEventListener('change', () => {
+            const files = eventAttachmentsInput.files;
+            if (files && files.length) {
+                for (let i = 0; i < files.length; i++) eventAttachmentPendingFiles.push(files[i]);
+                renderEventAttachmentList();
+            }
+            eventAttachmentsInput.value = '';
+        });
+    }
+    // 첨부 목록에서 제거 버튼 (위임)
+    const eventAttachmentList = document.getElementById('eventAttachmentList');
+    if (eventAttachmentList) {
+        eventAttachmentList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.attachment-remove');
+            if (!btn) return;
+            const type = btn.getAttribute('data-type');
+            const index = parseInt(btn.getAttribute('data-index'), 10);
+            if (type === 'existing') {
+                eventAttachmentExisting.splice(index, 1);
+            } else if (type === 'pending') {
+                eventAttachmentPendingFiles.splice(index, 1);
+            }
+            renderEventAttachmentList();
+        });
     }
 
     // 날짜/시간 가로 배치 + 휠 피커 초기화
@@ -1333,6 +1369,13 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     // Reset form
     eventForm.reset();
     
+    // 첨부파일 상태 초기화
+    eventAttachmentPendingFiles = [];
+    eventAttachmentExisting = [];
+    const attachmentInput = document.getElementById('eventAttachments');
+    if (attachmentInput) attachmentInput.value = '';
+    renderEventAttachmentList();
+    
     // 새 일정 추가 시 알림 기본값 OFF (reset 직후 적용)
     const notificationStartField = document.getElementById('eventNotificationStart');
     const notificationEndField = document.getElementById('eventNotificationEnd');
@@ -1511,6 +1554,11 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             console.log('⭐ Important event checkbox set to:', importantCheckbox.checked);
         }
         
+        // 첨부파일 목록 (수정 시 기존 첨부 표시)
+        const attachments = event.extendedProps && event.extendedProps.attachments;
+        eventAttachmentExisting = Array.isArray(attachments) ? attachments.map(a => ({ name: a.name || '파일', url: a.url || '' })) : [];
+        renderEventAttachmentList();
+        
         console.log('Form filled with event data');
     } else {
         // Creating mode - 새 일정 추가
@@ -1626,6 +1674,83 @@ function closeEventModal() {
     eventModal.classList.remove('active');
     currentEditingEvent = null;
     console.log('✅ Event modal closed');
+}
+
+/**
+ * Firebase Storage에 첨부파일 업로드 후 { name, url } 배열 반환
+ * @param {string} scheduleId - 일정 문서 ID
+ * @param {File[]} files - 업로드할 파일 목록
+ * @returns {Promise<{name: string, url: string}[]>}
+ */
+async function uploadAttachmentFiles(scheduleId, files) {
+    if (!files || files.length === 0) return [];
+    const storage = window.storage;
+    if (!storage) {
+        console.warn('Firebase Storage not available');
+        return [];
+    }
+    const results = [];
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const safeName = `${Date.now()}_${i}_${(file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const path = `schedules/${scheduleId}/${safeName}`;
+        const ref = storage.ref(path);
+        try {
+            await ref.put(file);
+            const url = await ref.getDownloadURL();
+            results.push({ name: file.name || 'file', url });
+        } catch (err) {
+            console.error('Attachment upload failed:', file.name, err);
+        }
+    }
+    return results;
+}
+
+/**
+ * 일정 폼 첨부 목록 UI 갱신
+ */
+function renderEventAttachmentList() {
+    const listEl = document.getElementById('eventAttachmentList');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    const escapeHtml = (s) => {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    };
+    eventAttachmentExisting.forEach((att, i) => {
+        const item = document.createElement('span');
+        item.className = 'attachment-item';
+        if (att.url) {
+            const a = document.createElement('a');
+            a.href = att.url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.className = 'attachment-name';
+            a.textContent = att.name || '파일';
+            item.appendChild(a);
+        } else {
+            const span = document.createElement('span');
+            span.className = 'attachment-name';
+            span.textContent = att.name || '파일';
+            item.appendChild(span);
+        }
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'attachment-remove';
+        removeBtn.setAttribute('data-type', 'existing');
+        removeBtn.setAttribute('data-index', String(i));
+        removeBtn.setAttribute('aria-label', '제거');
+        removeBtn.innerHTML = '<span class="material-icons">close</span>';
+        item.appendChild(removeBtn);
+        listEl.appendChild(item);
+    });
+    eventAttachmentPendingFiles.forEach((file, i) => {
+        const item = document.createElement('span');
+        item.className = 'attachment-item';
+        item.innerHTML = `<span class="attachment-name">${escapeHtml(file.name)}</span><button type="button" class="attachment-remove" data-type="pending" data-index="${i}" aria-label="제거"><span class="material-icons">close</span></button>`;
+        listEl.appendChild(item);
+    });
 }
 
 /**
@@ -1786,6 +1911,14 @@ async function handleEventFormSubmit(e) {
             
             console.log('🔗 Related schedules:', relatedSchedules.length);
             
+            // 첨부파일: 기존 유지 + 새 파일 업로드
+            let finalAttachments = [...eventAttachmentExisting];
+            if (eventAttachmentPendingFiles.length > 0 && relatedSchedules.length > 0) {
+                const uploadScheduleId = relatedSchedules[0].id;
+                const newUrls = await uploadAttachmentFiles(uploadScheduleId, eventAttachmentPendingFiles);
+                finalAttachments = finalAttachments.concat(newUrls);
+            }
+            
             // 기존 담당자 목록 (관련 일정들에서 추출)
             const existingPersons = relatedSchedules.map(s => s.person);
             console.log('👥 Existing persons:', existingPersons);
@@ -1857,6 +1990,7 @@ async function handleEventFormSubmit(e) {
                         notification_start: notificationStart,
                         notification_end: notificationEnd,
                         notification_set_by: notificationSetBy,
+                        attachments: finalAttachments,
                         repeat_type: repeatType,
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
@@ -1902,20 +2036,27 @@ async function handleEventFormSubmit(e) {
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
                     repeat_monthly_type: repeatMonthlyType,
-                    is_important: isImportant
+                    is_important: isImportant,
+                    attachments: []
                 };
                 appendAiScheduleLog('createSchedule.single', scheduleData);
-                await api.createSchedule(scheduleData);
+                const created = await api.createSchedule(scheduleData);
+                if (eventAttachmentPendingFiles.length > 0 && created && created.id) {
+                    const uploaded = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
+                    if (uploaded.length > 0) await api.updateSchedule(created.id, { attachments: uploaded });
+                }
                 showToast('일정이 추가되었습니다.', 'success');
             } else {
                 // 복수 담당자 선택 시 각 담당자별로 별도 일정 생성
-                for (const person of selectedPersons) {
+                let attachmentList = [];
+                for (let idx = 0; idx < selectedPersons.length; idx++) {
+                    const person = selectedPersons[idx];
                     const scheduleData = {
                         title,
                         start_datetime: startDateTime.toISOString(),
                         end_datetime: endDateTime.toISOString(),
                         person: person,
-                        persons: [person],  // 단일 담당자로 설정
+                        persons: [person],
                         description: description || null,
                         notification_start: notificationStart,
                         notification_end: notificationEnd,
@@ -1924,14 +2065,17 @@ async function handleEventFormSubmit(e) {
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
                         repeat_monthly_type: repeatMonthlyType,
-                        is_important: isImportant
+                        is_important: isImportant,
+                        attachments: idx === 0 ? [] : attachmentList
                     };
-                    
-                    console.log(`📋 Creating schedule for ${person}:`, scheduleData);
-                    appendAiScheduleLog('createSchedule.multi', scheduleData);
-                    await api.createSchedule(scheduleData);
+                    const created = await api.createSchedule(scheduleData);
+                    if (idx === 0 && eventAttachmentPendingFiles.length > 0 && created && created.id) {
+                        attachmentList = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
+                        if (attachmentList.length > 0) await api.updateSchedule(created.id, { attachments: attachmentList });
+                    }
+                    console.log(`📋 Creating schedule for ${person}:`, scheduleData.title);
+                    appendAiScheduleLog('createSchedule.multi', { person, title: scheduleData.title });
                 }
-                
                 const personCount = selectedPersons.length;
                 showToast(`${personCount}개의 일정이 추가되었습니다.`, 'success');
             }

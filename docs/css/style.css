@@ -1286,6 +1286,77 @@ body {
     margin-top: 20px;
 }
 
+/* 파일 첨부 영역 */
+.attachment-area {
+    flex: 1;
+    min-width: 0;
+}
+.attachment-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+.attachment-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    min-height: 0;
+}
+.attachment-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--hover-bg);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    max-width: 100%;
+}
+.attachment-item .attachment-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+}
+.attachment-item a.attachment-name {
+    color: var(--primary-blue, #1a73e8);
+    text-decoration: none;
+}
+.attachment-item a.attachment-name:hover {
+    text-decoration: underline;
+}
+.attachment-item .attachment-remove {
+    padding: 0;
+    min-width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+.attachment-item .attachment-remove:hover {
+    background: rgba(0,0,0,0.08);
+    color: var(--text-primary);
+}
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+.btn-sm .material-icons {
+    font-size: 18px;
+    margin-right: 4px;
+}
+
 .modal-title-input {
     flex: 1;
     border: none;

@@ -294,6 +294,21 @@
                     <textarea id="eventDescription" rows="3" placeholder="설명을 입력하세요" class="input-large"></textarea>
                 </div>
                 
+                <!-- 파일 첨부 -->
+                <div class="form-group">
+                    <label class="form-label" title="파일 첨부">
+                        <span class="material-icons form-icon">attach_file</span>
+                    </label>
+                    <div class="attachment-area">
+                        <input type="file" id="eventAttachments" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" class="attachment-input" aria-label="파일 첨부">
+                        <div class="attachment-list" id="eventAttachmentList"></div>
+                        <button type="button" class="btn btn-text btn-sm" id="eventAttachmentAddBtn">
+                            <span class="material-icons">add</span>
+                            <span>파일 추가</span>
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- 푸시 알림 -->
                 <div class="form-group">
                     <label class="form-label" title="푸시 알림">
