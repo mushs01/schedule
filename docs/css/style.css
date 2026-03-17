@@ -1771,12 +1771,17 @@ body {
 .fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
     content: '';
 }
-/* 하루 종일 일정이 없을 때 all-day 줄 숨김 (calendar.js에서 body에 .fc-no-all-day 추가) */
-body.fc-no-all-day .fc-timegrid-all-day {
+/* 하루 종일 일정이 없을 때 all-day 줄 완전 숨김 (이벤트 데이터 기준으로 body에 .fc-no-all-day 적용) */
+body.fc-no-all-day .fc-timegrid-all-day,
+body.fc-no-all-day .fc-timegrid .fc-timegrid-all-day {
+    display: none !important;
+}
+/* FC6: 첫 번째 섹션의 두 번째 행이 all-day 행인 경우 (클래스 없을 때 대비) */
+body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) {
     display: none !important;
 }
 
-/* all-day 영역: 위/아래 여백 제거, 일정 있는 만큼만 높이 사용 (첫 번째 첨부처럼) */
+/* all-day 영역: 위/아래 여백 제거, 일정 있는 만큼만 높이만 사용 */
 .fc .fc-scrollgrid-section:first-child {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
@@ -1787,22 +1792,42 @@ body.fc-no-all-day .fc-timegrid-all-day {
     margin-top: 0 !important;
     padding-top: 0 !important;
 }
+/* all-day 행/셀 높이를 콘텐츠만큼만 (테이블 기본 높이 제거) */
 .fc .fc-timegrid-all-day,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr,
 .fc .fc-timegrid-all-day tr,
 .fc .fc-timegrid-all-day td,
+.fc .fc-timegrid-all-day th,
 .fc .fc-timegrid-all-day .fc-timegrid-slot,
-.fc .fc-timegrid-all-day .fc-timegrid-slot-frame {
+.fc .fc-timegrid-all-day .fc-timegrid-slot-frame,
+.fc .fc-timegrid-all-day .fc-timegrid-slot-lane {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     min-height: 0 !important;
     height: auto !important;
+    line-height: 1.2 !important;
 }
-.fc .fc-timegrid-all-day .fc-timegrid-slot-lane {
+.fc .fc-timegrid-all-day .fc-timegrid-slot-lane,
+.fc .fc-timegrid-all-day .fc-daygrid-day-events {
     min-height: 0 !important;
 }
-.fc .fc-timegrid-all-day .fc-daygrid-day-events {
+/* FC 기본 slot 최소 높이 제거 (all-day 슬롯) */
+.fc .fc-timegrid-all-day .fc-timegrid-slot,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-slot {
+    min-height: 0 !important;
+}
+/* 첫 번째 섹션 테이블 행 높이를 콘텐츠만큼만 */
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table {
+    border-collapse: collapse;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) td,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) th {
+    vertical-align: top !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    height: auto !important;
     min-height: 0 !important;
 }
 

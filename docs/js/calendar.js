@@ -204,24 +204,19 @@ function initCalendar() {
                 clearSlotSelection();
             }
             updateHeaderDate();
-            // 하루 종일 일정 유무에 따라 all-day 줄 표시/숨김 (DOM 기준)
-            try {
-                const calEl = calendar.el;
-                if (calEl) {
-                    const allDayRow = calEl.querySelector('.fc-timegrid-all-day');
-                    if (allDayRow) {
-                        const hasAllDayEvent = !!allDayRow.querySelector('.fc-event');
-                        if (hasAllDayEvent) {
-                            document.body.classList.remove('fc-no-all-day');
-                            const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
-                            if (axis) axis.textContent = '';
-                        } else {
-                            document.body.classList.add('fc-no-all-day');
-                        }
+            // 주/일 뷰에서 하루 종일 일정 유무에 따라 all-day 줄 표시/숨김 (이벤트 데이터 기준)
+            if (dateInfo.view.type === 'timeGridWeek' || dateInfo.view.type === 'timeGridDay') {
+                try {
+                    const events = calendar.getEvents();
+                    const hasAllDayEvent = events.some(e => e.allDay === true);
+                    if (hasAllDayEvent) {
+                        document.body.classList.remove('fc-no-all-day');
+                    } else {
+                        document.body.classList.add('fc-no-all-day');
                     }
+                } catch (e) {
+                    console.warn('all-day visibility update error:', e);
                 }
-            } catch (e) {
-                console.warn('all-day visibility update error:', e);
             }
             // 약간의 지연 후 공휴일 표시 (DOM이 렌더링된 후)
             setTimeout(() => {
@@ -796,29 +791,31 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         console.log('🎯 Final events to render:', events.length);
         console.log('Events:', events);
         
+        // all-day 표시 여부를 이벤트 데이터로 먼저 설정 (DOM 타이밍 의존 제거)
+        const hasAllDayEvent = events.some(e => e.allDay === true);
+        if (hasAllDayEvent) {
+            document.body.classList.remove('fc-no-all-day');
+        } else {
+            document.body.classList.add('fc-no-all-day');
+        }
+        
         successCallback(events);
-        // 이벤트 렌더 후 all-day 영역 표시 여부 갱신 (DOM 기준, FC 렌더 타이밍 맞추기 위해 지연 + 한 번 더)
-        function updateAllDayVisibility() {
+        // 렌더 후 한 번 더 동기화 (뷰 전환 시 등)
+        setTimeout(function syncAllDayFromDom() {
             try {
                 if (!calendar) return;
                 const calEl = calendar.el;
                 if (!calEl) return;
                 const allDayRow = calEl.querySelector('.fc-timegrid-all-day');
-                if (!allDayRow) return;
-                const hasAllDayEvent = !!allDayRow.querySelector('.fc-event');
-                if (hasAllDayEvent) {
-                    document.body.classList.remove('fc-no-all-day');
+                if (allDayRow) {
+                    const hasInDom = !!allDayRow.querySelector('.fc-event');
+                    if (hasInDom) document.body.classList.remove('fc-no-all-day');
+                    else document.body.classList.add('fc-no-all-day');
                     const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
                     if (axis) axis.textContent = '';
-                } else {
-                    document.body.classList.add('fc-no-all-day');
                 }
-            } catch (e) {
-                console.warn('all-day visibility update error (loadEvents):', e);
-            }
-        }
-        setTimeout(updateAllDayVisibility, 50);
-        setTimeout(updateAllDayVisibility, 150);
+            } catch (e) {}
+        }, 100);
     } catch (error) {
         console.error('Error loading events:', error);
         showToast('일정을 불러오는데 실패했습니다.', 'error');
