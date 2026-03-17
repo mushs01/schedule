@@ -5,7 +5,7 @@
 
 // Global state
 let currentEditingEvent = null;
-let deleteRecurringOption = null; // 'single', 'all', or null
+let deleteRecurringOption = null; // 'single', 'future', 'all', or null
 
 // DOM Elements - will be initialized after DOM loads
 let eventModal;
@@ -49,7 +49,15 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            openEventModalWithPerson(btn.getAttribute('data-person'));
+            const person = btn.getAttribute('data-person');
+            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
+            if (slot) {
+                window.calendarModule.clearSlotSelection();
+                setEventModalPerson(person);
+                openEventModal({ start: slot.start, end: slot.end });
+            } else {
+                openEventModalWithPerson(person);
+            }
         }, 500); // 500ms 길게 누르기
     });
     
@@ -73,8 +81,16 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            openEventModalWithPerson(btn.getAttribute('data-person'));
-        }, 500); // 500ms 길게 누르기
+            const person = btn.getAttribute('data-person');
+            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
+            if (slot) {
+                window.calendarModule.clearSlotSelection();
+                setEventModalPerson(person);
+                openEventModal({ start: slot.start, end: slot.end });
+            } else {
+                openEventModalWithPerson(person);
+            }
+        }, 500);
     });
     
     // 마우스 떼기 (데스크톱)
@@ -123,6 +139,21 @@ function openEventModalWithPerson(person) {
     openEventModal();
     setEventModalPerson(person);
 }
+
+/**
+ * 시간대 터치로 선택된 슬롯 + FAB 담당자로 일정 추가 모달 바로 열기
+ */
+function openEventModalFromSlotSelection() {
+    if (!window.calendarModule || typeof window.calendarModule.getSlotSelection !== 'function') return;
+    const slot = window.calendarModule.getSlotSelection();
+    if (!slot) return;
+    const addEventBtn = document.getElementById('addEventBtn');
+    const person = addEventBtn ? addEventBtn.getAttribute('data-person') : 'all';
+    window.calendarModule.clearSlotSelection();
+    openEventModal({ start: slot.start, end: slot.end });
+    setEventModalPerson(person);
+}
+window.openEventModalFromSlotSelection = openEventModalFromSlotSelection;
 
 /**
  * Initialize the application
@@ -1207,6 +1238,7 @@ function setupEventListeners() {
     // Delete recurring event modal buttons
     const closeDeleteRecurringBtn = document.getElementById('closeDeleteRecurringBtn');
     const deleteSingleEventBtn = document.getElementById('deleteSingleEventBtn');
+    const deleteFutureEventsBtn = document.getElementById('deleteFutureEventsBtn');
     const deleteAllEventsBtn = document.getElementById('deleteAllEventsBtn');
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     
@@ -1221,6 +1253,16 @@ function setupEventListeners() {
             console.log('🔵 Single delete button clicked');
             deleteRecurringOption = 'single';
             // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
+            if (deleteRecurringModal) {
+                deleteRecurringModal.classList.remove('active');
+            }
+            executeDelete();
+        });
+    }
+    if (deleteFutureEventsBtn) {
+        deleteFutureEventsBtn.addEventListener('click', () => {
+            console.log('🟠 Future delete button clicked');
+            deleteRecurringOption = 'future';
             if (deleteRecurringModal) {
                 deleteRecurringModal.classList.remove('active');
             }
@@ -2119,34 +2161,30 @@ async function executeDelete() {
     try {
         showLoading(true);
         
+        const originalId = currentEditingEvent.extendedProps?.original_id 
+            || (currentEditingEvent.id.includes('_') 
+                ? currentEditingEvent.id.split('_')[0] 
+                : currentEditingEvent.id);
+        
         if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
-            // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
-            const originalId = currentEditingEvent.extendedProps?.original_id 
-                || (currentEditingEvent.id.includes('_') 
-                    ? currentEditingEvent.id.split('_')[0] 
-                    : currentEditingEvent.id);
-            
             console.log('  - Deleting all recurring events');
-            console.log('  - Original ID:', originalId);
-            console.log('  - Current event ID:', currentEditingEvent.id);
-            
             await api.deleteSchedule(originalId);
             showToast('모든 반복 일정이 삭제되었습니다.', 'success');
+        } else if (deleteRecurringOption === 'future') {
+            // 이 일정까지 남기고 이후만 삭제 → 반복 종료일을 선택한 일정 날짜로 변경
+            const selectedDateStr = new Date(currentEditingEvent.start).toISOString().split('T')[0];
+            const newRepeatEndDate = selectedDateStr + 'T23:59:59';
+            console.log('  - Truncating recurrence after selected date');
+            await api.updateSchedule(originalId, { repeat_end_date: newRepeatEndDate });
+            showToast('이후 반복 일정이 삭제되었습니다.', 'success');
         } else {
             // 단일 일정 삭제
             if (isRecurring) {
                 // 특정 날짜의 반복 일정만 제외
-                // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
-                const originalId = currentEditingEvent.extendedProps?.original_id 
-                    || (currentEditingEvent.id.includes('_') 
-                        ? currentEditingEvent.id.split('_')[0] 
-                        : currentEditingEvent.id);
                 
                 const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
-                
                 console.log('  - Excluding single recurring event');
-                console.log('  - Original ID:', originalId);
                 console.log('  - Exclude date:', excludeDate);
                 
                 await api.addExcludeDate(originalId, excludeDate);
