@@ -883,6 +883,9 @@ function handleTimeGridSlotClick(dateClickInfo) {
         classNames: ['slot-add-highlight'],
         extendedProps: { _slotAdd: true }
     });
+    if (typeof window.syncFabPersonFromFilter === 'function') {
+        window.syncFabPersonFromFilter();
+    }
 }
 
 /**

@@ -108,6 +108,26 @@ function setupFloatingButton(btn) {
     });
 }
 
+/**
+ * 일정표 상단 필터에서 현재 선택된 담당자 1명 반환 (단일 선택 시 해당 값, 복수/전체 시 'all')
+ */
+function getCurrentFilterPerson() {
+    const btns = document.querySelectorAll('.person-filter-buttons .person-filter-btn.active');
+    if (!btns.length) return 'all';
+    if (btns.length === 1) return btns[0].getAttribute('data-person') || 'all';
+    return 'all';
+}
+
+/**
+ * FAB 아이콘을 현재 필터 담당자와 동기화 (시간대 터치 시 아이콘에 담당자 반영)
+ */
+function syncFabPersonFromFilter() {
+    const addEventBtn = document.getElementById('addEventBtn');
+    if (!addEventBtn) return;
+    const person = getCurrentFilterPerson();
+    addEventBtn.setAttribute('data-person', person);
+}
+
 /** 이미 연 일정 모달에서 담당자 체크만 설정 (기본 추가·AI 추가 공용) */
 function setEventModalPerson(person) {
     if (!person) return;
@@ -142,20 +162,20 @@ function openEventModalWithPerson(person) {
 }
 
 /**
- * 시간대 터치로 선택된 슬롯 + 현재 FAB 담당자로 일정 추가 모달 바로 열기
+ * 시간대 터치로 선택된 슬롯 + 현재 일정표 필터 담당자로 일정 추가 모달 바로 열기
  * (슬롯 하이라이트를 다시 터치했을 때 또는 하이라이트 영역 클릭 시 호출)
  */
 function openEventModalFromSlotSelection() {
     if (!window.calendarModule || typeof window.calendarModule.getSlotSelection !== 'function') return;
     const slot = window.calendarModule.getSlotSelection();
     if (!slot) return;
-    const addEventBtn = document.getElementById('addEventBtn');
-    const person = addEventBtn ? addEventBtn.getAttribute('data-person') : 'all';
+    const person = getCurrentFilterPerson();
     window.calendarModule.clearSlotSelection();
-    setEventModalPerson(person);
     openEventModal({ start: slot.start, end: slot.end });
+    setEventModalPerson(person);
 }
 window.openEventModalFromSlotSelection = openEventModalFromSlotSelection;
+window.syncFabPersonFromFilter = syncFabPersonFromFilter;
 
 /**
  * Initialize the application
@@ -2430,6 +2450,7 @@ function updateCalendarFilterFromButtons() {
     } else {
         console.error('calendarModule.filterByPersons not found!');
     }
+    syncFabPersonFromFilter();
 }
 
 /**
