@@ -613,35 +613,7 @@ function setupEventListeners() {
         });
     });
     
-    // 하루 종일 토글 - 시간 설정 숨김/비활성화
-    const allDayCheckbox = document.getElementById('eventAllDay');
-    if (allDayCheckbox) {
-        const startTimeInput = document.getElementById('eventStartTime');
-        const endTimeInput = document.getElementById('eventEndTime');
-        const startCapsule = document.getElementById('startTimeCapsule');
-        const endCapsule = document.getElementById('endTimeCapsule');
-        const dateTimeRow = document.querySelector('.datetime-horizontal');
-        
-        const updateAllDayUI = () => {
-            const checked = !!allDayCheckbox.checked;
-            const disabled = checked;
-            if (startTimeInput) startTimeInput.disabled = disabled;
-            if (endTimeInput) endTimeInput.disabled = disabled;
-            if (startCapsule) {
-                startCapsule.disabled = disabled;
-                startCapsule.classList.toggle('disabled', disabled);
-            }
-            if (endCapsule) {
-                endCapsule.disabled = disabled;
-                endCapsule.classList.toggle('disabled', disabled);
-            }
-            // 날짜 선택은 항상 가능해야 하므로 줄 자체는 숨기지 않음
-        };
-        allDayCheckbox.addEventListener('change', updateAllDayUI);
-        // 디폴트는 미체크 상태 (HTML 기본), UI만 초기화
-        allDayCheckbox.checked = false;
-        updateAllDayUI();
-    }
+    // 하루 종일 토글 관련 로직 제거됨 (기본 날짜/시간 입력만 사용)
 
     // 헤더 일정관리/운동관리 토글
     document.querySelectorAll('.header-mode-toggle-btn').forEach(btn => {
@@ -1673,8 +1645,6 @@ async function handleEventFormSubmit(e) {
     const startTime = document.getElementById('eventStartTime').value;
     const endDate = document.getElementById('eventEndDate').value;
     const endTime = document.getElementById('eventEndTime').value;
-    const allDayCheckbox = document.getElementById('eventAllDay');
-    const isAllDay = allDayCheckbox ? allDayCheckbox.checked : false;
     const description = document.getElementById('eventDescription').value;
     
     // 담당자 체크박스에서 선택된 값들 가져오기
@@ -1683,8 +1653,8 @@ async function handleEventFormSubmit(e) {
         selectedPersons.push(checkbox.value);
     });
     
-    // 유효성 검사
-    if (!title || !startDate || (!isAllDay && !startTime) || !endDate || (!isAllDay && !endTime) || selectedPersons.length === 0) {
+    // 유효성 검사 (하루 종일 옵션 제거 - 항상 날짜+시간 모두 필수)
+    if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
         if (selectedPersons.length === 0) {
             showToast('담당자를 한 명 이상 선택해주세요.', 'error');
         } else {
@@ -1694,14 +1664,8 @@ async function handleEventFormSubmit(e) {
     }
     
     // Combine date and time
-    let startDateTime = new Date(`${startDate}T${startTime}`);
-    let endDateTime = new Date(`${endDate}T${endTime}`);
-
-    // 하루 종일 일정인 경우: 선택한 날짜 전체로 확장 (00:00 ~ 23:59:59)
-    if (isAllDay) {
-        startDateTime = new Date(`${startDate}T00:00:00`);
-        endDateTime = new Date(`${startDate}T23:59:59`);
-    }
+    const startDateTime = new Date(`${startDate}T${startTime}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
     
     // 종료 시간이 시작 시간보다 빠른지 확인 (동일 시각은 허용)
     if (endDateTime < startDateTime) {

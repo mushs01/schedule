@@ -205,20 +205,12 @@
                     </button>
                 </div>
                 
-                <!-- 시작/종료 날짜/시간 + 하루 종일 옵션 -->
+                <!-- 시작/종료 날짜/시간 - 가로 배치 (하루 종일 옵션 없이 기본 형태로 복원) -->
                 <div class="form-group">
                     <label class="form-label" title="일정 시간">
                         <span class="material-icons form-icon">schedule</span>
                     </label>
-                    <div class="datetime-container">
-                        <div class="all-day-row">
-                            <span class="toggle-text">하루 종일</span>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="eventAllDay">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="datetime-horizontal">
+                    <div class="datetime-horizontal">
                         <input type="time" id="eventStartTime" required class="datetime-hidden-input">
                         <input type="time" id="eventEndTime" required class="datetime-hidden-input">
                         <div class="datetime-block" data-side="start">
@@ -405,13 +397,10 @@
                     <label class="form-label" title="중요일정">
                         <span class="material-icons form-icon" style="color: #d32f2f;">star</span>
                     </label>
-                    <div class="all-day-row">
-                        <span class="toggle-text">중요일정 (D-day 표시)</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="eventImportant">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
+                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="eventImportant">
+                        <span>중요일정 (D-day 표시)</span>
+                    </label>
                 </div>
                 
                 <!-- 버튼 -->
