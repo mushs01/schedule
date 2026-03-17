@@ -797,8 +797,8 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         console.log('Events:', events);
         
         successCallback(events);
-        // 이벤트 렌더 후 all-day 영역 표시 여부 갱신 (약간 지연 후 DOM 기준으로 확인)
-        setTimeout(() => {
+        // 이벤트 렌더 후 all-day 영역 표시 여부 갱신 (DOM 기준, FC 렌더 타이밍 맞추기 위해 지연 + 한 번 더)
+        function updateAllDayVisibility() {
             try {
                 if (!calendar) return;
                 const calEl = calendar.el;
@@ -816,7 +816,9 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
             } catch (e) {
                 console.warn('all-day visibility update error (loadEvents):', e);
             }
-        }, 50);
+        }
+        setTimeout(updateAllDayVisibility, 50);
+        setTimeout(updateAllDayVisibility, 150);
     } catch (error) {
         console.error('Error loading events:', error);
         showToast('일정을 불러오는데 실패했습니다.', 'error');

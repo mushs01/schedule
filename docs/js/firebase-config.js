@@ -14,11 +14,15 @@ const firebaseConfig = {
     measurementId: "G-MMNN4NXZG6"
 };
 
-// Firebase 초기화
+// Firebase 초기화 (Storage는 별도 스크립트 없으면 사용 불가 → 에러 없이 null 처리)
 try {
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
-    window.storage = firebase.storage();
+    if (typeof firebase.storage === 'function') {
+        window.storage = firebase.storage();
+    } else {
+        window.storage = null;
+    }
     console.log('✅ Firebase initialized successfully');
 } catch (error) {
     console.error('❌ Firebase initialization error:', error);
