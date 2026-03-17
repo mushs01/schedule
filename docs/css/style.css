@@ -1754,21 +1754,10 @@ body {
     margin-right: 0;
 }
 
-/* 모바일에서 여백 조정 - 다른 form-group과 동일하게 */
+/* 모바일에서 여백 조정 */
 @media (max-width: 768px) {
     .repeat-detail-options {
         border-radius: 8px;
-    }
-
-    /* 모바일에서 일정 추가 폼은 세로(컬럼) 정렬로 보기 좋게 배치 */
-    #eventForm .form-group {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 0;
-    }
-
-    #eventForm .form-label {
-        margin-bottom: 4px;
     }
 }
 
