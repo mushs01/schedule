@@ -142,6 +142,22 @@ function openEventModalWithPerson(person) {
 }
 
 /**
+ * 시간대 터치로 선택된 슬롯 + 현재 FAB 담당자로 일정 추가 모달 바로 열기
+ * (슬롯 하이라이트를 다시 터치했을 때 또는 하이라이트 영역 클릭 시 호출)
+ */
+function openEventModalFromSlotSelection() {
+    if (!window.calendarModule || typeof window.calendarModule.getSlotSelection !== 'function') return;
+    const slot = window.calendarModule.getSlotSelection();
+    if (!slot) return;
+    const addEventBtn = document.getElementById('addEventBtn');
+    const person = addEventBtn ? addEventBtn.getAttribute('data-person') : 'all';
+    window.calendarModule.clearSlotSelection();
+    setEventModalPerson(person);
+    openEventModal({ start: slot.start, end: slot.end });
+}
+window.openEventModalFromSlotSelection = openEventModalFromSlotSelection;
+
+/**
  * Initialize the application
  */
 document.addEventListener('DOMContentLoaded', async () => {

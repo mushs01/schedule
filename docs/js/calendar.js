@@ -190,7 +190,7 @@ function initCalendar() {
             if (info.event.id === '_slotAdd_' || info.event.extendedProps._slotAdd) {
                 info.el.classList.add('slot-add-highlight');
                 info.el.innerHTML = '<span class="material-icons" style="font-size: 24px; pointer-events: none;">add</span>';
-                info.el.title = '이 시간에 일정 추가 (오른쪽 아래 + 버튼 길게 누르기)';
+                info.el.title = '다시 터치하면 일정 추가 (또는 오른쪽 아래 + 버튼 길게 누르기)';
                 return;
             }
             // Add tooltip
@@ -791,7 +791,12 @@ function handleDateSelect(selectInfo) {
  */
 function handleEventClick(clickInfo) {
     const event = clickInfo.event;
-    if (event.id === '_slotAdd_' || event.extendedProps._slotAdd) return; // 슬롯 하이라이트 클릭 시 상세 열지 않음
+    if (event.id === '_slotAdd_' || event.extendedProps._slotAdd) {
+        if (typeof window.openEventModalFromSlotSelection === 'function') {
+            window.openEventModalFromSlotSelection();
+        }
+        return;
+    }
     console.log('🖱️ Event clicked:', event);
     
     console.log('📋 Event ID:', event.id);
@@ -854,11 +859,18 @@ async function handleDateClick(dateClickInfo) {
 }
 
 /**
- * 주간/일간 보기에서 시간대(슬롯) 터치 시: 해당 1시간 하이라이트 + 플러스 표시, 일정 추가 시 사용
+ * 주간/일간 보기에서 시간대(슬롯) 터치 시: 해당 1시간 하이라이트 + 플러스 표시.
+ * 이미 선택된 슬롯을 다시 터치하면 일정 추가 모달을 바로 연다.
  */
 function handleTimeGridSlotClick(dateClickInfo) {
     const slotStart = new Date(dateClickInfo.date);
     const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    if (slotSelection && slotSelection.start.getTime() === slotStart.getTime()) {
+        if (typeof window.openEventModalFromSlotSelection === 'function') {
+            window.openEventModalFromSlotSelection();
+        }
+        return;
+    }
     clearSlotSelection();
     slotSelection = { start: slotStart, end: slotEnd };
     slotAddEventRef = calendar.addEvent({
