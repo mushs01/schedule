@@ -2283,6 +2283,98 @@ body {
     line-height: 1.5;
 }
 
+/* Event Detail - 첨부 큰 미리보기 */
+.event-detail-attachments {
+    width: 100%;
+}
+.event-detail-attachment-main {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+.event-detail-attachment-media {
+    width: 100%;
+    max-height: 320px;
+    min-height: 220px;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.event-detail-attachment-media img {
+    max-width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+}
+.event-detail-attachment-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    padding: 24px 12px;
+    text-align: center;
+}
+.event-detail-attachment-fallback .material-icons {
+    font-size: 40px;
+}
+.event-detail-attachment-fallback-text {
+    font-size: 13px;
+    max-width: 90%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event-detail-attachment-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 10px;
+    gap: 8px;
+}
+.event-detail-attachment-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.event-detail-attachment-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event-detail-attachment-index {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.event-detail-attachment-nav-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.event-detail-attachment-nav {
+    border: none;
+    background: transparent;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+.event-detail-attachment-nav:hover {
+    background: rgba(0,0,0,0.06);
+    color: var(--text-primary);
+}
+
 /* 이전 스타일 (호환성 유지) */
 .event-detail-item {
     display: flex;

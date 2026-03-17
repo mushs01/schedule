@@ -1720,6 +1720,98 @@ function _isImageFile(file) {
 }
 
 /**
+ * 일정 상세 모달 첨부 미리보기 (한 장씩 크게)
+ */
+function initEventDetailAttachments(attachments) {
+    const container = document.getElementById('eventDetailAttachments');
+    if (!container || !attachments || !attachments.length) return;
+    
+    let index = 0;
+    
+    container.innerHTML = `
+        <div class="event-detail-attachment-main">
+            <div class="event-detail-attachment-media" id="eventDetailAttachmentMedia"></div>
+            <div class="event-detail-attachment-footer">
+                <div class="event-detail-attachment-text">
+                    <span id="eventDetailAttachmentName" class="event-detail-attachment-name"></span>
+                    <span id="eventDetailAttachmentIndex" class="event-detail-attachment-index"></span>
+                </div>
+                <div class="event-detail-attachment-nav-wrap">
+                    ${attachments.length > 1 ? `
+                    <button type="button" class="event-detail-attachment-nav prev" aria-label="이전 첨부">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <button type="button" class="event-detail-attachment-nav next" aria-label="다음 첨부">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const mediaEl = document.getElementById('eventDetailAttachmentMedia');
+    const nameEl = document.getElementById('eventDetailAttachmentName');
+    const indexEl = document.getElementById('eventDetailAttachmentIndex');
+    const prevBtn = container.querySelector('.event-detail-attachment-nav.prev');
+    const nextBtn = container.querySelector('.event-detail-attachment-nav.next');
+    
+    function render() {
+        const att = attachments[index];
+        if (!att) return;
+        const name = att.name || '첨부파일';
+        const url = att.url || '';
+        
+        mediaEl.innerHTML = '';
+        if (url && _isImageUrl(url)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = name;
+            img.loading = 'lazy';
+            mediaEl.appendChild(img);
+        } else {
+            const box = document.createElement('div');
+            box.className = 'event-detail-attachment-fallback';
+            box.innerHTML = `
+                <span class="material-icons">description</span>
+                <span class="event-detail-attachment-fallback-text">${name}</span>
+            `;
+            mediaEl.appendChild(box);
+        }
+        
+        if (url) {
+            mediaEl.style.cursor = 'pointer';
+            mediaEl.onclick = () => {
+                window.open(url, '_blank', 'noopener');
+            };
+        } else {
+            mediaEl.style.cursor = 'default';
+            mediaEl.onclick = null;
+        }
+        
+        nameEl.textContent = name;
+        indexEl.textContent = attachments.length > 1
+            ? `${index + 1} / ${attachments.length}`
+            : '';
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            index = (index - 1 + attachments.length) % attachments.length;
+            render();
+        });
+    }
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            index = (index + 1) % attachments.length;
+            render();
+        });
+    }
+    
+    render();
+}
+
+/**
  * 일정 폼 첨부 목록 UI 갱신 (미리보기 포함)
  */
 function renderEventAttachmentList() {
@@ -2172,6 +2264,7 @@ function showEventDetail(event) {
     // persons 배열 사용 (없으면 person 사용)
     const persons = event.extendedProps.persons || [event.extendedProps.person];
     const personNames = persons.map(p => window.PERSON_NAMES[p]).join(', ');
+    const attachments = Array.isArray(event.extendedProps.attachments) ? event.extendedProps.attachments : [];
     
     // 헤더에 담당자 이미지와 제목 표시
     const personAvatarsHTML = persons.map(p => 
@@ -2242,7 +2335,19 @@ function showEventDetail(event) {
             <span class="detail-content">${repeatText}</span>
         </div>
         ` : ''}
+        ${attachments.length ? `
+        <div class="event-detail-row">
+            <span class="material-icons detail-icon">attach_file</span>
+            <span class="detail-content">
+                <div class="event-detail-attachments" id="eventDetailAttachments"></div>
+            </span>
+        </div>
+        ` : ''}
     `;
+    
+    if (attachments.length) {
+        initEventDetailAttachments(attachments);
+    }
     
     currentEditingEvent = event;
     console.log('📝 currentEditingEvent set to:', currentEditingEvent);
