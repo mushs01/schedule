@@ -62,6 +62,9 @@ function initCalendar() {
         return;
     }
     
+    // 하루 종일 일정이 없으면 all-day 줄 숨김 (이벤트 로드 후 갱신됨)
+    document.body.classList.add('fc-no-all-day');
+    
     // 모바일: FC가 측정할 때부터 컨테이너를 뷰포트 폭으로 고정해 여백 방지
     if (window.innerWidth <= 768) {
         const scheduleArea = document.getElementById('scheduleArea');
@@ -739,15 +742,28 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
             
             const startDate = new Date(schedule.start);
             const endDate = schedule.end ? new Date(schedule.end) : null;
-            const isAllDay = !!(endDate &&
+            const isAllDay = schedule.all_day === true || !!(endDate &&
                 startDate.getHours() === 0 && startDate.getMinutes() === 0 &&
                 endDate.getHours() === 23 && endDate.getMinutes() === 59);
+            // FullCalendar all-day: end은 해당일 다음날 00:00 (exclusive) 권장
+            let eventStart = schedule.start;
+            let eventEnd = schedule.end;
+            if (isAllDay && eventStart && eventEnd) {
+                const e = new Date(eventEnd);
+                if (e.getUTCHours() === 23 && e.getUTCMinutes() === 59) {
+                    const s = new Date(eventStart);
+                    const next = new Date(s);
+                    next.setUTCDate(next.getUTCDate() + 1);
+                    next.setUTCHours(0, 0, 0, 0);
+                    eventEnd = next.toISOString();
+                }
+            }
 
             const event = {
                 id: schedule.id,
                 title: schedule.title,
-                start: schedule.start,
-                end: schedule.end,
+                start: eventStart,
+                end: eventEnd,
                 allDay: isAllDay,
                 backgroundColor: color,
                 borderColor: color,
@@ -768,6 +784,7 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                     repeat_weekdays: schedule.repeat_weekdays || [],
                     repeat_monthly_type: schedule.repeat_monthly_type || 'dayOfMonth',
                     is_important: schedule.is_important === true,
+                    all_day: schedule.all_day === true,
                     attachments: schedule.attachments || []
                 }
             };

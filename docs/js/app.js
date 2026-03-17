@@ -649,7 +649,11 @@ function setupEventListeners() {
         });
     });
     
-    // 하루 종일 토글 관련 로직 제거됨 (기본 날짜/시간 입력만 사용)
+    // 하루 종일 체크 시 시간 비활성화
+    const eventAllDayCheckbox = document.getElementById('eventAllDay');
+    if (eventAllDayCheckbox) {
+        eventAllDayCheckbox.addEventListener('change', updateAllDayUI);
+    }
 
     // 헤더 일정관리/운동관리 토글
     document.querySelectorAll('.header-mode-toggle-btn').forEach(btn => {
@@ -1342,6 +1346,35 @@ function updateNotificationUI(isEnabled) {
 }
 
 /**
+ * 하루 종일 체크 시 시간 입력 비활성화/활성화
+ */
+function updateAllDayUI() {
+    const allDayCheckbox = document.getElementById('eventAllDay');
+    const startTimeInput = document.getElementById('eventStartTime');
+    const endTimeInput = document.getElementById('eventEndTime');
+    const startCapsule = document.getElementById('startTimeCapsule');
+    const endCapsule = document.getElementById('endTimeCapsule');
+    if (!allDayCheckbox || !startTimeInput || !endTimeInput || !startCapsule || !endCapsule) return;
+    const isAllDay = allDayCheckbox.checked;
+    if (isAllDay) {
+        startTimeInput.value = '00:00';
+        endTimeInput.value = '23:59';
+        startTimeInput.removeAttribute('required');
+        endTimeInput.removeAttribute('required');
+        startCapsule.classList.add('disabled');
+        endCapsule.classList.add('disabled');
+        startCapsule.textContent = '하루 종일';
+        endCapsule.textContent = '';
+    } else {
+        startTimeInput.setAttribute('required', 'required');
+        endTimeInput.setAttribute('required', 'required');
+        startCapsule.classList.remove('disabled');
+        endCapsule.classList.remove('disabled');
+        updateDateTimeDisplays();
+    }
+}
+
+/**
  * Open event modal for creating/editing
  * @param {Object} dateInfo - { start, end } for create mode
  * @param {Object} event - FullCalendar event for edit mode (null = create)
@@ -1382,6 +1415,11 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     if (!event && notificationStartField) notificationStartField.checked = false;
     if (!event && notificationEndField) notificationEndField.checked = false;
     
+    // 하루 종일 기본값 미체크
+    const eventAllDayCheckbox = document.getElementById('eventAllDay');
+    if (eventAllDayCheckbox) eventAllDayCheckbox.checked = false;
+    updateAllDayUI();
+    
     if (event) {
         // Editing mode - 기존 일정 수정
         console.log('✏️ Edit mode - event:', event);
@@ -1410,6 +1448,13 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
         }
         
         updateDateTimeDisplays();
+        
+        // 하루 종일 일정이면 체크 및 시간 비활성화
+        const isAllDayEvent = event.extendedProps && event.extendedProps.all_day === true;
+        if (eventAllDayCheckbox) {
+            eventAllDayCheckbox.checked = !!isAllDayEvent;
+            updateAllDayUI();
+        }
         
         // 담당자 설정 (체크박스) - 모든 체크박스 초기화
         document.querySelectorAll('input[name="eventPerson"]').forEach(cb => cb.checked = false);
@@ -1628,6 +1673,7 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
             console.log('📅 기본값 사용 (현재 시간)');
         }
+        updateDateTimeDisplays();
 
         // 기본 담당자: 현재 일정추가 아이콘(FAB)에 선택된 담당자를 그대로 사용
         const addEventBtn = document.getElementById('addEventBtn');
@@ -1908,11 +1954,19 @@ async function handleEventFormSubmit(e) {
     }
     
     const title = document.getElementById('eventTitle').value;
-    const startDate = document.getElementById('eventStartDate').value;
-    const startTime = document.getElementById('eventStartTime').value;
-    const endDate = document.getElementById('eventEndDate').value;
-    const endTime = document.getElementById('eventEndTime').value;
+    let startDate = document.getElementById('eventStartDate').value;
+    let startTime = document.getElementById('eventStartTime').value;
+    let endDate = document.getElementById('eventEndDate').value;
+    let endTime = document.getElementById('eventEndTime').value;
     const description = document.getElementById('eventDescription').value;
+    const allDayCheckbox = document.getElementById('eventAllDay');
+    const isAllDay = allDayCheckbox ? allDayCheckbox.checked : false;
+    
+    if (isAllDay) {
+        startTime = '00:00';
+        endTime = '23:59';
+        endDate = startDate;
+    }
     
     // 담당자 체크박스에서 선택된 값들 가져오기
     const selectedPersons = [];
@@ -1920,13 +1974,17 @@ async function handleEventFormSubmit(e) {
         selectedPersons.push(checkbox.value);
     });
     
-    // 유효성 검사 (하루 종일 옵션 제거 - 항상 날짜+시간 모두 필수)
-    if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
+    // 유효성 검사 (하루 종일이면 시간 생략 가능)
+    if (!title || !startDate || !endDate || selectedPersons.length === 0) {
         if (selectedPersons.length === 0) {
             showToast('담당자를 한 명 이상 선택해주세요.', 'error');
         } else {
             showToast('모든 필수 항목을 입력해주세요.', 'error');
         }
+        return;
+    }
+    if (!isAllDay && (!startTime || !endTime)) {
+        showToast('시작/종료 시간을 입력해주세요.', 'error');
         return;
     }
     
@@ -2101,7 +2159,8 @@ async function handleEventFormSubmit(e) {
                     repeat_end_date: repeatEndDate,
                     repeat_weekdays: repeatWeekdays,
                     repeat_monthly_type: repeatMonthlyType,
-                    is_important: isImportant
+                    is_important: isImportant,
+                    all_day: isAllDay
                 };
                 
                 console.log(`➕ Creating new schedule for ${person}`);
@@ -2137,7 +2196,8 @@ async function handleEventFormSubmit(e) {
                         repeat_end_date: repeatEndDate,
                         repeat_weekdays: repeatWeekdays,
                         repeat_monthly_type: repeatMonthlyType,
-                        is_important: isImportant
+                        is_important: isImportant,
+                        all_day: isAllDay
                     };
                     
                     console.log('  - ✅ 업데이트 데이터 전송:', scheduleData);
@@ -2179,6 +2239,7 @@ async function handleEventFormSubmit(e) {
                     repeat_weekdays: repeatWeekdays,
                     repeat_monthly_type: repeatMonthlyType,
                     is_important: isImportant,
+                    all_day: isAllDay,
                     attachments: []
                 };
                 appendAiScheduleLog('createSchedule.single', scheduleData);
@@ -2208,6 +2269,7 @@ async function handleEventFormSubmit(e) {
                         repeat_weekdays: repeatWeekdays,
                         repeat_monthly_type: repeatMonthlyType,
                         is_important: isImportant,
+                        all_day: isAllDay,
                         attachments: idx === 0 ? [] : attachmentList
                     };
                     const created = await api.createSchedule(scheduleData);

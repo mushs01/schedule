@@ -1771,9 +1771,8 @@ body {
 .fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
     content: '';
 }
-/* 현재는 실제 all-day 이벤트를 사용하지 않으므로,
-   상단 all-day 줄을 전역으로 숨긴다 (빈칸 방지). */
-.fc-timegrid-all-day {
+/* 하루 종일 일정이 없을 때만 all-day 줄 숨김 (calendar.js에서 body에 .fc-no-all-day 추가) */
+body.fc-no-all-day .fc-timegrid-all-day {
     display: none !important;
 }
 
@@ -1935,6 +1934,30 @@ body {
     pointer-events: none;
 }
 
+.datetime-container {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.all-day-row {
+    display: flex;
+    align-items: center;
+}
+.all-day-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+.all-day-label input {
+    width: 18px;
+    height: 18px;
+}
 .datetime-horizontal {
     flex: 1;
     display: flex;

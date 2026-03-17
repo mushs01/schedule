@@ -82,6 +82,7 @@ const api = {
                         repeat_weekdays: data.repeat_weekdays || [],
                         repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                         is_important: data.is_important === true,
+                        all_day: data.all_day === true,
                         exclude_dates: data.exclude_dates || [],
                         attachments: data.attachments || [],
                         createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,
@@ -173,6 +174,7 @@ const api = {
                     repeat_weekdays: data.repeat_weekdays || [],
                     repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                     is_important: data.is_important === true,
+                    all_day: data.all_day === true,
                     attachments: data.attachments || []
                 };
             } else {
@@ -213,6 +215,7 @@ const api = {
                 repeat_weekdays: scheduleData.repeat_weekdays || [],
                 repeat_monthly_type: scheduleData.repeat_monthly_type || 'dayOfMonth',
                 is_important: scheduleData.is_important === true,
+                all_day: scheduleData.all_day === true,
                 exclude_dates: [],
                 attachments: Array.isArray(scheduleData.attachments) ? scheduleData.attachments : [],
                 created_at: firebase.firestore.Timestamp.fromDate(now),
@@ -292,6 +295,9 @@ const api = {
             }
             if (scheduleData.is_important !== undefined) {
                 updateData.is_important = scheduleData.is_important === true;
+            }
+            if (scheduleData.all_day !== undefined) {
+                updateData.all_day = scheduleData.all_day === true;
             }
             if (scheduleData.attachments !== undefined) {
                 updateData.attachments = Array.isArray(scheduleData.attachments) ? scheduleData.attachments : [];
@@ -469,6 +475,7 @@ const api = {
                 repeat_weekdays: data.repeat_weekdays || [],
                 repeat_monthly_type: data.repeat_monthly_type || 'dayOfMonth',
                 is_important: data.is_important === true,
+                all_day: data.all_day === true,
                 exclude_dates: data.exclude_dates || [],
                 attachments: data.attachments || [],
                 createdAt: data.created_at ? data.created_at.toDate().toISOString() : null,

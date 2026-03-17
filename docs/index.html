@@ -205,28 +205,36 @@
                     </button>
                 </div>
                 
-                <!-- 시작/종료 날짜/시간 - 가로 배치 (하루 종일 옵션 없이 기본 형태로 복원) -->
+                <!-- 시작/종료 날짜/시간 (위에 하루종일 체크) -->
                 <div class="form-group">
                     <label class="form-label" title="일정 시간">
                         <span class="material-icons form-icon">schedule</span>
                     </label>
-                    <div class="datetime-horizontal">
-                        <input type="time" id="eventStartTime" required class="datetime-hidden-input">
-                        <input type="time" id="eventEndTime" required class="datetime-hidden-input">
-                        <div class="datetime-block" data-side="start">
-                            <label class="datetime-date-row" id="startDateRow">
-                                <input type="date" id="eventStartDate" required class="date-input-overlay">
-                                <span class="datetime-date-text" id="startDateText"></span>
+                    <div class="datetime-container">
+                        <div class="all-day-row">
+                            <label class="checkbox-label all-day-label">
+                                <input type="checkbox" id="eventAllDay">
+                                <span>하루 종일</span>
                             </label>
-                            <button type="button" class="datetime-time-capsule" id="startTimeCapsule">오후 12:00</button>
                         </div>
-                        <span class="datetime-arrow" aria-hidden="true">→</span>
-                        <div class="datetime-block" data-side="end">
-                            <label class="datetime-date-row" id="endDateRow">
-                                <input type="date" id="eventEndDate" required class="date-input-overlay">
-                                <span class="datetime-date-text" id="endDateText"></span>
-                            </label>
-                            <button type="button" class="datetime-time-capsule" id="endTimeCapsule">오후 1:00</button>
+                        <div class="datetime-horizontal">
+                            <input type="time" id="eventStartTime" required class="datetime-hidden-input">
+                            <input type="time" id="eventEndTime" required class="datetime-hidden-input">
+                            <div class="datetime-block" data-side="start">
+                                <label class="datetime-date-row" id="startDateRow">
+                                    <input type="date" id="eventStartDate" required class="date-input-overlay">
+                                    <span class="datetime-date-text" id="startDateText"></span>
+                                </label>
+                                <button type="button" class="datetime-time-capsule" id="startTimeCapsule">오후 12:00</button>
+                            </div>
+                            <span class="datetime-arrow" aria-hidden="true">→</span>
+                            <div class="datetime-block" data-side="end">
+                                <label class="datetime-date-row" id="endDateRow">
+                                    <input type="date" id="eventEndDate" required class="date-input-overlay">
+                                    <span class="datetime-date-text" id="endDateText"></span>
+                                </label>
+                                <button type="button" class="datetime-time-capsule" id="endTimeCapsule">오후 1:00</button>
+                            </div>
                         </div>
                     </div>
                 </div>
