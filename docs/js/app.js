@@ -635,9 +635,7 @@ function setupEventListeners() {
                 endCapsule.disabled = disabled;
                 endCapsule.classList.toggle('disabled', disabled);
             }
-            if (dateTimeRow) {
-                dateTimeRow.style.display = checked ? 'none' : '';
-            }
+            // 날짜 선택은 항상 가능해야 하므로 줄 자체는 숨기지 않음
         };
         allDayCheckbox.addEventListener('change', updateAllDayUI);
         // 디폴트는 미체크 상태 (HTML 기본), UI만 초기화

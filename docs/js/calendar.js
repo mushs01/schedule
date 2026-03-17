@@ -201,9 +201,16 @@ function initCalendar() {
                 clearSlotSelection();
             }
             updateHeaderDate();
-            // 하루 종일 일정 유무에 따라 all-day 줄 표시/숨김
+            // 하루 종일 일정 유무에 따라 all-day 줄 표시/숨김 (현재 뷰 범위 기준)
             try {
-                const hasAllDay = calendar.getEvents().some(e => e.allDay);
+                const viewStart = dateInfo.start;
+                const viewEnd = dateInfo.end;
+                const hasAllDay = calendar.getEvents().some(e => {
+                    if (!e.allDay) return false;
+                    const evStart = e.start;
+                    const evEnd = e.end || e.start;
+                    return evStart < viewEnd && evEnd > viewStart;
+                });
                 if (hasAllDay) {
                     document.body.classList.remove('fc-no-all-day');
                     const axis = calendar.el.querySelector('.fc-timegrid-all-day .fc-timegrid-axis-cushion');

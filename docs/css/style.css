@@ -1911,6 +1911,12 @@ body {
     background: #e8eaed;
 }
 
+.datetime-time-capsule.disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
 .datetime-arrow {
     flex-shrink: 0;
     font-size: 26px;
