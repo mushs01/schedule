@@ -5,7 +5,7 @@
 
 // Global state
 let currentEditingEvent = null;
-let deleteRecurringOption = null; // 'single', 'all', or null
+let deleteRecurringOption = null; // 'single', 'future', 'all', or null
 
 // DOM Elements - will be initialized after DOM loads
 let eventModal;
@@ -1246,6 +1246,7 @@ function setupEventListeners() {
     // Delete recurring event modal buttons
     const closeDeleteRecurringBtn = document.getElementById('closeDeleteRecurringBtn');
     const deleteSingleEventBtn = document.getElementById('deleteSingleEventBtn');
+    const deleteFutureEventsBtn = document.getElementById('deleteFutureEventsBtn');
     const deleteAllEventsBtn = document.getElementById('deleteAllEventsBtn');
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     
@@ -1259,7 +1260,16 @@ function setupEventListeners() {
         deleteSingleEventBtn.addEventListener('click', () => {
             console.log('🔵 Single delete button clicked');
             deleteRecurringOption = 'single';
-            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
+            if (deleteRecurringModal) {
+                deleteRecurringModal.classList.remove('active');
+            }
+            executeDelete();
+        });
+    }
+    if (deleteFutureEventsBtn) {
+        deleteFutureEventsBtn.addEventListener('click', () => {
+            console.log('🟠 Future delete button clicked');
+            deleteRecurringOption = 'future';
             if (deleteRecurringModal) {
                 deleteRecurringModal.classList.remove('active');
             }
@@ -1270,7 +1280,6 @@ function setupEventListeners() {
         deleteAllEventsBtn.addEventListener('click', () => {
             console.log('🔴 All delete button clicked');
             deleteRecurringOption = 'all';
-            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
             if (deleteRecurringModal) {
                 deleteRecurringModal.classList.remove('active');
             }
@@ -2213,30 +2222,30 @@ async function executeDelete() {
     try {
         showLoading(true);
         
+        const originalId = currentEditingEvent.extendedProps?.original_id 
+            || (currentEditingEvent.id.includes('_') 
+                ? currentEditingEvent.id.split('_')[0] 
+                : currentEditingEvent.id);
+        
         if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
-            // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
-            const originalId = currentEditingEvent.extendedProps?.original_id 
-                || (currentEditingEvent.id.includes('_') 
-                    ? currentEditingEvent.id.split('_')[0] 
-                    : currentEditingEvent.id);
-            
             console.log('  - Deleting all recurring events');
             console.log('  - Original ID:', originalId);
-            console.log('  - Current event ID:', currentEditingEvent.id);
-            
             await api.deleteSchedule(originalId);
             showToast('모든 반복 일정이 삭제되었습니다.', 'success');
+        } else if (deleteRecurringOption === 'future') {
+            // 이 일정까지 남기고 이후만 삭제 → 반복 종료일을 선택한 일정 날짜로 변경
+            const selectedDateStr = new Date(currentEditingEvent.start).toISOString().split('T')[0];
+            const newRepeatEndDate = selectedDateStr + 'T23:59:59';
+            console.log('  - Truncating recurrence after selected date');
+            console.log('  - Original ID:', originalId);
+            console.log('  - New repeat_end_date:', newRepeatEndDate);
+            await api.updateSchedule(originalId, { repeat_end_date: newRepeatEndDate });
+            showToast('이후 반복 일정이 삭제되었습니다.', 'success');
         } else {
             // 단일 일정 삭제
             if (isRecurring) {
                 // 특정 날짜의 반복 일정만 제외
-                // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
-                const originalId = currentEditingEvent.extendedProps?.original_id 
-                    || (currentEditingEvent.id.includes('_') 
-                        ? currentEditingEvent.id.split('_')[0] 
-                        : currentEditingEvent.id);
-                
                 const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
                 
                 console.log('  - Excluding single recurring event');
