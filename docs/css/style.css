@@ -863,29 +863,6 @@ body {
     opacity: 0.6;
 }
 
-/* 시간대 터치 선택: 해당 1시간 하이라이트 + 플러스 표시 */
-.fc .slot-add-highlight,
-.slot-add-highlight {
-    background: rgba(26, 115, 232, 0.25) !important;
-    border: 2px dashed var(--primary-blue, #1a73e8) !important;
-    cursor: pointer;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    min-height: 2em;
-}
-.fc .slot-add-highlight .fc-event-main,
-.slot-add-highlight .fc-event-main {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-.fc .slot-add-highlight .fc-event-title,
-.slot-add-highlight .fc-event-title {
-    display: none;
-}
-
 /* 월 일정 날짜 숫자 영역 */
 .fc-dayGridMonth-view .fc-daygrid-day-top {
     display: flex !important;
@@ -2413,27 +2390,6 @@ body {
     background: #c62828;
 }
 
-/* 일정 모달: 본문만 스크롤, 취소/저장은 항상 하단에 보이도록 */
-#eventModal .modal-content {
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden;
-}
-#eventModal #eventForm {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-}
-#eventModal .modal-actions {
-    position: sticky;
-    bottom: 0;
-    flex-shrink: 0;
-    margin-top: auto;
-}
-
 /* Modal Actions - 항상 하단에 고정 */
 .modal-actions {
     display: flex;
@@ -2442,6 +2398,7 @@ body {
     gap: 12px;
     padding: 16px;
     border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
     background: #ffffff;
 }
 
@@ -2724,39 +2681,6 @@ body {
     color: var(--text-secondary);
     padding: 32px 16px;
     font-size: 14px;
-}
-
-/* 일정 첨부 파일 */
-.attachment-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-}
-.attachment-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.attachment-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    background: var(--hover-bg);
-    font-size: 11px;
-    color: var(--text-secondary);
-}
-.attachment-item img {
-    width: 20px;
-    height: 20px;
-    object-fit: cover;
-    border-radius: 3px;
-}
-.attachment-status {
-    font-size: 11px;
-    color: var(--text-secondary);
 }
 
 

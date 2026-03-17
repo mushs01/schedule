@@ -5,7 +5,7 @@
 
 // Global state
 let currentEditingEvent = null;
-let deleteRecurringOption = null; // 'single', 'future', 'all', or null
+let deleteRecurringOption = null; // 'single', 'all', or null
 
 // DOM Elements - will be initialized after DOM loads
 let eventModal;
@@ -15,7 +15,6 @@ let settingsModal;
 let betaTestModal;
 let deleteRecurringModal;
 let eventForm;
-let pendingAttachments = [];
 let loadingOverlay;
 let toast;
 
@@ -50,15 +49,7 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            const person = btn.getAttribute('data-person');
-            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
-            if (slot) {
-                window.calendarModule.clearSlotSelection();
-                setEventModalPerson(person);
-                openEventModal({ start: slot.start, end: slot.end });
-            } else {
-                openEventModalWithPerson(person);
-            }
+            openEventModalWithPerson(btn.getAttribute('data-person'));
         }, 500); // 500ms 길게 누르기
     });
     
@@ -82,15 +73,7 @@ function setupFloatingButton(btn) {
         longPressTimer = setTimeout(() => {
             isLongPress = true;
             btn.classList.remove('long-pressing');
-            const person = btn.getAttribute('data-person');
-            const slot = window.calendarModule && window.calendarModule.getSlotSelection && window.calendarModule.getSlotSelection();
-            if (slot) {
-                window.calendarModule.clearSlotSelection();
-                setEventModalPerson(person);
-                openEventModal({ start: slot.start, end: slot.end });
-            } else {
-                openEventModalWithPerson(person);
-            }
+            openEventModalWithPerson(btn.getAttribute('data-person'));
         }, 500); // 500ms 길게 누르기
     });
     
@@ -106,26 +89,6 @@ function setupFloatingButton(btn) {
         btn.classList.remove('long-pressing');
         isLongPress = false;
     });
-}
-
-/**
- * 일정표 상단 필터에서 현재 선택된 담당자 1명 반환 (단일 선택 시 해당 값, 복수/전체 시 'all')
- */
-function getCurrentFilterPerson() {
-    const btns = document.querySelectorAll('.person-filter-buttons .person-filter-btn.active');
-    if (!btns.length) return 'all';
-    if (btns.length === 1) return btns[0].getAttribute('data-person') || 'all';
-    return 'all';
-}
-
-/**
- * FAB 아이콘을 현재 필터 담당자와 동기화 (시간대 터치 시 아이콘에 담당자 반영)
- */
-function syncFabPersonFromFilter() {
-    const addEventBtn = document.getElementById('addEventBtn');
-    if (!addEventBtn) return;
-    const person = getCurrentFilterPerson();
-    addEventBtn.setAttribute('data-person', person);
 }
 
 /** 이미 연 일정 모달에서 담당자 체크만 설정 (기본 추가·AI 추가 공용) */
@@ -160,22 +123,6 @@ function openEventModalWithPerson(person) {
     openEventModal();
     setEventModalPerson(person);
 }
-
-/**
- * 시간대 터치로 선택된 슬롯 + 현재 일정표 필터 담당자로 일정 추가 모달 바로 열기
- * (슬롯 하이라이트를 다시 터치했을 때 또는 하이라이트 영역 클릭 시 호출)
- */
-function openEventModalFromSlotSelection() {
-    if (!window.calendarModule || typeof window.calendarModule.getSlotSelection !== 'function') return;
-    const slot = window.calendarModule.getSlotSelection();
-    if (!slot) return;
-    const person = getCurrentFilterPerson();
-    window.calendarModule.clearSlotSelection();
-    openEventModal({ start: slot.start, end: slot.end });
-    setEventModalPerson(person);
-}
-window.openEventModalFromSlotSelection = openEventModalFromSlotSelection;
-window.syncFabPersonFromFilter = syncFabPersonFromFilter;
 
 /**
  * Initialize the application
@@ -591,44 +538,6 @@ function setupEventListeners() {
     if (closeDetailBtn) {
         closeDetailBtn.addEventListener('click', closeEventDetailModal);
         console.log('✅ Close detail button listener added');
-    }
-    
-    // Event attachments (file input)
-    const attachmentsInput = document.getElementById('eventAttachmentsInput');
-    const attachmentsList = document.getElementById('eventAttachmentsList');
-    if (attachmentsInput) {
-        attachmentsInput.addEventListener('change', (e) => {
-            pendingAttachments = Array.from(e.target.files || []);
-            if (window.appendAiScheduleLog) {
-                window.appendAiScheduleLog('attachments.select', {
-                    count: pendingAttachments.length,
-                    names: pendingAttachments.map(f => f.name)
-                });
-            }
-            if (attachmentsList) {
-                attachmentsList.innerHTML = '';
-                pendingAttachments.forEach(file => {
-                    const item = document.createElement('div');
-                    item.className = 'attachment-item';
-                    const isImage = file.type && file.type.startsWith('image/');
-                    if (isImage) {
-                        const img = document.createElement('img');
-                        img.src = URL.createObjectURL(file);
-                        img.alt = file.name;
-                        item.appendChild(img);
-                    } else {
-                        const icon = document.createElement('span');
-                        icon.className = 'material-icons';
-                        icon.textContent = 'insert_drive_file';
-                        item.appendChild(icon);
-                    }
-                    const nameSpan = document.createElement('span');
-                    nameSpan.textContent = file.name;
-                    item.appendChild(nameSpan);
-                    attachmentsList.appendChild(item);
-                });
-            }
-        });
     }
     
     // Event form submission
@@ -1298,7 +1207,6 @@ function setupEventListeners() {
     // Delete recurring event modal buttons
     const closeDeleteRecurringBtn = document.getElementById('closeDeleteRecurringBtn');
     const deleteSingleEventBtn = document.getElementById('deleteSingleEventBtn');
-    const deleteFutureEventsBtn = document.getElementById('deleteFutureEventsBtn');
     const deleteAllEventsBtn = document.getElementById('deleteAllEventsBtn');
     const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
     
@@ -1312,16 +1220,7 @@ function setupEventListeners() {
         deleteSingleEventBtn.addEventListener('click', () => {
             console.log('🔵 Single delete button clicked');
             deleteRecurringOption = 'single';
-            if (deleteRecurringModal) {
-                deleteRecurringModal.classList.remove('active');
-            }
-            executeDelete();
-        });
-    }
-    if (deleteFutureEventsBtn) {
-        deleteFutureEventsBtn.addEventListener('click', () => {
-            console.log('🟠 Future delete button clicked');
-            deleteRecurringOption = 'future';
+            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
             if (deleteRecurringModal) {
                 deleteRecurringModal.classList.remove('active');
             }
@@ -1332,6 +1231,7 @@ function setupEventListeners() {
         deleteAllEventsBtn.addEventListener('click', () => {
             console.log('🔴 All delete button clicked');
             deleteRecurringOption = 'all';
+            // 모달 닫기 (deleteRecurringOption 유지를 위해 직접 처리)
             if (deleteRecurringModal) {
                 deleteRecurringModal.classList.remove('active');
             }
@@ -1388,11 +1288,6 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     
     // Reset form
     eventForm.reset();
-    pendingAttachments = [];
-    const attachmentsInput = document.getElementById('eventAttachmentsInput');
-    const attachmentsList = document.getElementById('eventAttachmentsList');
-    if (attachmentsInput) attachmentsInput.value = '';
-    if (attachmentsList) attachmentsList.innerHTML = '';
     
     // 새 일정 추가 시 알림 기본값 OFF (reset 직후 적용)
     const notificationStartField = document.getElementById('eventNotificationStart');
@@ -1641,6 +1536,13 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             document.getElementById('eventEndTime').value = formatTimeInput(oneHourLater);
             console.log('📅 기본값 사용 (현재 시간)');
         }
+
+        // 기본 담당자: 현재 일정추가 아이콘(FAB)에 선택된 담당자를 그대로 사용
+        const addEventBtn = document.getElementById('addEventBtn');
+        if (addEventBtn) {
+            const person = addEventBtn.getAttribute('data-person') || 'all';
+            setEventModalPerson(person);
+        }
     }
     // AI 추출 데이터로 미리 채우기 (수동 추가와 동일 - 제목·담당자 동기 설정)
     if (!event && aiPrefill) {
@@ -1702,14 +1604,10 @@ async function handleEventFormSubmit(e) {
     const description = document.getElementById('eventDescription').value;
     
     // 담당자 체크박스에서 선택된 값들 가져오기
-    let selectedPersons = [];
+    const selectedPersons = [];
     document.querySelectorAll('input[name="eventPerson"]:checked').forEach(checkbox => {
         selectedPersons.push(checkbox.value);
     });
-    // '전체'가 선택된 경우에는 나머지 담당자는 모두 무시하고 가족일정 하나만 생성/유지
-    if (selectedPersons.includes('all')) {
-        selectedPersons = ['all'];
-    }
     
     // 유효성 검사
     if (!title || !startDate || !startTime || !endDate || !endTime || selectedPersons.length === 0) {
@@ -1793,13 +1691,6 @@ async function handleEventFormSubmit(e) {
     const isImportant = importantCheckbox ? importantCheckbox.checked : false;
     console.log('⭐ 중요일정:', isImportant);
     
-    if (window.appendAiScheduleLog) {
-        window.appendAiScheduleLog('form.submit.attachments', {
-            count: pendingAttachments.length,
-            names: pendingAttachments.map(f => f.name)
-        });
-    }
-
     try {
         showLoading(true);
         
@@ -1941,11 +1832,6 @@ async function handleEventFormSubmit(e) {
             } else {
                 showToast('일정이 수정되었습니다.', 'success');
             }
-            // 수정 모드에서 첨부 파일이 선택된 경우, 현재 편집 중인 일정 ID 기준으로 업로드
-            if (pendingAttachments.length > 0) {
-                const targetId = currentEditingEvent.extendedProps?.id || currentEditingEvent.id;
-                await uploadScheduleAttachments(targetId);
-            }
         } else {
             // Create new event - 복수 담당자 선택 시 각각 별도 일정 생성
             console.log('➕ Creating new event(s)');
@@ -1975,11 +1861,7 @@ async function handleEventFormSubmit(e) {
                     is_important: isImportant
                 };
                 appendAiScheduleLog('createSchedule.single', scheduleData);
-                const created = await api.createSchedule(scheduleData);
-                // 첨부 파일 업로드 (전체 일정)
-                if (pendingAttachments.length > 0) {
-                    await uploadScheduleAttachments(created.id);
-                }
+                await api.createSchedule(scheduleData);
                 showToast('일정이 추가되었습니다.', 'success');
             } else {
                 // 복수 담당자 선택 시 각 담당자별로 별도 일정 생성
@@ -2003,12 +1885,7 @@ async function handleEventFormSubmit(e) {
                     
                     console.log(`📋 Creating schedule for ${person}:`, scheduleData);
                     appendAiScheduleLog('createSchedule.multi', scheduleData);
-                    const created = await api.createSchedule(scheduleData);
-                    // 첨부 파일 업로드 (첫 번째 생성된 일정 기준으로 1회만 업로드)
-                    if (pendingAttachments.length > 0) {
-                        await uploadScheduleAttachments(created.id);
-                        pendingAttachments = [];
-                    }
+                    await api.createSchedule(scheduleData);
                 }
                 
                 const personCount = selectedPersons.length;
@@ -2096,37 +1973,6 @@ function showEventDetail(event) {
         repeatText = repeatTypeText + endDateText;
     }
     
-    const attachments = event.extendedProps.attachments || [];
-    
-    let attachmentsHtml = '';
-    if (attachments.length > 0) {
-        const items = attachments.map(att => {
-            const isImage = att.type && att.type.startsWith('image/');
-            if (isImage) {
-                return `
-                <div class="event-detail-row">
-                    <span class="material-icons detail-icon">attach_file</span>
-                    <span class="detail-content">
-                        <img src="${att.url}" alt="${att.name}" style="max-width: 100%; border-radius: 4px; display: block; margin-bottom: 4px;" />
-                        <a href="${att.url}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--primary-blue); text-decoration: underline;">
-                            ${att.name}
-                        </a>
-                    </span>
-                </div>`;
-            }
-            return `
-            <div class="event-detail-row">
-                <span class="material-icons detail-icon">attach_file</span>
-                <span class="detail-content">
-                    <a href="${att.url}" target="_blank" rel="noopener" style="font-size: 13px; color: var(--primary-blue); text-decoration: underline;">
-                        ${att.name}
-                    </a>
-                </span>
-            </div>`;
-        }).join('');
-        attachmentsHtml = items;
-    }
-    
     detail.innerHTML = `
         <div class="event-detail-row">
             <span class="material-icons detail-icon">event</span>
@@ -2158,7 +2004,6 @@ function showEventDetail(event) {
             <span class="detail-content">${repeatText}</span>
         </div>
         ` : ''}
-        ${attachmentsHtml}
     `;
     
     currentEditingEvent = event;
@@ -2274,30 +2119,30 @@ async function executeDelete() {
     try {
         showLoading(true);
         
-        const originalId = currentEditingEvent.extendedProps?.original_id 
-            || (currentEditingEvent.id.includes('_') 
-                ? currentEditingEvent.id.split('_')[0] 
-                : currentEditingEvent.id);
-        
         if (deleteRecurringOption === 'all') {
             // 모든 반복 일정 삭제 (원본 일정 삭제)
+            // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
+            const originalId = currentEditingEvent.extendedProps?.original_id 
+                || (currentEditingEvent.id.includes('_') 
+                    ? currentEditingEvent.id.split('_')[0] 
+                    : currentEditingEvent.id);
+            
             console.log('  - Deleting all recurring events');
             console.log('  - Original ID:', originalId);
+            console.log('  - Current event ID:', currentEditingEvent.id);
+            
             await api.deleteSchedule(originalId);
             showToast('모든 반복 일정이 삭제되었습니다.', 'success');
-        } else if (deleteRecurringOption === 'future') {
-            // 이 일정까지 남기고 이후만 삭제 → 반복 종료일을 선택한 일정 날짜로 변경
-            const selectedDateStr = new Date(currentEditingEvent.start).toISOString().split('T')[0];
-            const newRepeatEndDate = selectedDateStr + 'T23:59:59';
-            console.log('  - Truncating recurrence after selected date');
-            console.log('  - Original ID:', originalId);
-            console.log('  - New repeat_end_date:', newRepeatEndDate);
-            await api.updateSchedule(originalId, { repeat_end_date: newRepeatEndDate });
-            showToast('이후 반복 일정이 삭제되었습니다.', 'success');
         } else {
             // 단일 일정 삭제
             if (isRecurring) {
                 // 특정 날짜의 반복 일정만 제외
+                // extendedProps.original_id를 우선 사용, 없으면 ID에서 추출
+                const originalId = currentEditingEvent.extendedProps?.original_id 
+                    || (currentEditingEvent.id.includes('_') 
+                        ? currentEditingEvent.id.split('_')[0] 
+                        : currentEditingEvent.id);
+                
                 const excludeDate = new Date(currentEditingEvent.start).toISOString().split('T')[0];
                 
                 console.log('  - Excluding single recurring event');
@@ -2450,7 +2295,6 @@ function updateCalendarFilterFromButtons() {
     } else {
         console.error('calendarModule.filterByPersons not found!');
     }
-    syncFabPersonFromFilter();
 }
 
 /**

@@ -181,7 +181,7 @@
             <div class="fab-group" id="fabGroup">
                 <button class="fab fab-ai" id="aiAddEventBtn" title="AI 일정 추가 (음성으로 말하기)">
                     <div class="ai-fab-tooltip" id="aiFabTooltip" style="display: none;">
-                        <p>AI 일정추가 기능을 사용해보세요:)<br>예를들어 &quot;내일 3시 주환이 수영 일정&quot;</p>
+                        <p>AI일정추가 기능을 사용해보세요! 예를들어 &quot;내일 오후 3시에 주환이 리드인 일정 넣어줘&quot;.</p>
                     </div>
                     <span class="fab-ai-icon material-icons">auto_awesome</span>
                     <span class="fab-ai-mic material-icons" style="display:none">mic</span>
@@ -292,18 +292,6 @@
                         <span class="material-icons form-icon">subject</span>
                     </label>
                     <textarea id="eventDescription" rows="3" placeholder="설명을 입력하세요" class="input-large"></textarea>
-                </div>
-
-                <!-- 파일 첨부 -->
-                <div class="form-group">
-                    <label class="form-label" title="첨부 파일">
-                        <span class="material-icons form-icon">attach_file</span>
-                    </label>
-                    <div class="attachment-field">
-                        <input type="file" id="eventAttachmentsInput" multiple accept="image/*,application/pdf,text/plain" />
-                        <div id="eventAttachmentsList" class="attachment-list"></div>
-                        <div id="eventAttachmentsStatus" class="attachment-status" style="display: none;"></div>
-                    </div>
                 </div>
                 
                 <!-- 푸시 알림 -->
@@ -621,13 +609,6 @@
                         </button>
                     </div>
                     <p id="nlScheduleError" style="display: none; margin-top: 8px; color: #d32f2f; font-size: 12px;"></p>
-                    <div id="aiScheduleLogPanel" class="ai-schedule-log-panel">
-                        <div class="ai-schedule-log-header">
-                            <span>AI 일정추가 로그</span>
-                            <button type="button" class="btn-secondary ai-schedule-log-clear-btn" id="aiScheduleLogClearBtn">지우기</button>
-                        </div>
-                        <pre id="aiScheduleLog" class="ai-schedule-log-body">AI 일정추가 로그가 여기에 표시됩니다.</pre>
-                    </div>
                 </div>
             </div>
         </div>
@@ -728,10 +709,6 @@
                         <span class="material-icons">event</span>
                         <span>이 일정만 삭제</span>
                     </button>
-                    <button class="btn btn-primary" id="deleteFutureEventsBtn" style="width: 100%; justify-content: center; background: #f57c00;">
-                        <span class="material-icons">event_available</span>
-                        <span>이 일정까지 남기고 이후만 삭제</span>
-                    </button>
                     <button class="btn btn-primary" id="deleteAllEventsBtn" style="width: 100%; justify-content: center; background: #d32f2f;">
                         <span class="material-icons">event_repeat</span>
                         <span>모든 반복 일정 삭제</span>
@@ -755,7 +732,6 @@
     <!-- Firebase JS SDK (messaging은 알림 사용 시에만 로드 - Strava 연동 404 방지) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <!-- Firebase Config -->
     <script src="js/firebase-config.js?v=22"></script>
@@ -772,7 +748,6 @@
     <script src="js/fcm-notification.js?v=331"></script>
     <script src="js/api.js?v=310"></script>
     <script src="js/calendar.js?v=260"></script>
-    <script src="js/attachments.js?v=1"></script>
-    <script src="js/app.js?v=332"></script>
+    <script src="js/app.js?v=331"></script>
 </body>
 </html>

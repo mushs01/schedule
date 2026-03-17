@@ -18,8 +18,6 @@ const firebaseConfig = {
 try {
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
-    // Storage는 첨부파일 업로드에 사용
-    window.storage = firebase.storage();
     console.log('✅ Firebase initialized successfully');
 } catch (error) {
     console.error('❌ Firebase initialization error:', error);
