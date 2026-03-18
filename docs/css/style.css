@@ -2129,10 +2129,10 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     display: inline-flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;              /* 텍스트와 스위치 사이 간격만 */
+    gap: 4px;          /* 텍스트와 스위치 간 간격 */
     cursor: default;
     margin: 0;
-    padding: 2px 0;
+    padding: 0;        /* 줄 높이 최소화 */
 }
 .toggle-row,
 .toggle-row:hover,
@@ -2142,19 +2142,22 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     background: transparent !important;
     outline: none !important;
 }
+
 .toggle-row-text {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-primary);
-    white-space: nowrap;   /* 항상 한 줄 */
+    white-space: nowrap;
 }
+
+/* 짧은 토글 스위치 */
 .native-toggle {
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
-    width: 28px;           /* 짧은 스위치 바 */
-    height: 16px;
+    width: 24px;       /* 짧은 바 */
+    height: 14px;
     border-radius: 999px;
-    background: #dadce0;
+    background: #dadce0;      /* OFF: 회색 바 */
     border: none;
     outline: none;
     -webkit-appearance: none;
@@ -2164,24 +2167,27 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     box-sizing: content-box;
     vertical-align: middle;
 }
+
+/* 항상 흰색 동그라미 */
 .native-toggle::before {
     content: '';
     position: absolute;
     top: 1px;
     left: 1px;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background: #e0e0e0; /* OFF일 때는 연한 회색 동그라미 */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    background: #ffffff;      /* 항상 흰색 */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s;
 }
+
+/* ON 상태: 바만 파란색, 동그라미는 오른쪽으로 이동 */
 .native-toggle:checked {
-    background: #1a73e8;
+    background: #1a73e8;      /* ON: 파란색 바 */
 }
 .native-toggle:checked::before {
-    background: #ffffff; /* ON일 때는 흰색 동그라미 */
-    transform: translateX(10px);
+    transform: translateX(8px);
 }
 
 .datetime-horizontal {
