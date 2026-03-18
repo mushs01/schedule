@@ -863,11 +863,9 @@ body {
     opacity: 0.6;
 }
 
-/* 시간대 터치 선택: 해당 1시간 하이라이트 + 플러스 표시 */
+/* 시간대 터치 선택: 해당 1시간 하이라이트 + 플러스 표시 (담당자 색은 JS에서 적용) */
 .fc .slot-add-highlight,
 .slot-add-highlight {
-    background: rgba(120, 120, 120, 0.2) !important;
-    border: 2px dashed #9e9e9e !important;
     cursor: pointer;
     display: flex !important;
     align-items: center;

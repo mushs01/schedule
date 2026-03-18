@@ -187,7 +187,12 @@ function initCalendar() {
         eventDidMount: function(info) {
             if (info.event.id === '_slotAdd_' || info.event.extendedProps._slotAdd) {
                 info.el.classList.add('slot-add-highlight');
-                info.el.innerHTML = '<span class="material-icons" style="font-size: 24px; pointer-events: none;">add</span>';
+                const person = info.event.extendedProps._person || 'all';
+                const color = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'] || '#1a73e8';
+                const lightBg = hexToRgba(color, 0.2);
+                info.el.style.setProperty('border', `2px dashed ${color}`, 'important');
+                info.el.style.setProperty('background', lightBg, 'important');
+                info.el.innerHTML = '<span class="material-icons" style="font-size: 24px; pointer-events: none; color: ' + color + ';">add</span>';
                 info.el.title = '다시 터치하면 일정 추가 (또는 오른쪽 아래 + 버튼 길게 누르기)';
                 return;
             }
@@ -991,6 +996,9 @@ function handleTimeGridSlotClick(dateClickInfo) {
     }
     clearSlotSelection();
     slotSelection = { start: slotStart, end: slotEnd };
+    // FAB에 선택된 담당자 색으로 블록 표시
+    const addEventBtn = document.getElementById('addEventBtn');
+    const person = addEventBtn ? (addEventBtn.getAttribute('data-person') || 'all') : 'all';
     slotAddEventRef = calendar.addEvent({
         id: '_slotAdd_',
         start: slotStart,
@@ -999,7 +1007,7 @@ function handleTimeGridSlotClick(dateClickInfo) {
         display: 'block',
         editable: false,
         classNames: ['slot-add-highlight'],
-        extendedProps: { _slotAdd: true }
+        extendedProps: { _slotAdd: true, _person: person }
     });
 }
 
