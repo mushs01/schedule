@@ -865,7 +865,7 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                         if (calElForSync) calElForSync.classList.add('fc-no-all-day');
                     }
                     const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
-                    if (axis) axis.textContent = '';
+                    if (axis) axis.textContent = '📅';
                 }
                 console.log('[all-day] syncAllDayFromDom (100ms):', {
                     allDayRowFound: !!allDayRow,
