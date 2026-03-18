@@ -2157,7 +2157,7 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     position: relative;
     width: 24px;             /* 짧은 바 */
     height: 12px;
-    border-radius: 999px;
+    border-radius: 999px;              /* 양 끝 완전 둥글게 */
     background-color: #dadce0 !important;  /* OFF: 회색 바 (강제) */
     border: none;
     outline: none;
@@ -2168,6 +2168,8 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     box-sizing: content-box;
     vertical-align: middle;
     line-height: 0;          /* 내부에서 두 줄처럼 쌓이는 것 방지 */
+    overflow: hidden;        /* 모서리 밖을 잘라 사각형 느낌 제거 */
+    background-clip: padding-box;
 }
 
 /* 항상 흰색 동그라미 */
