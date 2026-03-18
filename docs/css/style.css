@@ -1885,15 +1885,40 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
-/* 첫 섹션: 날짜 행(첫 행) 아래 여백 제거 → all-day 일정이 바로 아래 붙도록 */
+/* 첫 섹션: 날짜 행(첫 행) 아래 여백 제거 + 헤더와 all-day 구분선(다른 선과 동일 색) */
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table thead th,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table thead td {
     padding-bottom: 0 !important;
-    border-bottom: none !important;
+    border-bottom: 1px solid #dadce0 !important;
+    line-height: 1 !important;
+    vertical-align: bottom !important;
 }
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:first-child th,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:first-child td {
     padding-bottom: 0 !important;
+    border-bottom: 1px solid #dadce0 !important;
+    line-height: 1 !important;
+    vertical-align: bottom !important;
+}
+/* 첫 섹션 날짜 헤더 셀/쿠션 아래 패딩 제거 → 위쪽 여백 최소화 */
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-col-header-cell {
+    padding-bottom: 0 !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-col-header-cell-cushion {
+    padding-bottom: 0 !important;
+}
+/* 날짜 헤더와 all-day 행 사이 간격 제거 (테이블/thead-tbody 겹침) */
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table {
+    border-spacing: 0 !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table thead,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody {
+    border: none !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr:first-child td,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr:first-child th {
+    padding-top: 0 !important;
+    border-top: none !important;
 }
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr td,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr th {
