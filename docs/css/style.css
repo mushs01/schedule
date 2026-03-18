@@ -2135,6 +2135,9 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     margin: 0;
     padding: 4px 0;
 }
+.toggle-row:hover {
+    background: transparent !important; /* 클릭 시 줄 전체가 파랗게 변하는 것 방지 */
+}
 .toggle-row-text {
     font-size: 14px;
     color: var(--text-primary);
