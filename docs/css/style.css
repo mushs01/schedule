@@ -2128,9 +2128,9 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 .toggle-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
-    gap: 16px; /* 토글을 텍스트보다 약간 오른쪽으로 띄움 */
+    gap: 12px; /* 텍스트 바로 오른쪽에 짧게 배치 */
     cursor: default;
     margin: 0;
     padding: 4px 0;
@@ -2146,8 +2146,7 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 .toggle-row-text {
     font-size: 14px;
     color: var(--text-primary);
-    white-space: normal;
-    flex: 1;
+    white-space: nowrap;
 }
 .native-toggle {
     flex-shrink: 0;
