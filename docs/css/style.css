@@ -2150,15 +2150,15 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     white-space: nowrap;   /* 항상 한 줄 */
 }
 
-/* 짧은 토글 스위치 */
+/* 짧은 토글 스위치: 바 1줄, 곡률 줄임 */
 .native-toggle {
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
-    width: 24px;             /* 짧은 바 */
-    height: 12px;
-    border-radius: 999px;              /* 양 끝 완전 둥글게 */
-    background-color: #dadce0 !important;  /* OFF: 회색 바 (강제) */
+    width: 24px;              /* 짧은 바 */
+    height: 10px;             /* 얇은 1줄 */
+    border-radius: 999px;     /* 곡률을 높여 양 끝 완전 둥근 캡슐 모양 */
+    background-color: #dadce0 !important;  /* OFF: 회색 바 */
     border: none;
     outline: none;
     -webkit-appearance: none;
@@ -2167,31 +2167,30 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     display: inline-block;
     box-sizing: content-box;
     vertical-align: middle;
-    line-height: 0;          /* 내부에서 두 줄처럼 쌓이는 것 방지 */
-    overflow: hidden;        /* 모서리 밖을 잘라 사각형 느낌 제거 */
-    background-clip: padding-box;
+    line-height: 0;
+    overflow: hidden;         /* 내부 요소가 바 밖으로 안 나가게 */
 }
 
-/* 항상 흰색 동그라미 */
+/* 항상 흰색 동그라미 (바 안에 딱 1줄로 보이게) */
 .native-toggle::before {
     content: '';
     position: absolute;
-    top: 1px;
+    top: 1px;                 /* 바의 위/아래 가운데에 오도록 */
     left: 1px;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #ffffff;      /* 항상 흰색 */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.0);  /* 2줄처럼 보이는 그림자 제거 */
     transition: transform 0.2s;
 }
 
 /* ON 상태: 바만 파란색, 동그라미는 오른쪽으로 이동 */
 .native-toggle:checked {
-    background-color: #1a73e8 !important;  /* ON: 파란색 바 (강제) */
+    background-color: #1a73e8 !important;  /* ON: 파란색 바 */
 }
 .native-toggle:checked::before {
-    transform: translateX(10px);
+    transform: translateX(12px);
 }
 
 .datetime-horizontal {
