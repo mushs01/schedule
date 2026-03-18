@@ -37,6 +37,32 @@ window.PERSON_NAMES = window.PERSON_NAMES || {
 };
 
 /**
+ * [디버그] 콘솔에서 실행: debugAllDayDom()
+ * all-day 영역 DOM 구조와 body 클래스 확인용
+ */
+window.debugAllDayDom = function debugAllDayDom() {
+    const cal = document.getElementById('calendar');
+    if (!cal) {
+        console.log('[all-day] #calendar 없음');
+        return;
+    }
+    const timegrid = cal.querySelector('.fc-timegrid');
+    const firstSection = cal.querySelector('.fc-timegrid .fc-scrollgrid-section:first-child');
+    const allDayRow = cal.querySelector('.fc-timegrid-all-day');
+    const info = {
+        bodyClass: document.body.classList.contains('fc-no-all-day'),
+        bodyClasses: Array.from(document.body.classList).filter(c => c.includes('fc')),
+        hasTimegrid: !!timegrid,
+        hasFirstSection: !!firstSection,
+        hasAllDayRow: !!allDayRow,
+        firstSectionHTML: firstSection ? firstSection.outerHTML.substring(0, 800) + (firstSection.outerHTML.length > 800 ? '...' : '') : null,
+        firstSectionTableRows: firstSection ? firstSection.querySelectorAll('table tr').length : 0
+    };
+    console.log('[all-day] DOM debug:', info);
+    return info;
+};
+
+/**
  * Hex 색상을 RGBA로 변환하는 헬퍼 함수
  */
 function hexToRgba(hex, alpha = 1) {
@@ -214,6 +240,12 @@ function initCalendar() {
                     } else {
                         document.body.classList.add('fc-no-all-day');
                     }
+                    console.log('[all-day] datesSet:', {
+                        view: dateInfo.view.type,
+                        hasAllDayEvent,
+                        eventCount: events.length,
+                        bodyHasClass: document.body.classList.contains('fc-no-all-day')
+                    });
                 } catch (e) {
                     console.warn('all-day visibility update error:', e);
                 }
@@ -793,12 +825,20 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         
         // all-day 표시 여부를 이벤트 데이터로 먼저 설정 (DOM 타이밍 의존 제거)
         const hasAllDayEvent = events.some(e => e.allDay === true);
+        const allDayCount = events.filter(e => e.allDay === true).length;
         if (hasAllDayEvent) {
             document.body.classList.remove('fc-no-all-day');
         } else {
             document.body.classList.add('fc-no-all-day');
         }
-        
+        console.log('[all-day] loadEvents:', {
+            hasAllDayEvent,
+            allDayCount,
+            totalEvents: events.length,
+            bodyHasClass: document.body.classList.contains('fc-no-all-day'),
+            bodyClassList: Array.from(document.body.classList).filter(c => c.includes('fc'))
+        });
+
         successCallback(events);
         // 렌더 후 한 번 더 동기화 (뷰 전환 시 등)
         setTimeout(function syncAllDayFromDom() {
@@ -807,14 +847,21 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 const calEl = calendar.el;
                 if (!calEl) return;
                 const allDayRow = calEl.querySelector('.fc-timegrid-all-day');
+                const hasInDom = allDayRow ? !!allDayRow.querySelector('.fc-event') : false;
                 if (allDayRow) {
-                    const hasInDom = !!allDayRow.querySelector('.fc-event');
                     if (hasInDom) document.body.classList.remove('fc-no-all-day');
                     else document.body.classList.add('fc-no-all-day');
                     const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
                     if (axis) axis.textContent = '';
                 }
-            } catch (e) {}
+                console.log('[all-day] syncAllDayFromDom (100ms):', {
+                    allDayRowFound: !!allDayRow,
+                    hasInDom,
+                    bodyHasClass: document.body.classList.contains('fc-no-all-day')
+                });
+            } catch (e) {
+                console.warn('[all-day] syncAllDayFromDom error:', e);
+            }
         }, 100);
     } catch (error) {
         console.error('Error loading events:', error);
