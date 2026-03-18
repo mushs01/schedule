@@ -2123,23 +2123,57 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     flex-direction: column;
     gap: 10px;
 }
-.all-day-row {
+
+/* 공통 토글 스위치 (하루 종일 / 중요일정) */
+.toggle-row {
     display: flex;
     align-items: center;
-}
-.all-day-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
     cursor: pointer;
     margin: 0;
+    padding: 4px 0;
+}
+.toggle-row-text {
     font-size: 14px;
     color: var(--text-primary);
+    white-space: nowrap;
 }
-.all-day-label input {
+.toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-switch {
+    position: relative;
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: #dadce0;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
     width: 18px;
     height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
 }
+.toggle-input:checked + .toggle-switch {
+    background: #1a73e8;
+}
+.toggle-input:checked + .toggle-switch::before {
+    transform: translateX(16px);
+}
+
 .datetime-horizontal {
     flex: 1;
     display: flex;

@@ -223,9 +223,10 @@
                     </label>
                     <div class="datetime-container">
                         <div class="all-day-row">
-                            <label class="checkbox-label all-day-label">
-                                <input type="checkbox" id="eventAllDay">
-                                <span>하루 종일</span>
+                            <label class="toggle-row" for="eventAllDay">
+                                <span class="toggle-row-text">하루 종일</span>
+                                <input type="checkbox" id="eventAllDay" class="toggle-input">
+                                <span class="toggle-switch"></span>
                             </label>
                         </div>
                         <div class="datetime-horizontal">
@@ -431,9 +432,10 @@
                     <label class="form-label" title="중요일정">
                         <span class="material-icons form-icon" style="color: #d32f2f;">star</span>
                     </label>
-                    <label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="eventImportant">
-                        <span>중요일정 (D-day 표시)</span>
+                    <label class="toggle-row" for="eventImportant">
+                        <span class="toggle-row-text">중요일정 (D-day 표시)</span>
+                        <input type="checkbox" id="eventImportant" class="toggle-input">
+                        <span class="toggle-switch"></span>
                     </label>
                 </div>
                 
