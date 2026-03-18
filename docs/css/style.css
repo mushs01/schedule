@@ -2145,7 +2145,7 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 }
 
 .toggle-row-text {
-    font-size: 12px;
+    font-size: 13px;          /* 글자 크기 조금 키움 */
     color: var(--text-primary);
     white-space: nowrap;   /* 항상 한 줄 */
 }
@@ -2155,8 +2155,8 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
-    width: 24px;              /* 짧은 바 */
-    height: 10px;             /* 얇은 1줄 */
+    width: 28px;              /* 글자 크기에 맞춰 약간 더 길게 */
+    height: 14px;             /* 글자 높이 정도로 바 높이 키움 */
     border-radius: 999px;     /* 곡률을 높여 양 끝 완전 둥근 캡슐 모양 */
     background-color: #dadce0 !important;  /* OFF: 회색 바 */
     border: none;
@@ -2177,8 +2177,8 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     position: absolute;
     top: 1px;                 /* 바의 위/아래 가운데에 오도록 */
     left: 1px;
-    width: 8px;
-    height: 8px;
+    width: 12px;              /* 동그라미도 글자 크기에 맞춰 키움 */
+    height: 12px;
     border-radius: 50%;
     background: #ffffff;      /* 항상 흰색 */
     box-shadow: 0 0 0 rgba(0, 0, 0, 0.0);  /* 2줄처럼 보이는 그림자 제거 */
