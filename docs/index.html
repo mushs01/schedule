@@ -37,7 +37,16 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=318">
+    <link rel="stylesheet" href="css/style.css?v=319">
+    <!-- all-day 숨김: 캐시와 무관하게 적용 (body 또는 #calendar에 .fc-no-all-day 있을 때) -->
+    <style>
+    body.fc-no-all-day .fc-timegrid-all-day,
+    body.fc-no-all-day .fc-timegrid .fc-timegrid-all-day,
+    #calendar.fc-no-all-day .fc-timegrid-all-day,
+    #calendar.fc-no-all-day .fc-timegrid .fc-timegrid-all-day { display: none !important; }
+    body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2),
+    #calendar.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) { display: none !important; }
+    </style>
 </head>
 <body>
     <!-- Google Calendar Style Header -->
