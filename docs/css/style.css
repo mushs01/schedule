@@ -1297,6 +1297,9 @@ body {
 .attachment-area {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;      /* 아이콘과 '파일 추가' 문구 줄 맞춤 */
+    gap: 8px;
 }
 .attachment-input {
     position: absolute;
@@ -2124,12 +2127,13 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     gap: 10px;
 }
 
-/* '하루 종일' 토글 줄 가운데 정렬 */
+/* '하루 종일' 토글 줄 - 위에 한 줄 여백 + 가운데 정렬 */
 .all-day-row {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
+    margin-top: 8px;  /* 위쪽에 한 줄 정도 여백 */
 }
 
 /* 공통 토글 스위치 (하루 종일 / 중요일정) - 한 줄, 짧은 스위치 */
