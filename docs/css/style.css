@@ -1834,10 +1834,48 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) td,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) th {
     vertical-align: top !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     height: auto !important;
     min-height: 0 !important;
+}
+/* all-day 영역: 일정을 위쪽부터 붙여서 표시 (여백·가운데 정렬 제거) */
+.fc .fc-timegrid-all-day .fc-timegrid-slot-lane,
+.fc .fc-timegrid-all-day .fc-daygrid-day-events,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-slot-lane,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-daygrid-day-events {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    min-height: 0 !important;
+}
+.fc .fc-timegrid-all-day .fc-timegrid-slot-frame,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-slot-frame {
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    padding-top: 0 !important;
+}
+/* 첫 섹션: 날짜 행(첫 행) 아래 여백 제거 → all-day 일정이 바로 아래 붙도록 */
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table thead th,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table thead td {
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:first-child th,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:first-child td {
+    padding-bottom: 0 !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr td,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tbody tr th {
+    padding-top: 0 !important;
+}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) th,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) td {
+    padding-top: 0 !important;
 }
 
 /* 반복 상세 옵션 */
