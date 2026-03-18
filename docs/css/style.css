@@ -1771,17 +1771,23 @@ body {
 .fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
     content: '';
 }
-/* [all-day 디버그] body에 fc-no-all-day 있으면 상단에 빨간선 표시 → style.css 로드·클래스 적용 확인용 (확인 후 제거) */
+/* [all-day 디버그] body 또는 #calendar에 fc-no-all-day 있으면 상단/캘린더에 빨간선 표시 (확인 후 제거) */
 body.fc-no-all-day {
     border-top: 3px solid red !important;
 }
-/* 하루 종일 일정이 없을 때 all-day 줄 완전 숨김 (이벤트 데이터 기준으로 body에 .fc-no-all-day 적용) */
+#calendar.fc-no-all-day {
+    border-top: 3px solid red !important;
+}
+/* 하루 종일 일정이 없을 때 all-day 줄 완전 숨김 (body 또는 #calendar에 .fc-no-all-day 적용) */
 body.fc-no-all-day .fc-timegrid-all-day,
-body.fc-no-all-day .fc-timegrid .fc-timegrid-all-day {
+body.fc-no-all-day .fc-timegrid .fc-timegrid-all-day,
+#calendar.fc-no-all-day .fc-timegrid-all-day,
+#calendar.fc-no-all-day .fc-timegrid .fc-timegrid-all-day {
     display: none !important;
 }
-/* FC6: 첫 번째 섹션의 두 번째 행이 all-day 행인 경우 (클래스 없을 때 대비) */
-body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) {
+/* FC6: 첫 번째 섹션의 두 번째 행이 all-day 행인 경우 */
+body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2),
+#calendar.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) {
     display: none !important;
 }
 

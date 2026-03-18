@@ -88,8 +88,9 @@ function initCalendar() {
         return;
     }
     
-    // 하루 종일 일정이 없으면 all-day 줄 숨김 (이벤트 로드 후 갱신됨)
+    // 하루 종일 일정이 없으면 all-day 줄 숨김 (body + 캘린더 요소 둘 다 적용해 확실히)
     document.body.classList.add('fc-no-all-day');
+    calendarEl.classList.add('fc-no-all-day');
     
     // 모바일: FC가 측정할 때부터 컨테이너를 뷰포트 폭으로 고정해 여백 방지
     if (window.innerWidth <= 768) {
@@ -235,10 +236,13 @@ function initCalendar() {
                 try {
                     const events = calendar.getEvents();
                     const hasAllDayEvent = events.some(e => e.allDay === true);
+                    const calEl = calendar.el;
                     if (hasAllDayEvent) {
                         document.body.classList.remove('fc-no-all-day');
+                        if (calEl) calEl.classList.remove('fc-no-all-day');
                     } else {
                         document.body.classList.add('fc-no-all-day');
+                        if (calEl) calEl.classList.add('fc-no-all-day');
                     }
                     console.log('[all-day] datesSet:', {
                         view: dateInfo.view.type,
@@ -826,10 +830,13 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
         // all-day 표시 여부를 이벤트 데이터로 먼저 설정 (DOM 타이밍 의존 제거)
         const hasAllDayEvent = events.some(e => e.allDay === true);
         const allDayCount = events.filter(e => e.allDay === true).length;
+        const calEl = calendar && calendar.el ? calendar.el : document.getElementById('calendar');
         if (hasAllDayEvent) {
             document.body.classList.remove('fc-no-all-day');
+            if (calEl) calEl.classList.remove('fc-no-all-day');
         } else {
             document.body.classList.add('fc-no-all-day');
+            if (calEl) calEl.classList.add('fc-no-all-day');
         }
         console.log('[all-day] loadEvents:', {
             hasAllDayEvent,
@@ -849,8 +856,14 @@ async function loadEvents(fetchInfo, successCallback, failureCallback) {
                 const allDayRow = calEl.querySelector('.fc-timegrid-all-day');
                 const hasInDom = allDayRow ? !!allDayRow.querySelector('.fc-event') : false;
                 if (allDayRow) {
-                    if (hasInDom) document.body.classList.remove('fc-no-all-day');
-                    else document.body.classList.add('fc-no-all-day');
+                    const calElForSync = calendar.el;
+                    if (hasInDom) {
+                        document.body.classList.remove('fc-no-all-day');
+                        if (calElForSync) calElForSync.classList.remove('fc-no-all-day');
+                    } else {
+                        document.body.classList.add('fc-no-all-day');
+                        if (calElForSync) calElForSync.classList.add('fc-no-all-day');
+                    }
                     const axis = allDayRow.querySelector('.fc-timegrid-axis-cushion');
                     if (axis) axis.textContent = '';
                 }
