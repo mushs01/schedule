@@ -1771,6 +1771,10 @@ body {
 .fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
     content: '';
 }
+/* [all-day 디버그] body에 fc-no-all-day 있으면 상단에 빨간선 표시 → style.css 로드·클래스 적용 확인용 (확인 후 제거) */
+body.fc-no-all-day {
+    border-top: 3px solid red !important;
+}
 /* 하루 종일 일정이 없을 때 all-day 줄 완전 숨김 (이벤트 데이터 기준으로 body에 .fc-no-all-day 적용) */
 body.fc-no-all-day .fc-timegrid-all-day,
 body.fc-no-all-day .fc-timegrid .fc-timegrid-all-day {
