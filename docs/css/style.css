@@ -1770,37 +1770,27 @@ body {
 
 /* (하루 종일 토글 관련 스타일은 제거 - 기본 체크박스로 복원) */
 
-/* 하루 종일 일정 줄 - 왼쪽에 📅 이모지 표시 (일정 없을 땐 fc-no-all-day로 행 전체 숨김) */
+/* 하루 종일 일정 줄 - 왼쪽 축(라벨) 영역 숨김 */
 .fc .fc-timegrid-all-day .fc-timegrid-axis,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis {
-    width: 32px !important;
-    min-width: 32px !important;
-    max-width: 32px !important;
-    padding: 0 4px !important;
-    overflow: visible !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
     border: none !important;
-    vertical-align: middle !important;
 }
 .fc .fc-timegrid-all-day .fc-timegrid-axis-cushion,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion {
-    font-size: 0 !important;  /* FC 기본 "all day" 텍스트 숨김 */
-    line-height: 1.2 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
-    text-indent: -9999px !important;  /* 기본 텍스트 화면 밖으로 */
-    visibility: visible !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    overflow: hidden !important;
+    text-indent: -9999px !important;
+    visibility: hidden !important;
 }
-/* 📅 이모지는 ::before로 고정 (FC가 텍스트를 덮어써도 유지) */
 .fc .fc-timegrid-all-day .fc-timegrid-axis-cushion::before,
-.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion::before {
-    content: '📅' !important;
-    font-size: 1rem !important;
-    text-indent: 0 !important;
-    line-height: 1 !important;
-}
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion::before,
 .fc .fc-timegrid-all-day .fc-timegrid-axis-cushion::after,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion::after {
     content: none !important;
