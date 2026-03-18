@@ -2153,8 +2153,8 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     cursor: pointer;
     /* 커스텀 스위치 모양 (파란/회색 토글) */
     position: relative;
-    width: 38px;
-    height: 22px;
+    width: 32px;  /* 전체 길이 축소 */
+    height: 20px;
     border-radius: 999px;
     background: #dadce0;
     border: none;
@@ -2162,12 +2162,14 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     -webkit-appearance: none;
     appearance: none;
     transition: background-color 0.2s;
+    display: inline-block;
+    box-sizing: content-box;
 }
 .native-toggle::before {
     content: '';
     position: absolute;
-    top: 2px;
-    left: 2px;
+    top: 1px;
+    left: 1px;
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -2179,7 +2181,7 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     background: #1a73e8;
 }
 .native-toggle:checked::before {
-    transform: translateX(16px);
+    transform: translateX(12px);
 }
 
 .datetime-horizontal {
