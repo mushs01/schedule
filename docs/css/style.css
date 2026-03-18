@@ -1003,21 +1003,25 @@ body {
     line-height: 1 !important;
 }
 
+/* 오늘의 일정 영역 - 펼치기 전 줄 높이 최소화 */
 .today-summary {
     background: #f5f5f5;
     border-bottom: 1px solid var(--border-color);
-    padding: 10px 16px;
+    padding: 4px 12px 4px 12px;
 }
 
 .today-summary-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
+    gap: 6px;
+    margin-bottom: 0;
+    margin-top: 0;
     user-select: none;
     transition: background-color 0.2s;
-    padding: 4px 0;
+    padding: 2px 0;
     border-radius: 4px;
+    line-height: 1.2;
+    min-height: 0;
 }
 
 .today-summary-header:hover {
@@ -1025,15 +1029,17 @@ body {
 }
 
 .today-summary-header h3 {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
+    line-height: 1.2;
+    padding: 0;
 }
 
 .today-summary-header .toggle-icon {
     margin-left: auto;
-    font-size: 20px;
+    font-size: 18px;
     color: var(--text-secondary);
     transition: transform 0.3s;
 }
@@ -1043,8 +1049,9 @@ body {
 }
 
 .today-date {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
+    line-height: 1.2;
 }
 
 .today-summary-list {
