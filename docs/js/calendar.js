@@ -187,9 +187,18 @@ function initCalendar() {
         eventDidMount: function(info) {
             if (info.event.id === '_slotAdd_' || info.event.extendedProps._slotAdd) {
                 info.el.classList.add('slot-add-highlight');
-                const person = info.event.extendedProps._person || 'all';
-                const color = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'] || '#1a73e8';
-                const lightBg = hexToRgba(color, 0.2);
+                const startOfToday = new Date();
+                startOfToday.setHours(0, 0, 0, 0);
+                const isPast = info.event.start < startOfToday;
+                let color, lightBg;
+                if (isPast) {
+                    color = '#9e9e9e';
+                    lightBg = 'rgba(158, 158, 158, 0.2)';
+                } else {
+                    const person = info.event.extendedProps._person || 'all';
+                    color = window.PERSON_COLORS[person] || window.PERSON_COLORS['all'] || '#1a73e8';
+                    lightBg = hexToRgba(color, 0.2);
+                }
                 info.el.style.setProperty('border', `2px dashed ${color}`, 'important');
                 info.el.style.setProperty('background', lightBg, 'important');
                 info.el.innerHTML = '<span class="material-icons" style="font-size: 24px; pointer-events: none; color: ' + color + ';">add</span>';
