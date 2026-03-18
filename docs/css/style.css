@@ -1763,13 +1763,28 @@ body {
 
 /* (하루 종일 토글 관련 스타일은 제거 - 기본 체크박스로 복원) */
 
-/* 하루 종일 일정 줄 - all-day 라벨 제거, 여백 최소화 */
-.fc-timegrid-all-day .fc-timegrid-axis-cushion {
-    font-size: 0;
-    padding: 0;
+/* 하루 종일 일정 줄 - 왼쪽 "all-day" 문구 완전 삭제(숨김) */
+.fc .fc-timegrid-all-day .fc-timegrid-axis,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
 }
-.fc-timegrid-all-day .fc-timegrid-axis-cushion::after {
-    content: '';
+.fc .fc-timegrid-all-day .fc-timegrid-axis-cushion,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion {
+    font-size: 0 !important;
+    line-height: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    text-indent: -9999px !important;
+    visibility: hidden !important;
+}
+.fc .fc-timegrid-all-day .fc-timegrid-axis-cushion::after,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-timegrid-axis-cushion::after {
+    content: '' !important;
 }
 /* 하루 종일 일정이 없을 때 all-day 줄 완전 숨김 (body 또는 #calendar에 .fc-no-all-day 적용) */
 /* 방법1: all-day 행/요소 직접 */
@@ -1797,9 +1812,19 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     padding-top: 0 !important;
     padding-bottom: 0 !important;
 }
+.fc .fc-scrollgrid-section:first-child > table,
+.fc .fc-scrollgrid-section:first-child > div {
+    margin: 0 !important;
+    padding: 0 !important;
+}
 .fc .fc-timegrid-divider {
     margin-top: 0 !important;
+    margin-bottom: 0 !important;
     padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    border: none !important;
 }
 /* all-day 행/셀 높이를 콘텐츠만큼만 (테이블 기본 높이 제거) */
 .fc .fc-timegrid-all-day,
@@ -1858,6 +1883,7 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
     justify-content: flex-start !important;
     align-items: flex-start !important;
     padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 /* 첫 섹션: 날짜 행(첫 행) 아래 여백 제거 → all-day 일정이 바로 아래 붙도록 */
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table thead th,
@@ -1876,6 +1902,26 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) th,
 .fc .fc-timegrid .fc-scrollgrid-section:first-child table tr:nth-child(2) td {
     padding-top: 0 !important;
+}
+
+/* all-day 영역 내 일정 블록 위/아래 여백 제거 */
+.fc .fc-timegrid-all-day .fc-daygrid-day-events,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-daygrid-day-events {
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+}
+.fc .fc-timegrid-all-day .fc-daygrid-event-harness,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-daygrid-event-harness {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+.fc .fc-timegrid-all-day .fc-event,
+.fc .fc-timegrid-all-day .fc-daygrid-event,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-event,
+.fc .fc-timegrid .fc-scrollgrid-section:first-child .fc-daygrid-event {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 /* 반복 상세 옵션 */
