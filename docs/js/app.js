@@ -20,6 +20,131 @@ let deleteRecurringModal;
 let eventForm;
 let loadingOverlay;
 let toast;
+let backExitDialog;
+let backNavigationInitialized = false;
+let skipNextPopstate = false;
+
+function showToastSafe(message, type = 'info') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        console.log(message);
+    }
+}
+
+function ensureBackExitDialog() {
+    if (backExitDialog) return backExitDialog;
+    backExitDialog = document.createElement('div');
+    backExitDialog.id = 'backExitDialog';
+    backExitDialog.className = 'modal';
+    backExitDialog.innerHTML = `
+        <div class="modal-content" style="max-width: 320px; padding: 16px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px;">앱 이동</h3>
+            <p style="margin: 0 0 16px 0; color: #5f6368; font-size: 14px;">이전 화면으로 돌아가거나 앱을 종료할 수 있습니다.</p>
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" id="backExitCancelBtn" class="btn btn-text">취소</button>
+                <button type="button" id="backExitGoBackBtn" class="btn btn-text">돌아가기</button>
+                <button type="button" id="backExitCloseAppBtn" class="btn btn-primary">종료하기</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(backExitDialog);
+
+    backExitDialog.addEventListener('click', (e) => {
+        if (e.target === backExitDialog) {
+            backExitDialog.classList.remove('active');
+        }
+    });
+    backExitDialog.querySelector('#backExitCancelBtn')?.addEventListener('click', () => {
+        backExitDialog.classList.remove('active');
+    });
+    backExitDialog.querySelector('#backExitGoBackBtn')?.addEventListener('click', () => {
+        backExitDialog.classList.remove('active');
+        // 이번 1회는 popstate 가드 무시하고 실제 이전 페이지로 이동 시도
+        skipNextPopstate = true;
+        window.history.back();
+    });
+    backExitDialog.querySelector('#backExitCloseAppBtn')?.addEventListener('click', () => {
+        backExitDialog.classList.remove('active');
+        // 브라우저/PWA 제약상 종료가 막힐 수 있어 best-effort
+        try {
+            window.close();
+        } catch (_) {}
+        setTimeout(() => {
+            try {
+                window.location.href = 'about:blank';
+            } catch (_) {}
+            showToastSafe('브라우저 정책으로 자동 종료가 제한될 수 있습니다.', 'info');
+        }, 120);
+    });
+
+    return backExitDialog;
+}
+
+function closeTopAppScreen() {
+    const activeModals = Array.from(document.querySelectorAll('.modal.active'));
+    if (activeModals.length === 0) return false;
+
+    const topModal = activeModals[activeModals.length - 1];
+    if (!topModal || !topModal.id) return false;
+
+    switch (topModal.id) {
+        case 'eventModal':
+            closeEventModal();
+            return true;
+        case 'eventDetailModal':
+            closeEventDetailModal();
+            return true;
+        case 'deleteRecurringModal':
+            closeDeleteRecurringModal();
+            return true;
+        case 'settingsModal':
+            closeSettingsModal();
+            return true;
+        case 'searchModal':
+            closeSearchModal();
+            return true;
+        case 'betaTestModal':
+            closeBetaTestModal();
+            return true;
+        case 'exerciseDetailModal': {
+            const closeBtn = document.getElementById('closeExerciseDetailBtn');
+            if (closeBtn) closeBtn.click();
+            else topModal.classList.remove('active');
+            return true;
+        }
+        default:
+            topModal.classList.remove('active');
+            return true;
+    }
+}
+
+function showRootBackDialog() {
+    ensureBackExitDialog().classList.add('active');
+}
+
+function initBackNavigationHandling() {
+    if (backNavigationInitialized) return;
+    backNavigationInitialized = true;
+
+    ensureBackExitDialog();
+    // 현재 페이지에 back-guard 상태 하나를 쌓아 하드웨어 뒤로가기(popstate) 이벤트를 받는다.
+    window.history.pushState({ appBackGuard: true }, '', window.location.href);
+
+    window.addEventListener('popstate', () => {
+        if (skipNextPopstate) {
+            skipNextPopstate = false;
+            return; // 사용자가 선택한 '돌아가기'는 실제 뒤로 이동 허용
+        }
+
+        const closed = closeTopAppScreen();
+        if (!closed) {
+            showRootBackDialog();
+        }
+        // 앱 내부 처리 후 guard 복구
+        window.history.pushState({ appBackGuard: true }, '', window.location.href);
+    });
+}
 
 /**
  * Floating Action Button 설정
@@ -174,6 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     eventForm = document.getElementById('eventForm');
     loadingOverlay = document.getElementById('loadingOverlay');
     toast = document.getElementById('toast');
+    initBackNavigationHandling();
     
     try {
         setupEventListeners();
