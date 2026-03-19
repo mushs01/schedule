@@ -128,8 +128,12 @@ function initBackNavigationHandling() {
     backNavigationInitialized = true;
 
     ensureBackExitDialog();
-    // 현재 페이지에 back-guard 상태 하나를 쌓아 하드웨어 뒤로가기(popstate) 이벤트를 받는다.
-    window.history.pushState({ appBackGuard: true }, '', window.location.href);
+    // 일부 웹뷰/PWA에서는 1개 가드만으로 바로 종료될 수 있어 2중 가드로 시작
+    const pushBackGuard = () => {
+        window.history.pushState({ appBackGuard: true, t: Date.now() }, '', window.location.href);
+    };
+    pushBackGuard();
+    pushBackGuard();
 
     window.addEventListener('popstate', () => {
         if (skipNextPopstate) {
@@ -142,7 +146,12 @@ function initBackNavigationHandling() {
             showRootBackDialog();
         }
         // 앱 내부 처리 후 guard 복구
-        window.history.pushState({ appBackGuard: true }, '', window.location.href);
+        pushBackGuard();
+    });
+
+    // 앱이 백그라운드/복귀를 반복할 때 가드가 사라지는 환경 대비
+    window.addEventListener('pageshow', () => {
+        pushBackGuard();
     });
 }
 
