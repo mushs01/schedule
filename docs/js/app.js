@@ -708,6 +708,16 @@ function setupEventListeners() {
         closeDetailBtn.addEventListener('click', closeEventDetailModal);
         console.log('✅ Close detail button listener added');
     }
+    const attachmentLightboxClose = document.getElementById('attachmentLightboxClose');
+    const attachmentLightbox = document.getElementById('attachmentLightbox');
+    if (attachmentLightboxClose) {
+        attachmentLightboxClose.addEventListener('click', closeAttachmentLightbox);
+    }
+    if (attachmentLightbox) {
+        attachmentLightbox.addEventListener('click', (e) => {
+            if (e.target === attachmentLightbox) closeAttachmentLightbox();
+        });
+    }
     
     // Event form submission
     if (eventForm) {
@@ -1901,6 +1911,40 @@ function _isImageFile(file) {
 }
 
 /**
+ * 첨부파일 크게 보기 (풀스크린 라이트박스)
+ */
+function showAttachmentLightbox(url, name) {
+    const lb = document.getElementById('attachmentLightbox');
+    const imgEl = document.getElementById('attachmentLightboxImg');
+    const fallbackEl = document.getElementById('attachmentLightboxFallback');
+    const nameEl = document.getElementById('attachmentLightboxName');
+    const linkEl = document.getElementById('attachmentLightboxLink');
+    if (!lb || !imgEl || !fallbackEl) return;
+    const isImg = url && (_isImageUrl(url) || url.startsWith('blob:'));
+    imgEl.style.display = isImg ? '' : 'none';
+    fallbackEl.style.display = isImg ? 'none' : 'flex';
+    if (isImg) {
+        imgEl.src = url;
+        imgEl.alt = name || '';
+    } else {
+        nameEl.textContent = name || '첨부파일';
+        linkEl.href = url || '#';
+        linkEl.style.display = url ? '' : 'none';
+    }
+    lb.classList.add('active');
+    lb.setAttribute('aria-hidden', 'false');
+}
+function closeAttachmentLightbox() {
+    const lb = document.getElementById('attachmentLightbox');
+    const imgEl = document.getElementById('attachmentLightboxImg');
+    if (lb) {
+        lb.classList.remove('active');
+        lb.setAttribute('aria-hidden', 'true');
+    }
+    if (imgEl) imgEl.src = '';
+}
+
+/**
  * 일정 상세 모달 첨부 미리보기 (한 장씩 크게)
  */
 function initEventDetailAttachments(attachments) {
@@ -1940,7 +1984,7 @@ function initEventDetailAttachments(attachments) {
     function render() {
         const att = attachments[index];
         if (!att) return;
-        const name = att.name || '첨부파일';
+        const name = att.name || att.filename || '첨부파일';
         const url = att.url || '';
         
         mediaEl.innerHTML = '';
@@ -1962,9 +2006,7 @@ function initEventDetailAttachments(attachments) {
         
         if (url) {
             mediaEl.style.cursor = 'pointer';
-            mediaEl.onclick = () => {
-                window.open(url, '_blank', 'noopener');
-            };
+            mediaEl.onclick = () => showAttachmentLightbox(url, name);
         } else {
             mediaEl.style.cursor = 'default';
             mediaEl.onclick = null;
@@ -2019,9 +2061,15 @@ function renderEventAttachmentList() {
             img.loading = 'lazy';
             img.onerror = () => { preview.classList.add('attachment-preview-fallback'); preview.textContent = ''; };
             preview.appendChild(img);
+            preview.style.cursor = 'pointer';
+            preview.addEventListener('click', () => showAttachmentLightbox(att.url, att.name || att.filename || '파일'));
         } else {
             preview.classList.add('attachment-preview-fallback');
             preview.innerHTML = '<span class="material-icons">description</span>';
+            if (att.url) {
+                preview.style.cursor = 'pointer';
+                preview.addEventListener('click', () => showAttachmentLightbox(att.url, att.name || att.filename || '파일'));
+            }
         }
         item.appendChild(preview);
         const info = document.createElement('div');
@@ -2063,9 +2111,12 @@ function renderEventAttachmentList() {
             img.src = url;
             img.alt = file.name || '';
             preview.appendChild(img);
+            preview.style.cursor = 'pointer';
+            preview.addEventListener('click', () => showAttachmentLightbox(url, file.name || '파일'));
         } else {
             preview.classList.add('attachment-preview-fallback');
             preview.innerHTML = '<span class="material-icons">description</span>';
+            preview.title = '미리보기: ' + (file.name || '파일') + ' - 저장 후 상세에서 확인';
         }
         item.appendChild(preview);
         const info = document.createElement('div');

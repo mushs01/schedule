@@ -1313,7 +1313,8 @@ body {
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: center;      /* 아이콘과 '파일 추가' 문구 줄 맞춤 */
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
 }
 .attachment-input {
@@ -1328,8 +1329,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 8px;
     min-height: 0;
+    width: 100%;
 }
 .attachment-item {
     display: inline-flex;
@@ -2587,17 +2588,19 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 }
 .event-detail-attachment-media {
     width: 100%;
-    max-height: 320px;
-    min-height: 220px;
+    max-height: 420px;
+    min-height: 280px;
     background: #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 .event-detail-attachment-media img {
     max-width: 100%;
-    max-height: 320px;
+    max-height: 420px;
     object-fit: contain;
+    cursor: pointer;
 }
 .event-detail-attachment-fallback {
     display: flex;
@@ -2663,6 +2666,63 @@ body.fc-no-all-day .fc-timegrid .fc-scrollgrid-section:first-child table tbody,
 .event-detail-attachment-nav:hover {
     background: rgba(0,0,0,0.06);
     color: var(--text-primary);
+}
+
+/* 첨부파일 크게 보기 라이트박스 */
+.attachment-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px 16px;
+}
+.attachment-lightbox.active {
+    display: flex;
+}
+.attachment-lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.attachment-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+.attachment-lightbox-content {
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.attachment-lightbox-content img {
+    max-width: 100%;
+    max-height: calc(100vh - 80px);
+    object-fit: contain;
+}
+.attachment-lightbox-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    padding: 24px;
+    text-align: center;
+}
+.attachment-lightbox-fallback .material-icons {
+    font-size: 64px;
+    margin-bottom: 12px;
 }
 
 /* 이전 스타일 (호환성 유지) */

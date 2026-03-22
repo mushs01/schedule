@@ -717,6 +717,21 @@
         </div>
     </div>
 
+    <!-- 첨부파일 크게 보기 (풀스크린 라이트박스) -->
+    <div class="attachment-lightbox" id="attachmentLightbox" aria-hidden="true">
+        <button class="attachment-lightbox-close" id="attachmentLightboxClose" aria-label="닫기">
+            <span class="material-icons">close</span>
+        </button>
+        <div class="attachment-lightbox-content">
+            <img id="attachmentLightboxImg" src="" alt="" style="display: none;">
+            <div id="attachmentLightboxFallback" class="attachment-lightbox-fallback" style="display: none;">
+                <span class="material-icons">description</span>
+                <span id="attachmentLightboxName"></span>
+                <a id="attachmentLightboxLink" href="#" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: 12px;">파일 열기</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div class="toast" id="toast">
         <span id="toastMessage"></span>
