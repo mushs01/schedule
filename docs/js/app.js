@@ -2551,6 +2551,12 @@ function showEventDetail(event) {
     console.log('📋 currentEditingEvent.id:', currentEditingEvent.id);
     console.log('📋 currentEditingEvent.extendedProps:', currentEditingEvent.extendedProps);
     
+    // 삭제/수정 버튼 표시 (showDaySchedule에서 숨겼을 수 있음)
+    const editBtn = document.getElementById('editEventBtn');
+    const deleteBtn = document.getElementById('deleteEventBtn');
+    if (editBtn) editBtn.style.display = '';
+    if (deleteBtn) deleteBtn.style.display = '';
+    
     // 모달 활성화
     eventDetailModal.classList.add('active');
     

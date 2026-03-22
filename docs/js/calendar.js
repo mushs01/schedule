@@ -1065,9 +1065,10 @@ function showDaySchedule(date, events) {
             const endTime = event.end ? event.end.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
             const personName = window.PERSON_NAMES[event.extendedProps.person] || '전체';
             const color = event.backgroundColor;
+            const eventId = event.id ? String(event.id) : '';
             
             eventsHTML += `
-                <div class="day-schedule-item" style="border-left: 4px solid ${color}; padding-left: 12px; margin-bottom: 12px; cursor: default;">
+                <div class="day-schedule-item" data-event-id="${eventId}" style="border-left: 4px solid ${color}; padding-left: 12px; margin-bottom: 12px; cursor: pointer;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                         <span style="font-weight: 600; font-size: 14px;">${startTime}${endTime ? ' - ' + endTime : ''}</span>
                         <span class="event-person-badge" style="background: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;">${personName}</span>
@@ -1110,6 +1111,19 @@ function showDaySchedule(date, events) {
             }
         });
     }
+    
+    // 일정 항목 터치/클릭 시 상세 보기
+    detail.querySelectorAll('.day-schedule-item[data-event-id]').forEach(item => {
+        const eventId = item.getAttribute('data-event-id');
+        if (!eventId) return;
+        const fcEvent = calendar.getEventById(eventId);
+        if (!fcEvent) return;
+        item.addEventListener('click', () => {
+            if (window.showEventDetail) {
+                window.showEventDetail(fcEvent);
+            }
+        });
+    });
     
     // 삭제/수정 버튼 숨기기 (월 일정 하루 요약에서는 읽기 전용)
     const deleteBtn = modal.querySelector('#deleteEventBtn');
