@@ -834,12 +834,12 @@ function setupEventListeners() {
 
     // AI 일정추가 로그 지우기
     const aiLogClearBtn = document.getElementById('aiScheduleLogClearBtn');
-    if (aiLogClearBtn) {
-        aiLogClearBtn.addEventListener('click', () => {
-            window._aiScheduleLogs = [];
-            const logEl = document.getElementById('aiScheduleLog');
-            if (logEl) logEl.textContent = 'AI 일정추가 로그가 여기에 표시됩니다.';
-        });
+        if (aiLogClearBtn) {
+            aiLogClearBtn.addEventListener('click', () => {
+                window._aiScheduleLogs = [];
+                const logEl = document.getElementById('aiScheduleLog');
+                if (logEl) logEl.textContent = 'AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.';
+            });
     }
     
     // Hamburger menu button (사이드바 토글)
@@ -1894,6 +1894,7 @@ async function uploadAttachmentFiles(scheduleId, files) {
     const storage = window.storage;
     if (!storage) {
         console.warn('Firebase Storage not available');
+        appendAiScheduleLog('attachment.storage.unavailable', { scheduleId });
         if (window.showToast) {
             window.showToast('파일 첨부 기능을 사용할 수 없습니다. Firebase Storage 설정을 확인해 주세요.', 'error');
         }
@@ -1911,6 +1912,11 @@ async function uploadAttachmentFiles(scheduleId, files) {
             results.push({ name: file.name || 'file', url });
         } catch (err) {
             console.error('Attachment upload failed:', file.name, err);
+            appendAiScheduleLog('attachment.upload.failed', {
+                fileName: file.name,
+                scheduleId,
+                error: err?.message || String(err)
+            });
             if (window.showToast) {
                 window.showToast(`첨부파일 업로드 실패: ${file.name}`, 'error');
             }
@@ -2453,8 +2459,13 @@ async function handleEventFormSubmit(e) {
                 appendAiScheduleLog('createSchedule.single', scheduleData);
                 const created = await api.createSchedule(scheduleData);
                 if (eventAttachmentPendingFiles.length > 0 && created && created.id) {
-                    const uploaded = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
-                    if (uploaded.length > 0) await api.updateSchedule(created.id, { attachments: uploaded });
+                    try {
+                        const uploaded = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
+                        if (uploaded.length > 0) await api.updateSchedule(created.id, { attachments: uploaded });
+                    } catch (attErr) {
+                        console.error('첨부파일 저장 실패 (일정은 저장됨):', attErr);
+                        showToast('일정은 저장되었으나 첨부파일 저장에 실패했습니다.', 'error');
+                    }
                 }
                 showToast('일정이 추가되었습니다.', 'success');
             } else {
@@ -2511,8 +2522,14 @@ async function handleEventFormSubmit(e) {
         closeEventModal();
     } catch (error) {
         console.error('❌ Error saving event:', error);
-        appendAiScheduleLog('form.submit.exception', { message: error?.message || String(error) });
-        showToast('일정 저장에 실패했습니다.', 'error');
+        const errMsg = error?.message || error?.toString?.() || '알 수 없는 오류';
+        appendAiScheduleLog('form.submit.exception', {
+            message: errMsg,
+            pendingFiles: eventAttachmentPendingFiles?.length ?? 0,
+            existingAttachments: eventAttachmentExisting?.length ?? 0,
+            stack: error?.stack?.split?.('\n')?.slice(0, 5)
+        });
+        showToast('일정 저장에 실패했습니다: ' + errMsg, 'error');
     } finally {
         showLoading(false);
     }
@@ -2964,6 +2981,13 @@ function openBetaTestModal() {
         updateStravaUI();
         if (typeof window.updateGeminiApiKeyUI === 'function') window.updateGeminiApiKeyUI();
         betaTestModal.classList.add('active');
+        // 디버그 로그 영역 갱신
+        const logEl = document.getElementById('aiScheduleLog');
+        if (logEl && window._aiScheduleLogs && window._aiScheduleLogs.length > 0) {
+            logEl.textContent = window._aiScheduleLogs.join('\n');
+        } else if (logEl && (!window._aiScheduleLogs || window._aiScheduleLogs.length === 0)) {
+            logEl.textContent = 'AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.';
+        }
         // OAuth 복귀 직후 등 타이밍 이슈 대비 - 잠시 후 한 번 더 UI 갱신
         setTimeout(updateStravaUI, 500);
     } catch (e) {

@@ -644,6 +644,18 @@
                     </div>
                     <p id="nlScheduleError" style="display: none; margin-top: 8px; color: #d32f2f; font-size: 12px;"></p>
                 </div>
+                <!-- 3. 디버그 로그 (일정 저장/첨부파일 오류 등) -->
+                <div class="settings-section">
+                    <h3>디버그 로그</h3>
+                    <p class="settings-description" style="margin-bottom: 8px; font-size: 12px; color: var(--text-secondary);">
+                        일정 저장 실패, 첨부파일 오류 등 관련 로그가 여기에 표시됩니다.
+                    </p>
+                    <pre id="aiScheduleLog" class="ai-schedule-log" style="margin: 0; padding: 12px; background: #1e1e1e; color: #d4d4d4; border-radius: 8px; font-size: 11px; max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.</pre>
+                    <button type="button" class="btn-secondary" id="aiScheduleLogClearBtn" style="margin-top: 8px;">
+                        <span class="material-icons" style="font-size: 18px;">delete_sweep</span>
+                        로그 지우기
+                    </button>
+                </div>
             </div>
         </div>
     </div>
