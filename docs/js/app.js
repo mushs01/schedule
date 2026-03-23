@@ -545,6 +545,7 @@ function setupDateChangeListeners() {
 }
 
 const AI_LOG_MAX_LINES = 80;
+const AI_LOG_STORAGE_KEY = 'schedule_debug_logs';
 function appendAiScheduleLog(event, payload) {
     try {
         const ts = new Date();
@@ -555,21 +556,21 @@ function appendAiScheduleLog(event, payload) {
         if (payload !== undefined) {
             let json;
             try {
-                json = JSON.stringify(payload);
+                json = JSON.stringify(payload, (_, v) => (v instanceof Error ? v.message : v));
             } catch (_) {
-                json = String(payload);
+                try { json = String(payload?.message || payload); } catch (e2) { json = '[object]'; }
             }
-            line += ' ' + json;
+            if (json && json.length < 800) line += ' ' + json;
+            else if (json) line += ' ' + json.substring(0, 800) + '...';
         }
         window._aiScheduleLogs = window._aiScheduleLogs || [];
         window._aiScheduleLogs.push(line);
         if (window._aiScheduleLogs.length > AI_LOG_MAX_LINES) {
             window._aiScheduleLogs.splice(0, window._aiScheduleLogs.length - AI_LOG_MAX_LINES);
         }
+        try { localStorage.setItem(AI_LOG_STORAGE_KEY, JSON.stringify(window._aiScheduleLogs)); } catch (_) {}
         const logEl = document.getElementById('aiScheduleLog');
-        if (logEl) {
-            logEl.textContent = window._aiScheduleLogs.join('\n');
-        }
+        if (logEl) logEl.textContent = window._aiScheduleLogs.join('\n');
     } catch (e) {
         console.warn('appendAiScheduleLog error:', e);
     }
@@ -837,6 +838,7 @@ function setupEventListeners() {
         if (aiLogClearBtn) {
             aiLogClearBtn.addEventListener('click', () => {
                 window._aiScheduleLogs = [];
+                try { localStorage.removeItem(AI_LOG_STORAGE_KEY); } catch (_) {}
                 const logEl = document.getElementById('aiScheduleLog');
                 if (logEl) logEl.textContent = 'AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.';
             });
@@ -1918,7 +1920,7 @@ async function uploadAttachmentFiles(scheduleId, files) {
                 error: err?.message || String(err)
             });
             if (window.showToast) {
-                window.showToast(`첨부파일 업로드 실패: ${file.name}`, 'error');
+                window.showToast(`첨부파일 업로드 실패: ${file.name} (베타테스트에서 로그 확인)`, 'error');
             }
         }
     }
@@ -2160,6 +2162,7 @@ function renderEventAttachmentList() {
  */
 async function handleEventFormSubmit(e) {
     e.preventDefault();
+    appendAiScheduleLog('form.submit.start', { pendingFiles: eventAttachmentPendingFiles?.length ?? 0 });
     
     const api = window.api;
     if (!api || typeof api.createSchedule !== 'function') {
@@ -2459,10 +2462,14 @@ async function handleEventFormSubmit(e) {
                 appendAiScheduleLog('createSchedule.single', scheduleData);
                 const created = await api.createSchedule(scheduleData);
                 if (eventAttachmentPendingFiles.length > 0 && created && created.id) {
+                    appendAiScheduleLog('attachment.upload.start', { scheduleId: created.id, fileCount: eventAttachmentPendingFiles.length });
                     try {
                         const uploaded = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
+                        appendAiScheduleLog('attachment.upload.result', { uploaded: uploaded.length });
                         if (uploaded.length > 0) await api.updateSchedule(created.id, { attachments: uploaded });
+                        else if (eventAttachmentPendingFiles.length > 0) appendAiScheduleLog('attachment.upload.allFailed', {});
                     } catch (attErr) {
+                        appendAiScheduleLog('attachment.upload.exception', { error: attErr?.message || String(attErr) });
                         console.error('첨부파일 저장 실패 (일정은 저장됨):', attErr);
                         showToast('일정은 저장되었으나 첨부파일 저장에 실패했습니다.', 'error');
                     }
@@ -2493,8 +2500,14 @@ async function handleEventFormSubmit(e) {
                     };
                     const created = await api.createSchedule(scheduleData);
                     if (idx === 0 && eventAttachmentPendingFiles.length > 0 && created && created.id) {
-                        attachmentList = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
-                        if (attachmentList.length > 0) await api.updateSchedule(created.id, { attachments: attachmentList });
+                        appendAiScheduleLog('attachment.upload.start', { scheduleId: created.id, fileCount: eventAttachmentPendingFiles.length });
+                        try {
+                            attachmentList = await uploadAttachmentFiles(created.id, eventAttachmentPendingFiles);
+                            appendAiScheduleLog('attachment.upload.result', { uploaded: attachmentList.length });
+                            if (attachmentList.length > 0) await api.updateSchedule(created.id, { attachments: attachmentList });
+                        } catch (attErr) {
+                            appendAiScheduleLog('attachment.upload.exception', { error: attErr?.message || String(attErr) });
+                        }
                     }
                     console.log(`📋 Creating schedule for ${person}:`, scheduleData.title);
                     appendAiScheduleLog('createSchedule.multi', { person, title: scheduleData.title });
@@ -2981,12 +2994,23 @@ function openBetaTestModal() {
         updateStravaUI();
         if (typeof window.updateGeminiApiKeyUI === 'function') window.updateGeminiApiKeyUI();
         betaTestModal.classList.add('active');
-        // 디버그 로그 영역 갱신
+        // 디버그 로그 영역: localStorage에서 복원 후 갱신
         const logEl = document.getElementById('aiScheduleLog');
-        if (logEl && window._aiScheduleLogs && window._aiScheduleLogs.length > 0) {
-            logEl.textContent = window._aiScheduleLogs.join('\n');
-        } else if (logEl && (!window._aiScheduleLogs || window._aiScheduleLogs.length === 0)) {
-            logEl.textContent = 'AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.';
+        if (logEl) {
+            if (!window._aiScheduleLogs || window._aiScheduleLogs.length === 0) {
+                try {
+                    const stored = localStorage.getItem(AI_LOG_STORAGE_KEY);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed)) window._aiScheduleLogs = parsed;
+                    }
+                } catch (_) {}
+            }
+            if (window._aiScheduleLogs && window._aiScheduleLogs.length > 0) {
+                logEl.textContent = window._aiScheduleLogs.join('\n');
+            } else {
+                logEl.textContent = 'AI 일정추가 / 일정 저장 / 첨부파일 관련 로그가 여기에 표시됩니다.';
+            }
         }
         // OAuth 복귀 직후 등 타이밍 이슈 대비 - 잠시 후 한 번 더 UI 갱신
         setTimeout(updateStravaUI, 500);
