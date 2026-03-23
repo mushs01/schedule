@@ -2169,6 +2169,7 @@ async function handleEventFormSubmit(e) {
         showToast('일정 API를 불러올 수 없습니다. 새로고침 후 다시 시도해주세요.', 'error');
         return;
     }
+    showLoading(true);
     
     const title = document.getElementById('eventTitle').value;
     let startDate = document.getElementById('eventStartDate').value;
@@ -2193,6 +2194,7 @@ async function handleEventFormSubmit(e) {
     
     // 유효성 검사 (하루 종일이면 시간 생략 가능)
     if (!title || !startDate || !endDate || selectedPersons.length === 0) {
+        showLoading(false);
         if (selectedPersons.length === 0) {
             showToast('담당자를 한 명 이상 선택해주세요.', 'error');
         } else {
@@ -2201,6 +2203,7 @@ async function handleEventFormSubmit(e) {
         return;
     }
     if (!isAllDay && (!startTime || !endTime)) {
+        showLoading(false);
         showToast('시작/종료 시간을 입력해주세요.', 'error');
         return;
     }
@@ -2211,6 +2214,7 @@ async function handleEventFormSubmit(e) {
     
     // 종료 시간이 시작 시간보다 빠른지 확인 (동일 시각은 허용)
     if (endDateTime < startDateTime) {
+        showLoading(false);
         showToast('종료 시간은 시작 시간보다 늦거나 같아야 합니다.', 'error');
         return;
     }
@@ -2278,8 +2282,6 @@ async function handleEventFormSubmit(e) {
     console.log('⭐ 중요일정:', isImportant);
     
     try {
-        showLoading(true);
-        
         if (currentEditingEvent) {
             // Update existing event - 담당자 변경을 감지하여 일정 추가/삭제 처리
             console.log('📝 Updating existing event');
