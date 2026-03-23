@@ -18,10 +18,11 @@ const firebaseConfig = {
 try {
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
-    if (typeof firebase.storage === 'function') {
-        window.storage = firebase.storage();
-    } else {
+    try {
+        window.storage = firebase.storage && typeof firebase.storage === 'function' ? firebase.storage() : null;
+    } catch (e) {
         window.storage = null;
+        console.warn('Firebase Storage init failed:', e);
     }
     console.log('✅ Firebase initialized successfully');
 } catch (error) {

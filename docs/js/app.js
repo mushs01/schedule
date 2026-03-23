@@ -1525,7 +1525,7 @@ function updateAllDayUI() {
  * @param {Object} event - FullCalendar event for edit mode (null = create)
  * @param {Object} aiPrefill - { title, person } for AI-extracted data prefill (create mode only)
  */
-function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
+async function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
     console.log('🔧 openEventModal called - dateInfo:', dateInfo, 'event:', event);
     
     if (!eventForm) {
@@ -1571,6 +1571,20 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
         console.log('📋 Event ID:', event.id || event.extendedProps?.id);
         console.log('📋 Event extendedProps:', event.extendedProps);
         document.getElementById('eventTitle').placeholder = '일정 제목을 입력하세요';
+        
+        // API에서 최신 첨부파일 조회 (캐시된 이벤트 데이터보다 정확)
+        const scheduleId = event.extendedProps?.original_id || event.id;
+        if (scheduleId && window.api && typeof window.api.getSchedule === 'function') {
+            try {
+                const fresh = await window.api.getSchedule(scheduleId);
+                if (fresh && Array.isArray(fresh.attachments) && fresh.attachments.length > 0) {
+                    eventAttachmentExisting = fresh.attachments.map(a => ({ name: a.name || '파일', url: a.url || '' }));
+                    renderEventAttachmentList();
+                }
+            } catch (e) {
+                console.warn('Could not fetch schedule for attachments:', e);
+            }
+        }
         
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
@@ -1744,9 +1758,11 @@ function openEventModal(dateInfo = null, event = null, aiPrefill = null) {
             console.log('⭐ Important event checkbox set to:', importantCheckbox.checked);
         }
         
-        // 첨부파일 목록 (수정 시 기존 첨부 표시)
+        // 첨부파일 목록 (수정 시) - API에서 가져온 데이터 사용, 없으면 이벤트 데이터 사용
         const attachments = event.extendedProps && event.extendedProps.attachments;
-        eventAttachmentExisting = Array.isArray(attachments) ? attachments.map(a => ({ name: a.name || '파일', url: a.url || '' })) : [];
+        if (eventAttachmentExisting.length === 0 && Array.isArray(attachments) && attachments.length > 0) {
+            eventAttachmentExisting = attachments.map(a => ({ name: a.name || '파일', url: a.url || '' }));
+        }
         renderEventAttachmentList();
         
         console.log('Form filled with event data');
@@ -1878,6 +1894,9 @@ async function uploadAttachmentFiles(scheduleId, files) {
     const storage = window.storage;
     if (!storage) {
         console.warn('Firebase Storage not available');
+        if (window.showToast) {
+            window.showToast('파일 첨부 기능을 사용할 수 없습니다. Firebase Storage 설정을 확인해 주세요.', 'error');
+        }
         return [];
     }
     const results = [];
@@ -1892,6 +1911,9 @@ async function uploadAttachmentFiles(scheduleId, files) {
             results.push({ name: file.name || 'file', url });
         } catch (err) {
             console.error('Attachment upload failed:', file.name, err);
+            if (window.showToast) {
+                window.showToast(`첨부파일 업로드 실패: ${file.name}`, 'error');
+            }
         }
     }
     return results;
@@ -2471,7 +2493,7 @@ async function handleEventFormSubmit(e) {
             }
         }
         
-        // Firestore 반영 후 캘린더 갱신 (바로 refresh하면 새 문서가 아직 안 보일 수 있음)
+        // Firestore 반영 후 캘린더 갱신 (바로 refresh하면 새 문서/첨부파일이 아직 안 보일 수 있음)
         const doRefresh = () => {
             if (window.calendarModule && typeof window.calendarModule.refresh === 'function') {
                 window.calendarModule.refresh();
@@ -2480,6 +2502,7 @@ async function handleEventFormSubmit(e) {
         doRefresh();
         setTimeout(doRefresh, 400);
         setTimeout(doRefresh, 1200);
+        setTimeout(doRefresh, 2500);
         
         loadAISummary();
         loadImportantEvents();
@@ -2498,7 +2521,7 @@ async function handleEventFormSubmit(e) {
 /**
  * Show event detail modal
  */
-function showEventDetail(event) {
+async function showEventDetail(event) {
     console.log('📖 showEventDetail called with event:', event);
     console.log('📋 Event ID:', event.id);
     console.log('📋 Event extendedProps.id:', event.extendedProps?.id);
@@ -2512,7 +2535,20 @@ function showEventDetail(event) {
     // persons 배열 사용 (없으면 person 사용)
     const persons = event.extendedProps.persons || [event.extendedProps.person];
     const personNames = persons.map(p => window.PERSON_NAMES[p]).join(', ');
-    const attachments = Array.isArray(event.extendedProps.attachments) ? event.extendedProps.attachments : [];
+    
+    // API에서 최신 첨부파일 조회 (캐시된 이벤트보다 정확 - 저장 직후 바로 표시)
+    let attachments = Array.isArray(event.extendedProps.attachments) ? event.extendedProps.attachments : [];
+    const scheduleId = event.extendedProps?.original_id || event.id;
+    if (scheduleId && window.api && typeof window.api.getSchedule === 'function') {
+        try {
+            const fresh = await window.api.getSchedule(scheduleId);
+            if (fresh && Array.isArray(fresh.attachments) && fresh.attachments.length > 0) {
+                attachments = fresh.attachments;
+            }
+        } catch (e) {
+            console.warn('Could not fetch schedule for attachments:', e);
+        }
+    }
     
     // 헤더에 담당자 이미지와 제목 표시
     const personAvatarsHTML = persons.map(p => 
